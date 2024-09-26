@@ -1,16 +1,16 @@
 Shader "Custom/DisplacementTestShader" {
 	Properties {
 		_Color ("Color", Color) = (1,1,1,1)
-//		_WaveNumber ("Wave Number", Vector) = (1, 1, 0, 0)
+		_WaveNumber ("Wave Number", Vector) = (1, 1, 0, 0)
 		_WaveNumberAngle ("Wave Number Angle", Float) = 0
 		_AngularFrequency ("Angular Frequency", Float) = 1
 		_Amplitude ("Amplitude", Float) = 1
+		
+		_Displacement ("Displacement", 2D) = "black" {}
 	}
 
 	SubShader {
-		Tags {
-			"RenderType" = "Opaque" "RenderPipeline" = "UniversalRenderPipeline"
-		}
+		Tags { "RenderType" = "Opaque" "RenderPipeline" = "UniversalRenderPipeline" }
 
 		Pass {
 			HLSLPROGRAM
@@ -33,22 +33,26 @@ Shader "Custom/DisplacementTestShader" {
 				float4 positionHCS : SV_POSITION;
 			};
 
-			// float2 _WaveNumber;
+			float2 _WaveNumber;
 			float _WaveNumberAngle;
 			float _AngularFrequency;
 			float _Amplitude;
 			half4 _Color;
 
+			sampler2D _Displacement;
+
 			Varyings vert(Attributes IN) {
 				Varyings OUT;
+				float3 worldPos = mul(unity_ObjectToWorld, IN.positionOS);
 
-				float2 x0 = IN.positionOS.xz;
-				float2 k = float2(cos(_WaveNumberAngle), sin(_WaveNumberAngle));
-				float A = _Amplitude;
-				float omega = _AngularFrequency;
-				float2 x = x0 - normalize(k) * A * sin(dot(k, x0) - omega * _Time.y);
-				float y = A * cos(dot(k, x0) - omega * _Time.y);
-				OUT.positionHCS = TransformObjectToHClip(float4(x.x, y, x.y, 1));
+				// float2 x0 = IN.positionOS.xz;
+				// float2 k = float2(cos(_WaveNumberAngle), sin(_WaveNumberAngle));
+				// float A = _Amplitude;
+				// float omega = _AngularFrequency;
+				// float2 x = x0 - normalize(k) * A * sin(dot(k, x0) - omega * _Time.y);
+				// float y = A * cos(dot(k, x0) - omega * _Time.y);
+				// OUT.positionHCS = TransformObjectToHClip(float4(x.x, y, x.y, 1));
+				OUT.positionHCS = TransformObjectToHClip(IN.positionOS + float4(0, tex2Dlod(_Displacement, float4(worldPos.xz * _WaveNumber / 100,0,0)).r * _Amplitude, 0, 0));
 
 				return OUT;
 			}

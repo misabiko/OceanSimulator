@@ -5,21 +5,43 @@ using UnityEngine;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class OceanMeshGenerator : MonoBehaviour {
 	Mesh mesh;
-	
+
 	Vector3[] vertices;
 	int[] triangles;
-	
+
 	public int xSize = 20;
 	public int zSize = 20;
 
-    void Start() {
+	[SerializeField] ComputeShader computeShader;
+	RenderTexture displacement;
+
+	void Start() {
 		mesh = new Mesh();
 		GetComponent<MeshFilter>().mesh = mesh;
 
 		CreateShape();
 		UpdateMesh();
-    }
-	
+
+		displacement = new RenderTexture(256, 256, 24);
+		displacement.enableRandomWrite = true;
+		displacement.Create();
+		computeShader.SetTexture(0, "Result", displacement);
+		computeShader.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
+
+		var material = GetComponent<Renderer>().material;
+		material.SetTexture("_Displacement", displacement);
+
+		//TODO Try rendering texture to UI?
+		GameObject.Find("RenderTextureDisplay").GetComponent<Renderer>().material.mainTexture = displacement;
+	}
+
+	// void Update() {
+	// 	if (vertices.Length != (xSize + 1) * (zSize + 1)) {
+	// 		CreateShape();
+	// 		UpdateMesh();
+	// 	}
+	// }
+
 	void CreateShape() {
 		vertices = new Vector3[(xSize + 1) * (zSize + 1)];
 
