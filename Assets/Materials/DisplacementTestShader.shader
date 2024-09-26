@@ -1,28 +1,22 @@
-// This shader fills the mesh shape with a color predefined in the code.
 Shader "Custom/DisplacementTestShader" {
-	// The properties block of the Unity shader. In this example this block is empty
-	// because the output color is predefined in the fragment shader code.
-	Properties {}
+	Properties {
+		_Color ("Color", Color) = (1,1,1,1)
+//		_WaveNumber ("Wave Number", Vector) = (1, 1, 0, 0)
+		_WaveNumberAngle ("Wave Number Angle", Float) = 0
+		_AngularFrequency ("Angular Frequency", Float) = 1
+		_Amplitude ("Amplitude", Float) = 1
+	}
 
-	// The SubShader block containing the Shader code. 
 	SubShader {
-		// SubShader Tags define when and under which conditions a SubShader block or
-		// a pass is executed.
 		Tags {
 			"RenderType" = "Opaque" "RenderPipeline" = "UniversalRenderPipeline"
 		}
 
 		Pass {
-			// The HLSL code block. Unity SRP uses the HLSL language.
 			HLSLPROGRAM
-			// This line defines the name of the vertex shader. 
 			#pragma vertex vert
-			// This line defines the name of the fragment shader. 
 			#pragma fragment frag
 
-			// The Core.hlsl file contains definitions of frequently used HLSL
-			// macros and functions, and also contains #include references to other
-			// HLSL files (for example, Common.hlsl, SpaceTransforms.hlsl, etc.).
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
 			// The structure definition defines which variables it contains.
@@ -39,31 +33,30 @@ Shader "Custom/DisplacementTestShader" {
 				float4 positionHCS : SV_POSITION;
 			};
 
-			// The vertex shader definition with properties defined in the Varyings 
-			// structure. The type of the vert function must match the type (struct)
-			// that it returns.
+			// float2 _WaveNumber;
+			float _WaveNumberAngle;
+			float _AngularFrequency;
+			float _Amplitude;
+			half4 _Color;
+
 			Varyings vert(Attributes IN) {
-				// Declaring the output object (OUT) with the Varyings struct.
 				Varyings OUT;
-				// The TransformObjectToHClip function transforms vertex positions
-				// from object space to homogenous space
+
 				float2 x0 = IN.positionOS.xz;
-				float2 k = float2(1, 1);
-				float A = 1;
-				float omega = 1;
+				float2 k = float2(cos(_WaveNumberAngle), sin(_WaveNumberAngle));
+				float A = _Amplitude;
+				float omega = _AngularFrequency;
 				float2 x = x0 - normalize(k) * A * sin(dot(k, x0) - omega * _Time.y);
 				float y = A * cos(dot(k, x0) - omega * _Time.y);
 				OUT.positionHCS = TransformObjectToHClip(float4(x.x, y, x.y, 1));
-				// Returning the output.
+
 				return OUT;
 			}
 
-			// The fragment shader definition.            
 			half4 frag() : SV_Target {
-				// Defining the color variable and returning it.
 				half4 customColor;
-				//TODO Add color param
-				customColor = half4(0.5, 0, 0, 1);
+
+				customColor = _Color;
 				return customColor;
 			}
 			ENDHLSL
