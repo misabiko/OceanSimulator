@@ -525,13 +525,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 835164874}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.43, y: 0.44, z: -7.89}
+  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 0.555, y: -0, z: -0.645}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!1 &2017735626
 GameObject:
   m_ObjectHideFlags: 0
@@ -613,9 +613,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 274307af742b4cd41b69fc4ee399a0df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  xSize: 20
-  zSize: 20
+  xSize: 100
+  zSize: 100
+  size: 1
   computeShader: {fileID: 7200000, guid: 40e34aac946926740866b917839f1a53, type: 3}
+  waveVector: {x: 29.87, y: 34.3}
+  amplitude: 0.84
+  angularFrequency: 5.86
+  height: 0.02
 --- !u!4 &2017735630
 Transform:
   m_ObjectHideFlags: 0
@@ -625,7 +630,7 @@ Transform:
   m_GameObject: {fileID: 2017735626}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.9355047, y: -0.15454029, z: -4.8331285}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

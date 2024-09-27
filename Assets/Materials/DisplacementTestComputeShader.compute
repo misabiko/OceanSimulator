@@ -1,14 +1,22 @@
-// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
 
-// Create a RenderTexture with enableRandomWrite flag and set it
-// with cs.SetTexture
 RWTexture2D<float4> Result;
 
-[numthreads(8,8,1)]
-void CSMain (uint3 id : SV_DispatchThreadID)
-{
-    // TODO: insert actual code here!
+float Resolution;
 
-    Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
+float2 waveVector;
+float amplitude;
+float angularFrequency;
+float time;
+
+[numthreads(10,10,1)]
+void CSMain (uint3 id : SV_DispatchThreadID) {
+    float idx = id.x / Resolution;
+	float idy = id.y / Resolution;
+
+	float2 x0 = float2(idx, idy);
+	float2 x = x0 - normalize(waveVector) * amplitude * sin(dot(waveVector, x0) - angularFrequency * time);
+	float y = amplitude * cos(dot(waveVector, x0) - angularFrequency * time);
+
+    Result[id.xy] = float4(x.x, y, x.y, 0.0);
 }

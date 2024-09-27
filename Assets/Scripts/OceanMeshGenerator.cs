@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
@@ -9,47 +7,67 @@ public class OceanMeshGenerator : MonoBehaviour {
 	Vector3[] vertices;
 	int[] triangles;
 
-	public int xSize = 20;
-	public int zSize = 20;
+	[SerializeField] int xSize = 20;
+	[SerializeField] int zSize = 20;
+	public float size = 1f;
 
 	[SerializeField] ComputeShader computeShader;
 	RenderTexture displacement;
 
+	[SerializeField] Vector2 waveVector = Vector2.one;
+	[SerializeField] float amplitude = 1;
+	[SerializeField] float angularFrequency = 1;
+	[SerializeField] float height = 1;
+
+	Material material;
+
 	void Start() {
 		mesh = new Mesh();
 		GetComponent<MeshFilter>().mesh = mesh;
+		material = GetComponent<Renderer>().material;
 
 		CreateShape();
 		UpdateMesh();
 
-		displacement = new RenderTexture(256, 256, 24);
+		displacement = new RenderTexture(xSize, zSize, 24);
 		displacement.enableRandomWrite = true;
 		displacement.Create();
 		computeShader.SetTexture(0, "Result", displacement);
-		computeShader.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
+		computeShader.SetFloat("Resolution", displacement.width);
+		SetupComputeShader();
 
-		var material = GetComponent<Renderer>().material;
 		material.SetTexture("_Displacement", displacement);
 
 		//TODO Try rendering texture to UI?
 		GameObject.Find("RenderTextureDisplay").GetComponent<Renderer>().material.mainTexture = displacement;
 	}
 
-	// void Update() {
-	// 	if (vertices.Length != (xSize + 1) * (zSize + 1)) {
-	// 		CreateShape();
-	// 		UpdateMesh();
-	// 	}
-	// }
+	void SetupComputeShader() {
+		computeShader.SetVector("waveVector", waveVector);
+		computeShader.SetFloat("amplitude", amplitude);
+		computeShader.SetFloat("angularFrequency", angularFrequency);
+		computeShader.SetFloat("time", Time.time);
+		computeShader.Dispatch(0, displacement.width / 10, displacement.height / 10, 1);
+	}
+
+	void Update() {
+		if (vertices.Length != (xSize + 1) * (zSize + 1)) {
+			CreateShape();
+			UpdateMesh();
+		}
+
+		material.SetFloat("_Height", height);
+		SetupComputeShader();
+	}
 
 	void CreateShape() {
 		vertices = new Vector3[(xSize + 1) * (zSize + 1)];
 
 		for (int i = 0, z = 0; z <= zSize; ++z)
-			for (int x = 0; x <= xSize; ++x) {
-				vertices[i] = new Vector3(x, 0f, z);
-				++i;
-			}
+		for (int x = 0; x <= xSize; ++x) {
+			vertices[i] = new Vector3((float)x / xSize, 0f, (float)z / zSize) * size;
+			++i;
+		}
 		triangles = new int[xSize * zSize * 6];
 		
 		int vert = 0;
@@ -68,6 +86,8 @@ public class OceanMeshGenerator : MonoBehaviour {
 			}
 			++vert;
 		}
+
+		material.SetVector("_Resolution", new Vector2(xSize, zSize));
 	}
 
 	void UpdateMesh() {
