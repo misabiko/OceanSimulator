@@ -1,0 +1,64 @@
+#pragma kernel CSMain
+
+RWTexture2D<float4> Result;
+RWTexture2D<float4> WaveNumber;
+//TODO Readonly texture
+Texture2D<float4> Noise;
+
+float Resolution;
+float L;
+float F;
+float U10;
+float gamma;
+
+float time;
+
+//TODO Is there a better way to define PI?
+float PI;
+float g;
+
+float heightTest;
+
+float energySpectrum(float w) {
+	// float F = 1400000;
+	// float U10 = 20;
+	float wp = 22 * pow((g * g) / (U10 * F), 1.0 / 3.0);
+	float s = wp <= w ? 0.07f : 0.09f;
+	float r = exp(-pow(w - wp, 2) / (2 * s * s * wp * wp));
+	float alpha = 0.076f * pow((U10*U10) / (F * g), 0.22f);
+	// float gamma = 3.3f;
+	return (alpha * g * g) / pow(w, 5) * exp(-5.0 /4.0 * pow(wp / w, 4)) * pow(gamma, r);
+}
+
+float dispersionRelation(float w) {
+	return 1.0;
+}
+
+float2 h0(float2 noise, float2 k) {
+	float w = sqrt(g * length(k));
+	return 1 / sqrt(2) * noise * sqrt(2 * energySpectrum(w) * dispersionRelation(w) /* * dw * 1/length(k) * deltakx * deltakz */);
+}
+
+float2 complexMul(float2 a, float2 b) {
+	return float2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
+}
+
+[numthreads(8,8,1)]
+void CSMain(uint3 id : SV_DispatchThreadID) {
+	float idx = id.x / Resolution;
+	float idy = id.y / Resolution;
+
+	float2 k = 2 * PI * (float2(idx - Resolution / 2, idy - Resolution / 2)) / L;
+	WaveNumber[id.xy] = float4(k / 2 + 0.5, 0.0, 0.0);
+
+	float w = sqrt(g * length(k));
+
+	//float2(r, i)
+	float2 h00 = h0(Noise[id.xy].xy, k);
+
+	float2 h0mk = h0(Noise[id.xy].xy, -k);
+
+	float2 h = complexMul(h00, float2(cos(w * time), sin(w * time))) + complexMul(h0mk, float2(cos(-w * time), sin(-w * time)));
+
+	Result[id.xy] = float4(h, 0.0, 0.0);
+}

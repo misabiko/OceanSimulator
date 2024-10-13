@@ -1,22 +1,104 @@
 #pragma kernel CSMain
 
+Texture2D<float4> HeightSpectrum;
 RWTexture2D<float4> Result;
 
 float Resolution;
+float L;
 
 float2 waveVector;
 float amplitude;
 float angularFrequency;
 float time;
 
-[numthreads(10,10,1)]
-void CSMain (uint3 id : SV_DispatchThreadID) {
-    float idx = id.x / Resolution;
+//TODO Is there a better way to define PI?
+float PI;
+float g;
+
+//https://github.com/rreusser/glsl-fft/blob/master/index.glsl
+const float TWOPI = 6.283185307179586;
+
+float4 fft(
+	int x, int y,
+	Texture2D src,
+	float2 resolution,
+	float subtransformSize,
+	bool horizontal,
+	bool forward,
+	float normalization
+) {
+	float2 evenPos, oddPos, twiddle, outputA, outputB;
+	float4 even, odd;
+	float index, evenIndex, twiddleArgument;
+
+	index = (horizontal ? x : y) - 0.5;
+
+	evenIndex = floor(index / subtransformSize) *
+		(subtransformSize * 0.5) +
+		fmod(index, subtransformSize * 0.5) +
+		0.5;
+
+	if (horizontal)
+	{
+		evenPos = float2(evenIndex, y);
+		oddPos = float2(evenIndex, y);
+	}
+	else
+	{
+		evenPos = float2(x, evenIndex);
+		oddPos = float2(x, evenIndex);
+	}
+
+	evenPos *= resolution;
+	oddPos *= resolution;
+
+	if (horizontal)
+	{
+		oddPos.x += 0.5;
+	}
+	else
+	{
+		oddPos.y += 0.5;
+	}
+
+	even = src[evenPos];
+	odd = src[oddPos];
+
+	twiddleArgument = (forward ? TWOPI : -TWOPI) * (index / subtransformSize);
+	twiddle = float2(cos(twiddleArgument), sin(twiddleArgument));
+
+	return (even.rgba + float4(
+		twiddle.x * odd.xz - twiddle.y * odd.yw,
+		twiddle.y * odd.xz + twiddle.x * odd.yw
+	).xzyw) * normalization;
+}
+
+float2 complexMul(float2 a, float2 b) {
+	return float2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
+}
+
+[numthreads(8,8,1)]
+void CSMain(uint3 id : SV_DispatchThreadID) {
+	float idx = id.x / Resolution;
 	float idy = id.y / Resolution;
 
-	float2 x0 = float2(idx, idy);
-	float2 x = x0 - normalize(waveVector) * amplitude * sin(dot(waveVector, x0) - angularFrequency * time);
-	float y = amplitude * cos(dot(waveVector, x0) - angularFrequency * time);
+	// float2 x0 = float2(idx, idy);
+	// float2 x = x0 - normalize(waveVector) * amplitude * sin(dot(waveVector, x0) - angularFrequency * time);
+	// float y = amplitude * cos(dot(waveVector, x0) - angularFrequency * time);
 
-    Result[id.xy] = float4(x.x, y, x.y, 0.0);
+	float4 result = fft(
+		idx, idy,
+		HeightSpectrum,
+		float2(Resolution, Resolution),
+		Resolution,
+		true,
+		false,
+		1.0
+	);
+	Result[id.xy] = amplitude * (float4(0.0, result.x, 0.0, 0.0) + angularFrequency);
+
+	// float2 x = float2(0, 0);
+	// float y = result.x;
+	//
+	// Result[id.xy] = float4(x.x / 2 + 0.5, y / 2 + 0.5, x.y / 2 + 0.5, 0.0);
 }
