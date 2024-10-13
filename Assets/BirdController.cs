@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class BirdController : MonoBehaviour
 {
@@ -7,7 +6,6 @@ public class BirdController : MonoBehaviour
    [SerializeField] private float myRollSpeed = 2f; 
    [SerializeField] private float myYawSpeed = 2f;   
    [SerializeField] private float myForwardSpeed = 5f; 
-   [SerializeField] private float myGlideFactor = 0.95f;
    [SerializeField] private float myMinAngle = -80f;
    [SerializeField] private float myMaxAngle = 80f;
    [SerializeField] private float upperAngleThreshold = 20f;
@@ -44,10 +42,8 @@ public class BirdController : MonoBehaviour
       transform.Rotate(pitch * myPitchSpeed,  roll * myRollSpeed, -yaw * myYawSpeed, Space.Self);
       
       if (momentumEnabled)
-      {
          CalculateMomentum();
-      }
-
+      
       currentSpeed = myForwardSpeed + (myForwardSpeed - 10) * momentumFactor;
       forwardMovement = transform.forward * currentSpeed;
       

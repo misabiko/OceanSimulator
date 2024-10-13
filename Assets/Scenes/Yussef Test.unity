@@ -4228,15 +4228,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6fed95598d10ff74f8e1030fd39cafaf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  myPitchSpeed: 0.5
-  myRollSpeed: 0.5
-  myYawSpeed: 0.5
-  myForwardSpeed: 30
+  myPitchSpeed: 1
+  myRollSpeed: 1
+  myYawSpeed: 2
+  myForwardSpeed: 40
   myGlideFactor: 0.5
-  myMinAngle: -80
-  myMaxAngle: 80
-  upperAngleThreshold: 0
-  lowerAngleThreshold: 0
+  myMinAngle: -70
+  myMaxAngle: 70
+  upperAngleThreshold: 20
+  lowerAngleThreshold: 20
   momentumEnabled: 1
 --- !u!54 &1753355727
 Rigidbody:

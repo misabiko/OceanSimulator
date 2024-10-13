@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using Cinemachine;
 using UnityEngine;
 
@@ -11,6 +8,9 @@ public class CameraFOVController : MonoBehaviour
     
     private CinemachineVirtualCamera myCinemachineVirtualCamera;
 
+    [SerializeField] private float lerpSpeed = 2f;
+    private float myCurrentFOV;
+    
     private void Awake()
     {
         myCinemachineVirtualCamera = GetComponent<CinemachineVirtualCamera>();
@@ -18,6 +18,8 @@ public class CameraFOVController : MonoBehaviour
 
     private void Update()
     {
-        myCinemachineVirtualCamera.m_Lens.FieldOfView = myBirdController.IsFast() ? defaultFOV + myBirdController.SpeedDifference() : defaultFOV;
+        float valFOV = myBirdController.IsFast() ? defaultFOV + myBirdController.SpeedDifference() : defaultFOV;
+        myCurrentFOV = Mathf.Lerp(myCurrentFOV, valFOV, lerpSpeed * Time.deltaTime);
+        myCinemachineVirtualCamera.m_Lens.FieldOfView = myCurrentFOV;
     }
 }
