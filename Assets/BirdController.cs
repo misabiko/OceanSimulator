@@ -13,9 +13,11 @@ public class BirdController : MonoBehaviour
    [SerializeField] private float upperAngleThreshold = 20f;
    [SerializeField] private float lowerAngleThreshold = 20f;
    [SerializeField] private bool momentumEnabled;
-   
+
+   private float currentSpeed;
    private Rigidbody myRigidbody;
    private float momentumFactor;
+   private Vector3 forwardMovement;
    
    void Start()
    {
@@ -41,18 +43,19 @@ public class BirdController : MonoBehaviour
       
       transform.Rotate(pitch * myPitchSpeed,  roll * myRollSpeed, -yaw * myYawSpeed, Space.Self);
       
-      Vector3 forwardMovement = transform.forward * myForwardSpeed;
-
       if (momentumEnabled)
       {
-         forwardMovement *= 1+CalculateMomentum();
+         CalculateMomentum();
       }
 
+      currentSpeed = myForwardSpeed + (myForwardSpeed - 10) * momentumFactor;
+      forwardMovement = transform.forward * currentSpeed;
+      
       myRigidbody.MovePosition(transform.position + forwardMovement * Time.deltaTime);
       Debug.Log("Forward Movement: "+forwardMovement);
    }
 
-   private float CalculateMomentum()
+   private void CalculateMomentum()
    {
       float angle = transform.eulerAngles.x;
 
@@ -64,6 +67,10 @@ public class BirdController : MonoBehaviour
             angle *= -1f;
             momentumFactor = angle / myMinAngle;
          }
+         else
+         {
+            momentumFactor = 0;
+         }
       }
       else
       {
@@ -73,10 +80,13 @@ public class BirdController : MonoBehaviour
 
             angle = 360 - angle;
             momentumFactor = angle / myMaxAngle;
+            momentumFactor *= -1;
+         }
+         else
+         {
+            momentumFactor = 0;
          }
       }
-
-      return 0f;
    }
 
    private void ClampRotation()
@@ -93,5 +103,35 @@ public class BirdController : MonoBehaviour
          anAngle = 360 + anAngle;
       
       return anAngle > 180f ? Mathf.Max(anAngle, 360+aStartAngle) : Mathf.Min(anAngle, aDestAngle);
+   }
+
+   public Vector3 GetForwardMovement()
+   {
+      return forwardMovement;
+   }
+
+   public float GetMomentumFactor()
+   {
+      return momentumFactor;
+   }
+
+   public Vector3  GetVelocity()
+   {
+      return myRigidbody.velocity;
+   }
+
+   public float ForwardSpeed()
+   {
+      return currentSpeed;
+   }
+
+   public bool IsFast()
+   {
+      return currentSpeed > myForwardSpeed;
+   }
+
+   public float SpeedDifference()
+   {
+      return currentSpeed - myForwardSpeed;
    }
 }
