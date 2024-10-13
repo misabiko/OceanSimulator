@@ -14,8 +14,11 @@ public class OceanMeshGenerator : MonoBehaviour {
 	[Min(0)]
 	public float noiseResolution = 10f;
 
+	[Min(0)]
 	public float F = 1400000;
+	[Min(0)]
 	public float U10 = 20;
+	[Min(0)]
 	public float gamma = 3.3f;
 
 	public float heightTest = 20;
@@ -23,6 +26,9 @@ public class OceanMeshGenerator : MonoBehaviour {
 	[SerializeField] ComputeShader computeShader;
 	[SerializeField] ComputeShader spectrumComputeShader;
 	RenderTexture displacement;
+	RenderTexture finalHeightX;
+	RenderTexture finalHeightY;
+	RenderTexture finalHeightZ;
 	RenderTexture waveNumberTexture;
 	Texture2D noiseTexture;
 	RenderTexture heightSpectrumTexture;
@@ -42,9 +48,9 @@ public class OceanMeshGenerator : MonoBehaviour {
 		CreateShape();
 		UpdateMesh();
 
-		heightSpectrumTexture = CreateRenderTexture(xSize, zSize, 24);
+		heightSpectrumTexture = CreateRenderTexture(xSize, zSize);
 		spectrumComputeShader.SetTexture(0, "Result", heightSpectrumTexture);
-		waveNumberTexture = CreateRenderTexture(xSize, zSize, 24);
+		waveNumberTexture = CreateRenderTexture(xSize, zSize);
 		spectrumComputeShader.SetTexture(0, "WaveNumber", waveNumberTexture);
 		noiseTexture = CreateTexture(xSize, zSize);
 		int greenNoise = Random.Range(0,10000);
@@ -57,10 +63,14 @@ public class OceanMeshGenerator : MonoBehaviour {
 		spectrumComputeShader.SetFloat("PI", Mathf.PI);
 		spectrumComputeShader.SetFloat("g", -Physics.gravity.y);
 		
-		displacement = new RenderTexture(xSize, zSize, 24);
-		displacement.enableRandomWrite = true;
-		displacement.Create();
-		computeShader.SetTexture(0, "Result", displacement);
+		displacement = CreateRenderTexture(xSize, zSize);
+		computeShader.SetTexture(0, "Displacement", displacement);
+		finalHeightX = CreateRenderTexture(xSize, zSize);
+		computeShader.SetTexture(0, "HX", finalHeightX);
+		finalHeightY = CreateRenderTexture(xSize, zSize);
+		computeShader.SetTexture(0, "HY", finalHeightY);
+		finalHeightZ = CreateRenderTexture(xSize, zSize);
+		computeShader.SetTexture(0, "HZ", finalHeightZ);
 		computeShader.SetTexture(0, "HeightSpectrum", heightSpectrumTexture);
 		computeShader.SetFloat("Resolution", xSize);
 		computeShader.SetFloat("PI", Mathf.PI);
@@ -143,8 +153,8 @@ public class OceanMeshGenerator : MonoBehaviour {
 		mesh.RecalculateNormals();
 	}
 
-	static RenderTexture CreateRenderTexture(int width, int height, int depth) {
-		var rt = new RenderTexture(width, height, depth) {
+	static RenderTexture CreateRenderTexture(int width, int height) {
+		var rt = new RenderTexture(width, height, 24) {
 			enableRandomWrite = true,
 			filterMode = FilterMode.Point,
 			graphicsFormat = UnityEngine.Experimental.Rendering.GraphicsFormat.R16G16B16A16_SFloat,

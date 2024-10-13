@@ -1,7 +1,11 @@
 #pragma kernel CSMain
 
 Texture2D<float4> HeightSpectrum;
-RWTexture2D<float4> Result;
+RWTexture2D<float4> Displacement;
+
+RWTexture2D<float4> HX;
+RWTexture2D<float4> HY;
+RWTexture2D<float4> HZ;
 
 float Resolution;
 float L;
@@ -20,7 +24,7 @@ const float TWOPI = 6.283185307179586;
 
 float4 fft(
 	int x, int y,
-	Texture2D src,
+	RWTexture2D<float4> src,
 	float2 resolution,
 	float subtransformSize,
 	bool horizontal,
@@ -82,23 +86,50 @@ void CSMain(uint3 id : SV_DispatchThreadID) {
 	float idx = id.x / Resolution;
 	float idy = id.y / Resolution;
 
-	// float2 x0 = float2(idx, idy);
-	// float2 x = x0 - normalize(waveVector) * amplitude * sin(dot(waveVector, x0) - angularFrequency * time);
-	// float y = amplitude * cos(dot(waveVector, x0) - angularFrequency * time);
+	float2 k = 2 * PI * (float2(idx - Resolution / 2, idy - Resolution / 2)) / L;
+	float w = sqrt(g * length(k));
+	float2 hy = complexMul(HeightSpectrum[id.xy].xy, float2(cos(w * time), sin(w * time))) + complexMul(HeightSpectrum[id.xy].zw, float2(cos(-w * time), sin(-w * time)));
 
-	float4 result = fft(
+	
+	HY[id.xy] = float4(hy.x, hy.y, hy.x, hy.y);
+
+	float4 dy = fft(
 		idx, idy,
-		HeightSpectrum,
+		HY,
 		float2(Resolution, Resolution),
 		Resolution,
 		true,
 		false,
 		1.0
 	);
-	Result[id.xy] = amplitude * (float4(0.0, result.x, 0.0, 0.0) + angularFrequency);
+	
+	float2 hx = float2(-k.x / length(k) * HeightSpectrum[id.xy].y, k.x / length(k) * HeightSpectrum[id.xy].x);
 
-	// float2 x = float2(0, 0);
-	// float y = result.x;
-	//
-	// Result[id.xy] = float4(x.x / 2 + 0.5, y / 2 + 0.5, x.y / 2 + 0.5, 0.0);
+	HX[id.xy] = float4(hx.x, hx.y, hx.x, hx.y);
+	float4 dx = fft(
+		idx, idy,
+		HX,
+		float2(Resolution, Resolution),
+		Resolution,
+		true,
+		false,
+		1.0
+		);
+	
+	float2 hz = float2(-k.y / length(k) * HeightSpectrum[id.xy].y, k.y / length(k) * HeightSpectrum[id.xy].x);
+
+	HZ[id.xy] = float4(hz.x, hz.y, hz.x, hz.y);
+	float4 dz = fft(
+		idx, idy,
+		HZ,
+		float2(Resolution, Resolution),
+		Resolution,
+		true,
+		false,
+		1.0
+	);
+	
+	Displacement[id.xy] = amplitude * (float4(HX[id.xy].x, HY[id.xy].x, HZ[id.xy].x, 0.0) + angularFrequency);
+
+	// Displacement[id.xy] = float4(x.x / 2 + 0.5, y / 2 + 0.5, x.y / 2 + 0.5, 0.0);
 }

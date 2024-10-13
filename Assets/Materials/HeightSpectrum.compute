@@ -58,7 +58,5 @@ void CSMain(uint3 id : SV_DispatchThreadID) {
 
 	float2 h0mk = h0(Noise[id.xy].xy, -k);
 
-	float2 h = complexMul(h00, float2(cos(w * time), sin(w * time))) + complexMul(h0mk, float2(cos(-w * time), sin(-w * time)));
-
-	Result[id.xy] = float4(h, 0.0, 0.0);
+	Result[id.xy] = float4(h00, h0mk);
 }

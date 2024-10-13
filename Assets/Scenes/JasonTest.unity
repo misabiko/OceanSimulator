@@ -1101,10 +1101,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   xSize: 256
   zSize: 256
-  size: 100
-  noiseResolution: 10
-  F: 500
-  U10: 500
+  size: 25
+  noiseResolution: 5
+  F: 1400000
+  U10: 20
   gamma: 3.3
   heightTest: 0
   computeShader: {fileID: 7200000, guid: 40e34aac946926740866b917839f1a53, type: 3}
