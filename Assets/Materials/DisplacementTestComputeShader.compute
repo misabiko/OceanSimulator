@@ -1,7 +1,7 @@
 #pragma kernel CSMain
 
-Texture2D<float4> HeightSpectrum;
 RWTexture2D<float4> Displacement;
+RWTexture2D<float4> Displacement2;
 
 RWTexture2D<float4> HX;
 RWTexture2D<float4> HY;
@@ -36,5 +36,10 @@ void CSMain(uint3 id : SV_DispatchThreadID) {
 		HX[id.xy].x * dtest1,
 		HY[id.xy].x * dtest2,
 		HZ[id.xy].x * dtest3,
+		0.0);
+	Displacement2[id.xy] = float4(
+		HX2[id.xy].x * dtest1,
+		HY2[id.xy].x * dtest2,
+		HZ2[id.xy].x * dtest3,
 	0.0);
 }

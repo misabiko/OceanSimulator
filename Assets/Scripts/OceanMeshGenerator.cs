@@ -32,6 +32,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 	[SerializeField] ComputeShader spectrumComputeShader;
 	[SerializeField] ComputeShader rreusserFFT;
 	RenderTexture displacement;
+	RenderTexture displacement2;
 	RenderTexture HX;
 	RenderTexture HY;
 	RenderTexture HZ;
@@ -40,7 +41,6 @@ public class OceanMeshGenerator : MonoBehaviour {
 	RenderTexture HZ2;
 	RenderTexture waveNumberTexture;
 	Texture2D noiseTexture;
-	RenderTexture heightSpectrumTexture;
 
 	[SerializeField] Vector2 waveVector = Vector2.one;
 	[SerializeField] float amplitude = 1;
@@ -57,8 +57,6 @@ public class OceanMeshGenerator : MonoBehaviour {
 		CreateShape();
 		UpdateMesh();
 
-		heightSpectrumTexture = CreateRenderTexture(xSize, zSize);
-		spectrumComputeShader.SetTexture(0, "Result", heightSpectrumTexture);
 		waveNumberTexture = CreateRenderTexture(xSize, zSize);
 		spectrumComputeShader.SetTexture(0, "WaveNumber", waveNumberTexture);
 		noiseTexture = CreateTexture(xSize, zSize);
@@ -80,10 +78,11 @@ public class OceanMeshGenerator : MonoBehaviour {
 
 		displacement = CreateRenderTexture(xSize, zSize);
 		computeShader.SetTexture(0, "Displacement", displacement);
-		computeShader.SetTexture(0, "HeightSpectrum", heightSpectrumTexture);
-		// computeShader.SetTexture(0, "HX", HX);
-		// computeShader.SetTexture(0, "HY", HY);
-		// computeShader.SetTexture(0, "HZ", HZ);
+		displacement2 = CreateRenderTexture(xSize, zSize);
+		computeShader.SetTexture(0, "Displacement2", displacement2);
+		computeShader.SetTexture(0, "HX", HX);
+		computeShader.SetTexture(0, "HY", HY);
+		computeShader.SetTexture(0, "HZ", HZ);
 		HX2 = CreateRenderTexture(xSize, zSize);
 		computeShader.SetTexture(0, "HX2", HX2);
 		HY2 = CreateRenderTexture(xSize, zSize);
@@ -99,14 +98,21 @@ public class OceanMeshGenerator : MonoBehaviour {
 
 		//TODO Try rendering texture to UI?
 		GameObject.Find("RenderTextureDisplay").GetComponent<Renderer>().material.mainTexture = displacement;
+		GameObject.Find("RenderTextureDisplay2").GetComponent<Renderer>().material.mainTexture = displacement2;
 		GameObject.Find("RenderTextureNoise").GetComponent<Renderer>().material.mainTexture = noiseTexture;
 		GameObject.Find("RenderTextureWaveNumber").GetComponent<Renderer>().material.mainTexture = waveNumberTexture;
 		GameObject.Find("RenderTextureHY").GetComponent<Renderer>().material.mainTexture = HY;
 		GameObject.Find("RenderTextureHX").GetComponent<Renderer>().material.mainTexture = HX;
 		GameObject.Find("RenderTextureHZ").GetComponent<Renderer>().material.mainTexture = HZ;
+		GameObject.Find("RenderTextureHY2").GetComponent<Renderer>().material.mainTexture = HY2;
+		GameObject.Find("RenderTextureHX2").GetComponent<Renderer>().material.mainTexture = HX2;
+		GameObject.Find("RenderTextureHZ2").GetComponent<Renderer>().material.mainTexture = HZ2;
 	}
 
 	void SetupComputeShader() {
+		spectrumComputeShader.SetFloats("test", test2d.x, test2d.y);
+		spectrumComputeShader.SetFloats("test2", test2d2.x, test2d2.y);
+		spectrumComputeShader.SetFloats("test3", test2d3.x, test2d3.y);
 		spectrumComputeShader.SetFloat("time", Time.time * timeScale);
 		spectrumComputeShader.SetFloat("L", size);
 		spectrumComputeShader.SetFloat("F", F);
@@ -266,9 +272,6 @@ public class OceanMeshGenerator : MonoBehaviour {
 			}
 		}
 
-		computeShader.SetTexture(0, "HY", HY2);
-		computeShader.SetTexture(0, "HX", HX2);
-		computeShader.SetTexture(0, "HZ", HZ2);
 		computeShader.SetFloat("dtest1", dtest1);
 		computeShader.SetFloat("dtest2", dtest2);
 		computeShader.SetFloat("dtest3", dtest3);

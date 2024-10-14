@@ -16,6 +16,10 @@ float2 test;
 float2 test2;
 float2 test3;
 
+float mod(float a, float b) {
+	return a - b * floor(a / b);
+}
+
 [numthreads(8,8,1)]
 void CSMain(uint3 id : SV_DispatchThreadID) {
 	float2 evenPos, oddPos, twiddle, outputA, outputB;
@@ -23,12 +27,13 @@ void CSMain(uint3 id : SV_DispatchThreadID) {
 	float index, evenIndex, twiddleArgument;
 
 	float2 idf = float2(id.x / resolution.x, id.y / resolution.y);
+	// float2 idf = float2((float)id.x / subtransformSize, id.y / subtransformSize);
 
 	index = (horizontal ? idf.x : idf.y) - 0.5;
 
-	//Added 0.5 inside the floor, not sure why it fixed only half the texture being used
-	evenIndex = floor(index / subtransformSize + 0.5) * (subtransformSize * 0.5) +
-		fmod(index, subtransformSize * 0.5) +
+	//Added 0.5 inside the floor
+	evenIndex = floor((index /*+ 0.5*/) / subtransformSize) * (subtransformSize * 0.5) +
+		mod(index, subtransformSize * 0.5) +
 		0.5;
 
 	if (horizontal)
