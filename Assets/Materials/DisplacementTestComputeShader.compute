@@ -1,0 +1,45 @@
+#pragma kernel CSMain
+
+RWTexture2D<float4> Displacement;
+RWTexture2D<float4> Displacement2;
+
+RWTexture2D<float4> HX;
+RWTexture2D<float4> HY;
+RWTexture2D<float4> HZ;
+RWTexture2D<float4> HX2;
+RWTexture2D<float4> HY2;
+RWTexture2D<float4> HZ2;
+
+float Resolution;
+float L;
+
+float2 waveVector;
+float amplitude;
+float angularFrequency;
+float time;
+
+//TODO Is there a better way to define PI?
+float PI;
+float g;
+
+float dtest1;
+float dtest2;
+float dtest3;
+
+float2 complexMul(float2 a, float2 b) {
+	return float2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
+}
+
+[numthreads(8,8,1)]
+void CSMain(uint3 id : SV_DispatchThreadID) {
+	Displacement[id.xy] = float4(
+		HX[id.xy].x * dtest1,
+		HY[id.xy].x * dtest2,
+		HZ[id.xy].x * dtest3,
+		0.0);
+	Displacement2[id.xy] = float4(
+		HX2[id.xy].x * dtest1,
+		HY2[id.xy].x * dtest2,
+		HZ2[id.xy].x * dtest3,
+	0.0);
+}

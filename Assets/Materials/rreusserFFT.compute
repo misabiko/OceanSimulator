@@ -1,0 +1,68 @@
+//https://github.com/rreusser/glsl-fft/blob/master/index.glsl
+#pragma kernel CSMain
+
+const float TWOPI = 6.283185307179586;
+
+Texture2D<float4> src;
+RWTexture2D<float4> output;
+
+float2 resolution;
+float subtransformSize;
+bool horizontal;
+bool forward;
+float normalization;
+
+float2 test;
+float2 test2;
+float2 test3;
+
+float mod(float a, float b) {
+	return a - b * floor(a / b);
+}
+
+[numthreads(8,8,1)]
+void CSMain(uint3 id : SV_DispatchThreadID) {
+	float2 evenPos, oddPos, twiddle, outputA, outputB;
+	float4 even, odd;
+	float index, evenIndex, twiddleArgument;
+
+	float2 idf = float2(id.x / resolution.x, id.y / resolution.y);
+	// float2 idf = float2((float)id.x / subtransformSize, id.y / subtransformSize);
+
+	index = (horizontal ? idf.x : idf.y) - 0.5;
+
+	//Added 0.5 inside the floor
+	evenIndex = floor((index /*+ 0.5*/) / subtransformSize) * (subtransformSize * 0.5) +
+		mod(index, subtransformSize * 0.5) +
+		0.5;
+
+	if (horizontal)
+	{
+		evenPos = float2(evenIndex, idf.y);
+		oddPos = float2(evenIndex, idf.y);
+	}
+	else
+	{
+		evenPos = float2(idf.x, evenIndex);
+		oddPos = float2(idf.x, evenIndex);
+	}
+
+	evenPos *= resolution;
+	oddPos *= resolution;
+
+	if (horizontal)
+		oddPos.x += 0.5;
+	else
+		oddPos.y += 0.5;
+
+	even = src[evenPos];
+	odd = src[oddPos];
+
+	twiddleArgument = (forward ? TWOPI : -TWOPI) * (index / subtransformSize);
+	twiddle = float2(cos(twiddleArgument), sin(twiddleArgument));
+
+	output[id.xy] = (even.rgba + float4(
+		twiddle.x * odd.xz - twiddle.y * odd.yw,
+		twiddle.y * odd.xz + twiddle.x * odd.yw
+	).xzyw) * normalization;
+}
