@@ -22,15 +22,19 @@ float time;
 float PI;
 float g;
 
+float dtest1;
+float dtest2;
+float dtest3;
+
 float2 complexMul(float2 a, float2 b) {
 	return float2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
 }
 
 [numthreads(8,8,1)]
 void CSMain(uint3 id : SV_DispatchThreadID) {
-	float idx = id.x / Resolution;
-	float idy = id.y / Resolution;
-	
-	// Displacement[id.xy] = amplitude * (float4(HX[id.xy].x, HY[id.xy].x, HZ[id.xy].x, 0.0) + angularFrequency);
-	Displacement[id.xy] = amplitude * (float4(0, HY[id.xy].x, 0, 0.0) + angularFrequency);
+	Displacement[id.xy] = float4(
+		HX[id.xy].x * dtest1,
+		HY[id.xy].x * dtest2,
+		HZ[id.xy].x * dtest3,
+	0.0);
 }

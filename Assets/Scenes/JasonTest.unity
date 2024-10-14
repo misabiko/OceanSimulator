@@ -1314,7 +1314,7 @@ MonoBehaviour:
   xSize: 256
   zSize: 256
   size: 128
-  noiseResolution: 5
+  noiseResolution: 2.5
   F: 1400000
   U10: 20
   gamma: 3.3
@@ -1323,6 +1323,9 @@ MonoBehaviour:
   test2d: {x: 0, y: 0}
   test2d2: {x: 0, y: 0}
   test2d3: {x: 0, y: 0}
+  dtest1: 0.1
+  dtest2: 0.5
+  dtest3: 0
   computeShader: {fileID: 7200000, guid: 40e34aac946926740866b917839f1a53, type: 3}
   spectrumComputeShader: {fileID: 7200000, guid: bab3b7ecb79e4d5b9515d87e3efd086e,
     type: 3}
