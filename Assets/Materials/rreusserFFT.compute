@@ -32,8 +32,8 @@ void CSMain(uint3 id : SV_DispatchThreadID) {
 	index = (horizontal ? idf.x : idf.y) - 0.5;
 
 	//Added 0.5 inside the floor
-	evenIndex = floor((index /*+ 0.5*/) / subtransformSize) * (subtransformSize * 0.5) +
-		mod(index, subtransformSize * 0.5) +
+	evenIndex = floor((index + 0.5) / subtransformSize) * (subtransformSize * 0.5) +
+		fmod(index, subtransformSize * 0.5) +
 		0.5;
 
 	if (horizontal)
