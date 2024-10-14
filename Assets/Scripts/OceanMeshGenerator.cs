@@ -12,20 +12,14 @@ public class OceanMeshGenerator : MonoBehaviour {
 
 	[SerializeField, Min(0)] int xSize = 20;
 	[SerializeField, Min(0)] int zSize = 20;
-	[Min(0)]
-	public float size = 100f;
-	[Min(0)]
-	public float noiseResolution = 10f;
+	[Min(0)] public float size = 100f;
+	[Min(0)] public float noiseResolution = 10f;
 
-	[Min(0)]
-	public float F = 1400000;
-	[Min(0)]
-	public float U10 = 20;
-	[Min(0)]
-	public float gamma = 3.3f;
+	[Min(0)] public float F = 1400000;
+	[Min(0)] public float U10 = 20;
+	[Min(0)] public float gamma = 3.3f;
 
-	[Min(0)]
-	public float timeScale = 1;
+	[Min(0)] public float timeScale = 1;
 	public float heightTest = 20;
 	public Vector2 test2d = new(0, 0);
 	public Vector2 test2d2 = new(0, 0);
@@ -65,10 +59,10 @@ public class OceanMeshGenerator : MonoBehaviour {
 		waveNumberTexture = CreateRenderTexture(xSize, zSize);
 		spectrumComputeShader.SetTexture(0, "WaveNumber", waveNumberTexture);
 		noiseTexture = CreateTexture(xSize, zSize);
-		int greenNoise = Random.Range(0,10000);
+		int greenNoise = Random.Range(0, 10000);
 		for (int x = 0; x < xSize; ++x)
-			for (int y = 0; y < zSize; ++y)
-				noiseTexture.SetPixel(x, y, new Color(Mathf.PerlinNoise(x / noiseResolution, y / noiseResolution), Mathf.PerlinNoise(x / noiseResolution + greenNoise, y / noiseResolution + greenNoise), 0, 0));
+		for (int y = 0; y < zSize; ++y)
+			noiseTexture.SetPixel(x, y, new Color(Mathf.PerlinNoise(x / noiseResolution, y / noiseResolution), Mathf.PerlinNoise(x / noiseResolution + greenNoise, y / noiseResolution + greenNoise), 0, 0));
 		noiseTexture.Apply();
 		spectrumComputeShader.SetTexture(0, "Noise", noiseTexture);
 		spectrumComputeShader.SetFloat("Resolution", xSize);
@@ -80,7 +74,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 		spectrumComputeShader.SetTexture(0, "HY", HY);
 		HZ = CreateRenderTexture(xSize, zSize);
 		spectrumComputeShader.SetTexture(0, "HZ", HZ);
-		
+
 		displacement = CreateRenderTexture(xSize, zSize);
 		computeShader.SetTexture(0, "Displacement", displacement);
 		computeShader.SetTexture(0, "HeightSpectrum", heightSpectrumTexture);
@@ -117,35 +111,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 		spectrumComputeShader.SetFloat("gamma", gamma);
 		spectrumComputeShader.SetFloat("heightTest", heightTest);
 		spectrumComputeShader.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
-		
-		// // var hx = CreateTexture(displacement.width, displacement.height);
-		// // RenderTexture.active = HX;
-		// // hx.ReadPixels(new Rect(0, 0, displacement.width, displacement.height), 0, 0);
-		// // hx.Apply();
-		// var hy = CreateTexture(displacement.width, displacement.height);
-		// RenderTexture.active = HY;
-		// hy.ReadPixels(new Rect(0, 0, displacement.width, displacement.height), 0, 0);
-		// hy.Apply();
-		// // var hz = CreateTexture(displacement.width, displacement.height);
-		// // RenderTexture.active = HZ;
-		// // hz.ReadPixels(new Rect(0, 0, displacement.width, displacement.height), 0, 0);
-		// // hz.Apply();
-		//
-		// // var array = new Complex32[displacement.width, displacement.height];
-		// // for (int x = 0; x < displacement.width; ++x)
-		// // 	for (int y = 0; y < displacement.height; ++y)
-		// // 		array[x, y] = ;
-		// var matrix = DenseMatrix.Create(displacement.width, displacement.height, (i, j) => new Complex32(hy.GetPixel(i, j).r, hy.GetPixel(i, j).g));
-		// // DenseMatrix.OfArray()
-		// Fourier.Inverse2D(matrix);
-		// for (int x = 0; x < displacement.width; ++x) {
-		// 	for (int y = 0; y < displacement.height; ++y) {
-		// 		hy.SetPixel(x, y, new Color(matrix[x, y].Real, matrix[x, y].Imaginary, 0, 0));
-		// 	}
-		// }
-		// hy.Apply();
-		// computeShader.SetTexture(0, "HY", HY);
-		
+
 		int subtransformSize = displacement.width;
 		bool pingpong = true;
 		int i = 0;
@@ -158,7 +124,6 @@ public class OceanMeshGenerator : MonoBehaviour {
 			rreusserFFT.SetBool("forward", false);
 			if (i == 0)
 				rreusserFFT.SetFloat("normalization", 1f / displacement.width);
-				// rreusserFFT.SetFloat("normalization", 1f / (displacement.width * displacement.height));
 			else
 				rreusserFFT.SetFloat("normalization", 1f);
 			rreusserFFT.SetFloats("test", test2d.x, test2d.y);
@@ -169,8 +134,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 			pingpong = !pingpong;
 			++i;
 		}
-		print("Horizontal: " + i);
-		
+
 		subtransformSize = displacement.height;
 		pingpong = true;
 		i = 0;
@@ -183,7 +147,6 @@ public class OceanMeshGenerator : MonoBehaviour {
 			rreusserFFT.SetBool("forward", false);
 			if (i == 0)
 				rreusserFFT.SetFloat("normalization", 1f / displacement.height);
-			// rreusserFFT.SetFloat("normalization", 1f / (displacement.width * displacement.height));
 			else
 				rreusserFFT.SetFloat("normalization", 1f);
 			rreusserFFT.SetFloat("normalization", 1f);
@@ -195,10 +158,8 @@ public class OceanMeshGenerator : MonoBehaviour {
 			pingpong = !pingpong;
 			++i;
 		}
-		print("Vertical: " + i);
-		print(subtransformSize);
-		
-		
+
+
 		computeShader.SetTexture(0, "HY", HY2);
 		computeShader.SetVector("waveVector", waveVector);
 		computeShader.SetFloat("amplitude", amplitude);
@@ -227,6 +188,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 			vertices[i] = new Vector3((float)x / xSize, 0f, (float)z / zSize) * size;
 			++i;
 		}
+
 		triangles = new int[xSize * zSize * 6];
 
 		int vert = 0;
@@ -243,6 +205,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 				++vert;
 				tris += 6;
 			}
+
 			++vert;
 		}
 

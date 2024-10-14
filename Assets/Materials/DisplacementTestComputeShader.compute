@@ -26,21 +26,6 @@ float2 complexMul(float2 a, float2 b) {
 	return float2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
 }
 
-//https://www.nayuki.io/page/how-to-implement-the-discrete-fourier-transform
-// void idft(RWTexture2D<float4> input, RWTexture2D<float4> output) {
-// 	for (int k = 0; k < Resolution; ++k) {
-// 		for (int l = 0; l < Resolution; ++l) {
-// 			float2 sum = float2(0, 0);
-// 			for (int x = 0; x < Resolution; ++x) {
-// 				for (int y = 0; y < Resolution; ++y) {
-// 					sum += complexMul(input[uint2(x, y)].xy, float2(cos(-2 * PI * (k * x + l * y) / Resolution), sin(-2 * PI * (k * x + l * y) / Resolution)));
-// 				}
-// 			}
-// 			output[uint2(k, l)] = float4(sum, 0, 0);
-// 		}
-// 	}
-// }
-
 [numthreads(8,8,1)]
 void CSMain(uint3 id : SV_DispatchThreadID) {
 	float idx = id.x / Resolution;
