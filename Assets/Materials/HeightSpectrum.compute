@@ -1,6 +1,8 @@
 #pragma kernel CSMain
 
-RWTexture2D<float4> Result;
+RWTexture2D<float4> HX;
+RWTexture2D<float4> HY;
+RWTexture2D<float4> HZ;
 RWTexture2D<float4> WaveNumber;
 //TODO Readonly texture
 Texture2D<float4> Noise;
@@ -48,15 +50,24 @@ void CSMain(uint3 id : SV_DispatchThreadID) {
 	float idx = id.x / Resolution;
 	float idy = id.y / Resolution;
 
-	float2 k = 2 * PI * (float2(idx - Resolution / 2, idy - Resolution / 2)) / L;
-	WaveNumber[id.xy] = float4(k / 2 + 0.5, 0.0, 0.0);
+	float2 k = 2.0 * PI * (float2(id.x - Resolution / 2.0, id.y - Resolution / 2.0)) / L;
+	WaveNumber[id.xy] = float4(k, 0, 0);
 
 	float w = sqrt(g * length(k));
 
 	//float2(r, i)
-	float2 h00 = h0(Noise[id.xy].xy, k);
-
-	float2 h0mk = h0(Noise[id.xy].xy, -k);
-
-	Result[id.xy] = float4(h00, h0mk);
+	float2 h0y = h0(Noise[id.xy].xy, k);
+	float2 h0ymk = h0(Noise[id.xy].xy, -k);
+	float2 hy = complexMul(h0y, float2(cos(w * time), sin(w * time))) + complexMul(h0ymk, float2(cos(-w * time), sin(-w * time)));
+	HY[id.xy] = float4(hy.x, hy.y, 0.0, 0.0);
+	
+	float2 h0x = float2(-k.x / length(k) * h0y.y, k.x / length(k) * h0y.x);
+	float2 h0xmk = float2(k.x / length(k) * h0ymk.y, -k.x / length(k) * h0ymk.x);
+	float2 hx = complexMul(h0x, float2(cos(w * time), sin(w * time))) + complexMul(h0xmk, float2(cos(-w * time), sin(-w * time)));
+	HX[id.xy] = float4(hx.x, hx.y, 0.0, 0.0);
+	
+	float2 h0z = float2(-k.y / length(k) * h0y.y, k.y / length(k) * h0y.x);
+	float2 h0zmk = float2(k.y / length(k) * h0ymk.y, -k.y / length(k) * h0ymk.x);
+	float2 hz = complexMul(h0z, float2(cos(w * time), sin(w * time))) + complexMul(h0zmk, float2(cos(-w * time), sin(-w * time)));
+	HZ[id.xy] = float4(hz.x, hz.y, 0.0, 0.0);
 }

@@ -6,6 +6,9 @@ RWTexture2D<float4> Displacement;
 RWTexture2D<float4> HX;
 RWTexture2D<float4> HY;
 RWTexture2D<float4> HZ;
+RWTexture2D<float4> HX2;
+RWTexture2D<float4> HY2;
+RWTexture2D<float4> HZ2;
 
 float Resolution;
 float L;
@@ -19,117 +22,30 @@ float time;
 float PI;
 float g;
 
-//https://github.com/rreusser/glsl-fft/blob/master/index.glsl
-const float TWOPI = 6.283185307179586;
-
-float4 fft(
-	int x, int y,
-	RWTexture2D<float4> src,
-	float2 resolution,
-	float subtransformSize,
-	bool horizontal,
-	bool forward,
-	float normalization
-) {
-	float2 evenPos, oddPos, twiddle, outputA, outputB;
-	float4 even, odd;
-	float index, evenIndex, twiddleArgument;
-
-	index = (horizontal ? x : y) - 0.5;
-
-	evenIndex = floor(index / subtransformSize) *
-		(subtransformSize * 0.5) +
-		fmod(index, subtransformSize * 0.5) +
-		0.5;
-
-	if (horizontal)
-	{
-		evenPos = float2(evenIndex, y);
-		oddPos = float2(evenIndex, y);
-	}
-	else
-	{
-		evenPos = float2(x, evenIndex);
-		oddPos = float2(x, evenIndex);
-	}
-
-	evenPos *= resolution;
-	oddPos *= resolution;
-
-	if (horizontal)
-	{
-		oddPos.x += 0.5;
-	}
-	else
-	{
-		oddPos.y += 0.5;
-	}
-
-	even = src[evenPos];
-	odd = src[oddPos];
-
-	twiddleArgument = (forward ? TWOPI : -TWOPI) * (index / subtransformSize);
-	twiddle = float2(cos(twiddleArgument), sin(twiddleArgument));
-
-	return (even.rgba + float4(
-		twiddle.x * odd.xz - twiddle.y * odd.yw,
-		twiddle.y * odd.xz + twiddle.x * odd.yw
-	).xzyw) * normalization;
-}
-
 float2 complexMul(float2 a, float2 b) {
 	return float2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
 }
+
+//https://www.nayuki.io/page/how-to-implement-the-discrete-fourier-transform
+// void idft(RWTexture2D<float4> input, RWTexture2D<float4> output) {
+// 	for (int k = 0; k < Resolution; ++k) {
+// 		for (int l = 0; l < Resolution; ++l) {
+// 			float2 sum = float2(0, 0);
+// 			for (int x = 0; x < Resolution; ++x) {
+// 				for (int y = 0; y < Resolution; ++y) {
+// 					sum += complexMul(input[uint2(x, y)].xy, float2(cos(-2 * PI * (k * x + l * y) / Resolution), sin(-2 * PI * (k * x + l * y) / Resolution)));
+// 				}
+// 			}
+// 			output[uint2(k, l)] = float4(sum, 0, 0);
+// 		}
+// 	}
+// }
 
 [numthreads(8,8,1)]
 void CSMain(uint3 id : SV_DispatchThreadID) {
 	float idx = id.x / Resolution;
 	float idy = id.y / Resolution;
-
-	float2 k = 2 * PI * (float2(idx - Resolution / 2, idy - Resolution / 2)) / L;
-	float w = sqrt(g * length(k));
-	float2 hy = complexMul(HeightSpectrum[id.xy].xy, float2(cos(w * time), sin(w * time))) + complexMul(HeightSpectrum[id.xy].zw, float2(cos(-w * time), sin(-w * time)));
-
 	
-	HY[id.xy] = float4(hy.x, hy.y, hy.x, hy.y);
-
-	float4 dy = fft(
-		idx, idy,
-		HY,
-		float2(Resolution, Resolution),
-		Resolution,
-		true,
-		false,
-		1.0
-	);
-	
-	float2 hx = float2(-k.x / length(k) * HeightSpectrum[id.xy].y, k.x / length(k) * HeightSpectrum[id.xy].x);
-
-	HX[id.xy] = float4(hx.x, hx.y, hx.x, hx.y);
-	float4 dx = fft(
-		idx, idy,
-		HX,
-		float2(Resolution, Resolution),
-		Resolution,
-		true,
-		false,
-		1.0
-		);
-	
-	float2 hz = float2(-k.y / length(k) * HeightSpectrum[id.xy].y, k.y / length(k) * HeightSpectrum[id.xy].x);
-
-	HZ[id.xy] = float4(hz.x, hz.y, hz.x, hz.y);
-	float4 dz = fft(
-		idx, idy,
-		HZ,
-		float2(Resolution, Resolution),
-		Resolution,
-		true,
-		false,
-		1.0
-	);
-	
-	Displacement[id.xy] = amplitude * (float4(HX[id.xy].x, HY[id.xy].x, HZ[id.xy].x, 0.0) + angularFrequency);
-
-	// Displacement[id.xy] = float4(x.x / 2 + 0.5, y / 2 + 0.5, x.y / 2 + 0.5, 0.0);
+	// Displacement[id.xy] = amplitude * (float4(HX[id.xy].x, HY[id.xy].x, HZ[id.xy].x, 0.0) + angularFrequency);
+	Displacement[id.xy] = amplitude * (float4(0, HY[id.xy].x, 0, 0.0) + angularFrequency);
 }
