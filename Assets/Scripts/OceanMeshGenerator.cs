@@ -29,6 +29,8 @@ public class OceanMeshGenerator : MonoBehaviour {
 	public float dtest1 = 0;
 	public float dtest2 = 0;
 	public float dtest3 = 0;
+	[Range(0, 15)]
+	public int maxIteractions = 15;
 
 	[SerializeField] ComputeShader computeShader;
 	[SerializeField] ComputeShader spectrumComputeShader;
@@ -41,6 +43,8 @@ public class OceanMeshGenerator : MonoBehaviour {
 	RenderTexture HX2;
 	RenderTexture HY2;
 	RenderTexture HZ2;
+	RenderTexture pingBuffer;
+	RenderTexture pongBuffer;
 	RenderTexture waveNumberTexture;
 	Texture2D noiseTexture;
 
@@ -56,8 +60,8 @@ public class OceanMeshGenerator : MonoBehaviour {
 		GetComponent<MeshFilter>().mesh = mesh;
 		material = GetComponent<Renderer>().material;
 
-		// CreateShape();
-		// UpdateMesh();
+		CreateShape();
+		UpdateMesh();
 
 		waveNumberTexture = CreateRenderTexture(xSize, zSize);
 		spectrumComputeShader.SetTexture(0, "WaveNumber", waveNumberTexture);
@@ -73,11 +77,19 @@ public class OceanMeshGenerator : MonoBehaviour {
 		spectrumComputeShader.SetFloat("PI", Mathf.PI);
 		spectrumComputeShader.SetFloat("g", -Physics.gravity.y);
 		HX = CreateRenderTexture(xSize, zSize);
-		spectrumComputeShader.SetTexture(0, "HX", HX);
 		HY = CreateRenderTexture(xSize, zSize);
-		spectrumComputeShader.SetTexture(0, "HY", HY);
 		HZ = CreateRenderTexture(xSize, zSize);
+		HX2 = CreateRenderTexture(xSize, zSize);
+		HY2 = CreateRenderTexture(xSize, zSize);
+		HZ2 = CreateRenderTexture(xSize, zSize);
+		pingBuffer = CreateRenderTexture(xSize, zSize);
+		pongBuffer = CreateRenderTexture(xSize, zSize);
+		spectrumComputeShader.SetTexture(0, "HX", HX);
+		spectrumComputeShader.SetTexture(0, "HY", HY);
 		spectrumComputeShader.SetTexture(0, "HZ", HZ);
+		spectrumComputeShader.SetTexture(0, "HX2", HX2);
+		spectrumComputeShader.SetTexture(0, "HY2", pongBuffer);
+		spectrumComputeShader.SetTexture(0, "HZ2", HZ2);
 
 		displacement = CreateRenderTexture(xSize, zSize);
 		computeShader.SetTexture(0, "Displacement", displacement);
@@ -86,11 +98,8 @@ public class OceanMeshGenerator : MonoBehaviour {
 		computeShader.SetTexture(0, "HX", HX);
 		computeShader.SetTexture(0, "HY", HY);
 		computeShader.SetTexture(0, "HZ", HZ);
-		HX2 = CreateRenderTexture(xSize, zSize);
 		computeShader.SetTexture(0, "HX2", HX2);
-		HY2 = CreateRenderTexture(xSize, zSize);
 		computeShader.SetTexture(0, "HY2", HY2);
-		HZ2 = CreateRenderTexture(xSize, zSize);
 		computeShader.SetTexture(0, "HZ2", HZ2);
 		computeShader.SetFloat("Resolution", xSize);
 		computeShader.SetFloat("PI", Mathf.PI);
@@ -133,9 +142,16 @@ public class OceanMeshGenerator : MonoBehaviour {
 			bool pingpong = true;
 			int i = 0;
 			// while (subtransformSize > 1) {
-			while (subtransformSize <= displacement.width) {
-				rreusserFFT.SetTexture(0, "src", pingpong ? HY : HY2);
-				rreusserFFT.SetTexture(0, "output", pingpong ? HY2 : HY);
+			while (subtransformSize <= displacement.width && i < maxIteractions) {
+				if (i == 0) {
+					rreusserFFT.SetTexture(0, "src", HY);
+					rreusserFFT.SetTexture(0, "output", pongBuffer);
+					// print($"{subtransformSize}: HY → pongBuffer");
+				}else {
+					rreusserFFT.SetTexture(0, "src", pingpong ? pingBuffer : pongBuffer);
+					rreusserFFT.SetTexture(0, "output", pingpong ? pongBuffer : pingBuffer);
+					// print($"{subtransformSize}: {(pingpong ? "pingBuffer" : "pongBuffer")} → {(pingpong ? "pongBuffer" : "pingBuffer")}");
+				}
 				// rreusserFFT.SetFloats("resolution", displacement.width, displacement.height);
 				rreusserFFT.SetFloats("resolution", 1f / displacement.width, 1f / displacement.height);
 				rreusserFFT.SetFloat("subtransformSize", subtransformSize);
@@ -164,17 +180,19 @@ public class OceanMeshGenerator : MonoBehaviour {
 
 			// subtransformSize = displacement.height;
 			subtransformSize = 2;
-			pingpong = true;
+			// pingpong = true;
 			i = 0;
 			// while (subtransformSize > 1) {
-			while (subtransformSize <= displacement.height) {
-				// if (subtransformSize == displacement.height) {
-					// rreusserFFT.SetTexture(0, "src", HY2);
-					// rreusserFFT.SetTexture(0, "output", displacement);
-				// }else {
-					rreusserFFT.SetTexture(0, "src", pingpong ? HY : HY2);
-					rreusserFFT.SetTexture(0, "output", pingpong ? HY2 : HY);
-				// }
+			while (subtransformSize <= displacement.height && i < maxIteractions) {
+				if (subtransformSize == displacement.height || i == maxIteractions - 1) {
+					rreusserFFT.SetTexture(0, "src", pongBuffer);
+					rreusserFFT.SetTexture(0, "output", HY2);
+					// print($"{subtransformSize}: pongBuffer → HY2");
+				}else {
+					rreusserFFT.SetTexture(0, "src", pingpong ? pingBuffer : pongBuffer);
+					rreusserFFT.SetTexture(0, "output", pingpong ? pongBuffer : pingBuffer);
+					// print($"{subtransformSize}: {(pingpong ? "pingBuffer" : "pongBuffer")} → {(pingpong ? "pongBuffer" : "pingBuffer")}");
+				}
 				// rreusserFFT.SetFloats("resolution", displacement.width, displacement.height);
 				rreusserFFT.SetFloats("resolution", 1f / displacement.width, 1f / displacement.height);
 				rreusserFFT.SetFloat("subtransformSize", subtransformSize);
@@ -311,10 +329,10 @@ public class OceanMeshGenerator : MonoBehaviour {
 	}
 
 	void Update() {
-		// if (vertices.Length != (xSize + 1) * (zSize + 1)) {
-		// 	CreateShape();
-		// 	UpdateMesh();
-		// }
+		if (vertices.Length != (xSize + 1) * (zSize + 1)) {
+			CreateShape();
+			UpdateMesh();
+		}
 
 		material.SetFloat("_Height", height);
 		material.SetVector("_Resolution", new Vector2(size, size));
