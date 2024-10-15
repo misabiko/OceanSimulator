@@ -32,7 +32,9 @@ public class BirdSimulation : MonoBehaviour
     public float GoalWeight;
     [Range(0f, 100.0f)]
     public float WanderWeight;
-    
+    [Range(0f, 100.0f)]
+    public float VelocityLerp;
+
 
 
     // Start is called before the first frame update

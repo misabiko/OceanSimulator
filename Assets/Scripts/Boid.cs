@@ -11,6 +11,7 @@ public class Boid : MonoBehaviour
     //float speed;
     const float Speed = 5f;
     public Vector3 velocity;
+    public Vector3 centroid;
 
     // Start is called before the first frame update
     void Start()
@@ -55,10 +56,10 @@ public class Boid : MonoBehaviour
             if (d <= BirdSimulation.instance.AvoidanceRadius)
             {
                 countInAvoidance++;
-                close_d += -dist.normalized;
+                close_d += -dist.normalized * (BirdSimulation.instance.AvoidanceRadius - dist.magnitude);
             }
             else
-            if (d <= BirdSimulation.instance.DetectRadius && Vector3.Dot(vel0.normalized, dist) > -0.5f)
+            if (d <= BirdSimulation.instance.DetectRadius) // && Vector3.Dot(vel0.normalized, dist) > -0.5f)
             {
                 countInProximity++;
                 avgPos += pos1;
@@ -71,27 +72,47 @@ public class Boid : MonoBehaviour
         {
             avgPos /= countInProximity;
             avgVel /= countInProximity;
+            centroid = avgPos;
 
             var cohesion = (avgPos - pos0) * BirdSimulation.instance.Cohesion;
             var align = (avgVel - vel0) * BirdSimulation.instance.Alignment;
+            Debug.DrawLine(this.transform.position, this.transform.position + cohesion, Color.green);
+            Debug.DrawLine(this.transform.position, this.transform.position + align, Color.blue);
             vel0 += cohesion + align;
         }
         if (countInAvoidance > 0)
         {
-            close_d /= countInAvoidance;
+            //close_d /= countInAvoidance;
             vel0 += close_d * BirdSimulation.instance.Separation;
         }
 
         vel0 += wander * BirdSimulation.instance.WanderWeight;
-        vel0 += (BirdSimulation.instance.goalPos - this.transform.position) * BirdSimulation.instance.GoalWeight;
+        vel0 += (BirdSimulation.instance.goalPos - this.transform.position).normalized * BirdSimulation.instance.GoalWeight;
 
+        // Clamp
         var speed = Math.Clamp(vel0.magnitude, 1, Speed);
         vel0 = vel0.normalized * speed;
-
+        //vel0 = (vel0 + previousVelocity) / 2.0f;
+        vel0 = Vector3.Lerp(previousVelocity, vel0, BirdSimulation.instance.VelocityLerp);
         this.velocity = vel0;
 
+        // Transform
+        Debug.DrawLine(this.transform.position, this.transform.position + velocity, Color.red);
         this.transform.LookAt(this.transform.position + velocity);
-        this.transform.Translate(velocity * Time.deltaTime);
+        this.transform.Translate(velocity * Time.deltaTime, Space.World);
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = new Color(1, 0, 1);
+        Gizmos.DrawWireSphere(this.centroid, BirdSimulation.instance.DetectRadius);
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = new Color(0, 1, 1);
+        Gizmos.DrawWireSphere(this.transform.position, BirdSimulation.instance.DetectRadius);
+        Gizmos.DrawWireSphere(this.transform.position, BirdSimulation.instance.AvoidanceRadius);
     }
 
 }

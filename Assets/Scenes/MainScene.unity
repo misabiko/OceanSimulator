@@ -518,17 +518,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   boidPrefab: {fileID: 2176301407503456708, guid: 4b17a840543d03746aabb122d40d0857,
     type: 3}
-  boidCount: 50
+  boidCount: 20
   allBoids: []
-  spaceBounds: {x: 20, y: 20, z: 10}
+  spaceBounds: {x: 20, y: 20, z: 20}
   goalPos: {x: 0, y: 0, z: 0}
-  DetectRadius: 10
-  AvoidanceRadius: 1
+  DetectRadius: 30
+  AvoidanceRadius: 6
   Cohesion: 0.2
   Alignment: 0.2
-  Separation: 5
+  Separation: 3
   GoalWeight: 0
-  WanderWeight: 1
+  WanderWeight: 0.1
+  VelocityLerp: 0.2
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
