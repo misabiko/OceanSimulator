@@ -24,6 +24,8 @@ float heightTest;
 float2 test;
 float2 test2;
 float2 test3;
+float2 test4;
+float2 test5;
 
 float energySpectrum(float w) {
 	// float F = 1400000;
@@ -66,6 +68,10 @@ void CSMain(uint3 id : SV_DispatchThreadID) {
 	float2 h0ymk = h0(Noise[id.xy].xy, -k);
 	float2 hy = complexMul(h0y, float2(cos(w * time), sin(w * time))) + complexMul(h0ymk, float2(cos(-w * time), sin(-w * time)));
 	HY[id.xy] = float4(hy.x, hy.y, 0, 0);
+	// if (id.x >= test.x && id.x <= test.x + test2.x && id.y >= test.y && id.y <= test.y + test2.y)
+		// HY[id.xy] = float4(test3, 0.0, 0.0);
+	// else
+		// HY[id.xy] = float4(0, 0, 0, 0);
 	
 	float2 h0x = float2(-k.x / length(k) * h0y.y, k.x / length(k) * h0y.x);
 	float2 h0xmk = float2(k.x / length(k) * h0ymk.y, -k.x / length(k) * h0ymk.x);
