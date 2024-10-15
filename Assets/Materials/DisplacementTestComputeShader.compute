@@ -1,7 +1,6 @@
 #pragma kernel CSMain
 
 RWTexture2D<float4> Displacement;
-RWTexture2D<float4> Displacement2;
 
 RWTexture2D<float4> HX;
 RWTexture2D<float4> HY;
@@ -28,14 +27,11 @@ float dtest3;
 
 [numthreads(8,8,1)]
 void CSMain(uint3 id : SV_DispatchThreadID) {
-	Displacement[uint2(id.xy)] = float4(
+	float3 displacement = float3(
 		length(HX2[id.xy]) * dtest1,
 		length(HY2[id.xy]) * dtest2,
-		length(HZ2[id.xy]) * dtest3,
-		0);
-	Displacement2[id.xy] = float4(
-		length(HX[id.xy]) * dtest1,
-		length(HY[id.xy]) * dtest2,
-		length(HZ[id.xy]) * dtest3,
-		0);
+		length(HZ2[id.xy]) * dtest3
+	);
+	// Displacement[id.xy] = float4(normalize(displacement) * min(length(displacement), 1.0), 0);
+	Displacement[id.xy] = float4(displacement, 0);
 }

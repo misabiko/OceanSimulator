@@ -36,7 +36,6 @@ public class OceanMeshGenerator : MonoBehaviour {
 	[SerializeField] ComputeShader spectrumComputeShader;
 	[SerializeField] ComputeShader rreusserFFT;
 	RenderTexture displacement;
-	RenderTexture displacement2;
 	RenderTexture HX;
 	RenderTexture HY;
 	RenderTexture HZ;
@@ -93,8 +92,6 @@ public class OceanMeshGenerator : MonoBehaviour {
 
 		displacement = CreateRenderTexture(xSize, zSize);
 		computeShader.SetTexture(0, "Displacement", displacement);
-		displacement2 = CreateRenderTexture(xSize, zSize);
-		computeShader.SetTexture(0, "Displacement2", displacement2);
 		computeShader.SetTexture(0, "HX", HX);
 		computeShader.SetTexture(0, "HY", HY);
 		computeShader.SetTexture(0, "HZ", HZ);
@@ -110,7 +107,6 @@ public class OceanMeshGenerator : MonoBehaviour {
 
 		//TODO Try rendering texture to UI?
 		GameObject.Find("RenderTextureDisplay").GetComponent<Renderer>().material.mainTexture = displacement;
-		GameObject.Find("RenderTextureDisplay2").GetComponent<Renderer>().material.mainTexture = displacement2;
 		GameObject.Find("RenderTextureNoise").GetComponent<Renderer>().material.mainTexture = noiseTexture;
 		GameObject.Find("RenderTextureWaveNumber").GetComponent<Renderer>().material.mainTexture = waveNumberTexture;
 		GameObject.Find("RenderTextureHY").GetComponent<Renderer>().material.mainTexture = HY;
