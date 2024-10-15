@@ -188,13 +188,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1437277}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 100.89, z: -504.07}
+  m_LocalRotation: {x: -0.40821788, y: 0.23456968, z: -0.10938163, w: 0.8754261}
+  m_LocalPosition: {x: -252.03497, y: -271.48456, z: -355.58896}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 188747365}
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1895250940}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1437280
 MonoBehaviour:
@@ -228,6 +228,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   myBirdController: {fileID: 1753355726}
   defaultFOV: 40
+  lerpSpeed: 2
 --- !u!1 &54200530
 GameObject:
   m_ObjectHideFlags: 0
@@ -4209,6 +4210,8 @@ GameObject:
   - component: {fileID: 1753355728}
   - component: {fileID: 1753355727}
   - component: {fileID: 1753355726}
+  - component: {fileID: 1753355729}
+  - component: {fileID: 1753355730}
   m_Layer: 0
   m_Name: Bird
   m_TagString: Untagged
@@ -4232,12 +4235,12 @@ MonoBehaviour:
   myRollSpeed: 1
   myYawSpeed: 2
   myForwardSpeed: 40
-  myGlideFactor: 0.5
   myMinAngle: -70
   myMaxAngle: 70
   upperAngleThreshold: 20
   lowerAngleThreshold: 20
   momentumEnabled: 1
+  inputManager: {fileID: 1753355729}
 --- !u!54 &1753355727
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4281,6 +4284,100 @@ Transform:
   - {fileID: 816176314}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1753355729
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1753355725}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96a0bcdb77c3bc94ba91cff8f34d2656, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  birdController: {fileID: 1753355726}
+  playerInput: {fileID: 1753355730}
+  moveDirection: {x: 0, y: 0}
+--- !u!114 &1753355730
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1753355725}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Actions: {fileID: -944628639613478452, guid: f50a9bde7eac12942a684e56e45b82e3,
+    type: 3}
+  m_NotificationBehavior: 2
+  m_UIInputModule: {fileID: 0}
+  m_DeviceLostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_DeviceRegainedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ControlsChangedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ActionEvents:
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1753355729}
+        m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
+        m_MethodName: OnMove
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 14964933-9e47-4ba1-8c57-80b3a893af13
+    m_ActionName: Player/Move[/XInputControllerWindows/leftStick]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1753355729}
+        m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
+        m_MethodName: OnLeftYaw
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 853c7ac4-a222-4e49-b489-69e101f9c4d8
+    m_ActionName: Player/Left Yaw[/XInputControllerWindows/leftShoulder]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1753355729}
+        m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
+        m_MethodName: OnRightYaw
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 3e998aac-6d05-44af-b6f9-b62e41beb2d5
+    m_ActionName: Player/Right Yaw[/XInputControllerWindows/rightShoulder]
+  m_NeverAutoSwitchControlSchemes: 0
+  m_DefaultControlScheme: 
+  m_DefaultActionMap: Player
+  m_SplitScreenIndex: -1
+  m_Camera: {fileID: 0}
 --- !u!1 &1759818488
 GameObject:
   m_ObjectHideFlags: 0
@@ -4979,7 +5076,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1437279}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
 --- !u!1 &1900656131
@@ -5728,7 +5826,6 @@ SceneRoots:
   - {fileID: 144929883}
   - {fileID: 1895250940}
   - {fileID: 1753355728}
-  - {fileID: 1437279}
   - {fileID: 836680486}
   - {fileID: 886451360}
   - {fileID: 2054638711}
