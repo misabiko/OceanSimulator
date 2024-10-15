@@ -12,7 +12,9 @@ public class BirdController : MonoBehaviour
    [SerializeField] private float lowerAngleThreshold = 20f;
    [SerializeField] private bool momentumEnabled;
    [SerializeField] private InputManager inputManager;
-   
+   [SerializeField] private float lowerHeightCap = 5f;
+   [SerializeField] private float higherHeightCap = 200f;
+
    private float currentSpeed;
    private Rigidbody myRigidbody;
    private float momentumFactor;
@@ -26,6 +28,7 @@ public class BirdController : MonoBehaviour
    void Update()
    {
       HandleFlightInput();
+      ClampHeight();
       ClampRotation();
    }
 
@@ -48,30 +51,23 @@ public class BirdController : MonoBehaviour
    {
       float angle = transform.eulerAngles.x;
 
-      if (angle < 180)
+      if (angle < 180)// if we go downwards
       {
          if (angle > lowerAngleThreshold)
-         {
-            angle *= -1f;
-            momentumFactor = angle / myMinAngle;
-         }
+            momentumFactor = angle*-1/ myMinAngle;
          else
-         {
             momentumFactor = 0;
-         }
       }
       else
       {
          if (angle < 360 - upperAngleThreshold)
          {
-            angle = 360 - angle;
-            momentumFactor = angle / myMaxAngle;
+            momentumFactor = (360 - angle) / myMaxAngle;
             momentumFactor *= -1;
          }
          else
-         {
             momentumFactor = 0;
-         }
+         
       }
    }
 
@@ -81,6 +77,12 @@ public class BirdController : MonoBehaviour
       float zRotation = ClampAngle(transform.eulerAngles.z, myMinAngle, myMaxAngle);
       Vector3 rotation = new Vector3(xRotation, transform.eulerAngles.y, zRotation);
       transform.eulerAngles = rotation;
+   }
+
+   private void ClampHeight()
+   {
+      float heightValue = Mathf.Clamp(transform.position.y, lowerHeightCap, higherHeightCap);
+      transform.position = new Vector3(transform.position.x, heightValue, transform.position.z);
    }
 
    private float ClampAngle(float anAngle, float aStartAngle, float aDestAngle)

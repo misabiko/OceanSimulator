@@ -4241,6 +4241,8 @@ MonoBehaviour:
   lowerAngleThreshold: 20
   momentumEnabled: 1
   inputManager: {fileID: 1753355729}
+  lowerHeightCap: 1
+  higherHeightCap: 200
 --- !u!54 &1753355727
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4296,8 +4298,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96a0bcdb77c3bc94ba91cff8f34d2656, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  birdController: {fileID: 1753355726}
   moveDirection: {x: 0, y: 0}
+  Yaw: 0
 --- !u!114 &1753355730
 MonoBehaviour:
   m_ObjectHideFlags: 0
