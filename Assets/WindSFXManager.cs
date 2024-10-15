@@ -13,6 +13,7 @@ public class WindSFXManager : MonoBehaviour
     {
         birdController = GameObject.FindObjectOfType<BirdController>();
         audioSource = GetComponent<AudioSource>();
+        audioSource.volume = 0;
     }
 
     private void Update()

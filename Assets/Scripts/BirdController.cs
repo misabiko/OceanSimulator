@@ -15,7 +15,7 @@ public class BirdController : MonoBehaviour
    [SerializeField] private float lowerAngleThreshold = 20f;
    [SerializeField] private bool momentumEnabled;
    [SerializeField] private float lowerHeightCap = 5f;
-   [SerializeField] private float higherHeightCap = 200f;
+   [SerializeField] private float upperHeightCap = 200f;
    [SerializeField] private float upwardsLerpSpeed = 0.7f;
    [SerializeField] private float downwardsLerpSpeed = 0.7f;
    [SerializeField] private float decellerationLerpSpeed = 2f;
@@ -54,6 +54,9 @@ public class BirdController : MonoBehaviour
 
    private void CalculateMomentum()
    {
+      if (transform.position.y <= lowerHeightCap+1 || transform.position.y >= upperHeightCap-1 ) 
+         momentumFactor = Mathf.Lerp(momentumFactor, 0, decellerationLerpSpeed * Time.deltaTime);
+      
       float angle = transform.eulerAngles.x;
 
       if (angle < 180)// if we go downwards
@@ -82,7 +85,7 @@ public class BirdController : MonoBehaviour
 
    private void ClampHeight()
    {
-      float heightValue = Mathf.Clamp(transform.position.y, lowerHeightCap, higherHeightCap);
+      float heightValue = Mathf.Clamp(transform.position.y, lowerHeightCap, upperHeightCap);
       transform.position = new Vector3(transform.position.x, heightValue, transform.position.z);
    }
 
