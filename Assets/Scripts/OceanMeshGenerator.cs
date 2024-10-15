@@ -1,6 +1,3 @@
-using MathNet.Numerics;
-using MathNet.Numerics.IntegralTransforms;
-using MathNet.Numerics.LinearAlgebra.Complex32;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
