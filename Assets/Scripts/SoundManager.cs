@@ -37,6 +37,7 @@ public class SoundManager : MonoBehaviour
     {
         List<SoundData> soundTemplates = new List<SoundData>();
 
+        Resources.LoadAll<SoundData>("SFX");
         foreach (SoundData soundTemplate in Resources.FindObjectsOfTypeAll(typeof(SoundData)) as SoundData[])
         {
             soundTemplates.Add(soundTemplate);
