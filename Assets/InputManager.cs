@@ -1,59 +1,54 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class InputManager : MonoBehaviour
 {
-    [SerializeField] private BirdController birdController;
-    
-    public PlayerInput playerInput;
     public Vector2 moveDirection;
+    public float Yaw;
+    
+    private PlayerInput myPlayerInput;
+    private InputAction RightYawAction;
+    private InputAction LeftYawAction;
 
-    private void OnEnable()
+    private void Awake()
     {
-        /**
-        move.started += OnMove;
-        move.performed += OnMove;
-        move.canceled += OnMove;
+        myPlayerInput = GetComponent<PlayerInput>();
+        RightYawAction = myPlayerInput.actions.FindAction("Right Yaw");
+        LeftYawAction = myPlayerInput.actions.FindAction("Left Yaw");
 
-        leftYaw.started += OnLeftYaw;
-        leftYaw.canceled += OnYawCancel;
-        
-        RightYaw.started += OnRightYaw;
-        RightYaw.canceled += OnYawCancel;
-        */
+        RightYawAction.canceled += OnYawCancel;
+        LeftYawAction.canceled += OnYawCancel;
     }
-
+    
     private void OnDestroy()
     {
-        /*move.started -= OnMove;
-        move.performed -= OnMove;
-        move.canceled -= OnMove;
-        
-        leftYaw.started -= OnLeftYaw;
-        leftYaw.canceled -= OnYawCancel;
-        
-        RightYaw.started -= OnRightYaw;
-        RightYaw.canceled -= OnYawCancel;*/
+        RightYawAction.canceled -= OnYawCancel;
+        LeftYawAction.canceled -= OnYawCancel;
     }
 
-    public void OnMove(InputAction.CallbackContext context)
+    public void OnMove(InputValue aValue)
     {
-        Debug.Log("Move");
-        moveDirection = context.ReadValue<Vector2>();
+        MoveInput(aValue.Get<Vector2>());
     }
 
-    public void OnLeftYaw(InputAction.CallbackContext context)
+    private void MoveInput(Vector2 aVector)
     {
-        birdController.SetYaw(-1f);
+        moveDirection = aVector;
+    }
+
+    public void OnLeftYaw(InputValue aValue)
+    {
+        Yaw = aValue.isPressed ? -1f : 0f;
     }
     
-    public void OnRightYaw(InputAction.CallbackContext context)
+    public void OnRightYaw(InputValue aValue)
     {
-        birdController.SetYaw(1f);
+        Yaw = aValue.isPressed ? 1f : 0f;
     }
 
-    private void OnYawCancel(InputAction.CallbackContext context)
+    private void OnYawCancel(InputAction.CallbackContext obj)
     {
-        birdController.SetYaw(0f);
+        Yaw = 0;
     }
 }

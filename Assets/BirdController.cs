@@ -17,7 +17,6 @@ public class BirdController : MonoBehaviour
    private Rigidbody myRigidbody;
    private float momentumFactor;
    private Vector3 forwardMovement;
-   private float yaw;
    
    void Start()
    {
@@ -34,7 +33,7 @@ public class BirdController : MonoBehaviour
    {
       Vector2 moveInput = inputManager.moveDirection;
 
-      transform.Rotate(moveInput.y * myPitchSpeed,   moveInput.x * myRollSpeed, -yaw * myYawSpeed, Space.Self);
+      transform.Rotate(moveInput.y * myPitchSpeed,   moveInput.x * myRollSpeed, -inputManager.Yaw * myYawSpeed, Space.Self);
       
       if (momentumEnabled)
          CalculateMomentum();
@@ -120,10 +119,5 @@ public class BirdController : MonoBehaviour
    public float SpeedDifference()
    {
       return currentSpeed - myForwardSpeed;
-   }
-
-   public void SetYaw(float aValue)
-   {
-      yaw = aValue;
    }
 }
