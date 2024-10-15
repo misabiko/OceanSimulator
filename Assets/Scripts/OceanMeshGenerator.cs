@@ -29,6 +29,8 @@ public class OceanMeshGenerator : MonoBehaviour {
 	public float dtest1 = 0;
 	public float dtest2 = 0;
 	public float dtest3 = 0;
+	[Range(0, 15)]
+	public int maxIteractions = 15;
 
 	[SerializeField] ComputeShader computeShader;
 	[SerializeField] ComputeShader spectrumComputeShader;
@@ -41,6 +43,8 @@ public class OceanMeshGenerator : MonoBehaviour {
 	RenderTexture HX2;
 	RenderTexture HY2;
 	RenderTexture HZ2;
+	RenderTexture pingBuffer;
+	RenderTexture pongBuffer;
 	RenderTexture waveNumberTexture;
 	Texture2D noiseTexture;
 
@@ -56,8 +60,8 @@ public class OceanMeshGenerator : MonoBehaviour {
 		GetComponent<MeshFilter>().mesh = mesh;
 		material = GetComponent<Renderer>().material;
 
-		// CreateShape();
-		// UpdateMesh();
+		CreateShape();
+		UpdateMesh();
 
 		waveNumberTexture = CreateRenderTexture(xSize, zSize);
 		spectrumComputeShader.SetTexture(0, "WaveNumber", waveNumberTexture);
@@ -73,11 +77,19 @@ public class OceanMeshGenerator : MonoBehaviour {
 		spectrumComputeShader.SetFloat("PI", Mathf.PI);
 		spectrumComputeShader.SetFloat("g", -Physics.gravity.y);
 		HX = CreateRenderTexture(xSize, zSize);
-		spectrumComputeShader.SetTexture(0, "HX", HX);
 		HY = CreateRenderTexture(xSize, zSize);
-		spectrumComputeShader.SetTexture(0, "HY", HY);
 		HZ = CreateRenderTexture(xSize, zSize);
+		HX2 = CreateRenderTexture(xSize, zSize);
+		HY2 = CreateRenderTexture(xSize, zSize);
+		HZ2 = CreateRenderTexture(xSize, zSize);
+		pingBuffer = CreateRenderTexture(xSize, zSize);
+		pongBuffer = CreateRenderTexture(xSize, zSize);
+		spectrumComputeShader.SetTexture(0, "HX", HX);
+		spectrumComputeShader.SetTexture(0, "HY", HY);
 		spectrumComputeShader.SetTexture(0, "HZ", HZ);
+		spectrumComputeShader.SetTexture(0, "HX2", HX2);
+		spectrumComputeShader.SetTexture(0, "HY2", pongBuffer);
+		spectrumComputeShader.SetTexture(0, "HZ2", HZ2);
 
 		displacement = CreateRenderTexture(xSize, zSize);
 		computeShader.SetTexture(0, "Displacement", displacement);
@@ -86,11 +98,8 @@ public class OceanMeshGenerator : MonoBehaviour {
 		computeShader.SetTexture(0, "HX", HX);
 		computeShader.SetTexture(0, "HY", HY);
 		computeShader.SetTexture(0, "HZ", HZ);
-		HX2 = CreateRenderTexture(xSize, zSize);
 		computeShader.SetTexture(0, "HX2", HX2);
-		HY2 = CreateRenderTexture(xSize, zSize);
 		computeShader.SetTexture(0, "HY2", HY2);
-		HZ2 = CreateRenderTexture(xSize, zSize);
 		computeShader.SetTexture(0, "HZ2", HZ2);
 		computeShader.SetFloat("Resolution", xSize);
 		computeShader.SetFloat("PI", Mathf.PI);
@@ -128,14 +137,17 @@ public class OceanMeshGenerator : MonoBehaviour {
 		
 		//Y
 		{
-			// int subtransformSize = displacement.width;
 			int subtransformSize = 2;
 			bool pingpong = true;
 			int i = 0;
-			// while (subtransformSize > 1) {
-			while (subtransformSize <= displacement.width) {
-				rreusserFFT.SetTexture(0, "src", pingpong ? HY : HY2);
-				rreusserFFT.SetTexture(0, "output", pingpong ? HY2 : HY);
+			while (subtransformSize <= displacement.width && i < maxIteractions) {
+				if (i == 0) {
+					rreusserFFT.SetTexture(0, "src", HY);
+					rreusserFFT.SetTexture(0, "output", pongBuffer);
+				}else {
+					rreusserFFT.SetTexture(0, "src", pingpong ? pingBuffer : pongBuffer);
+					rreusserFFT.SetTexture(0, "output", pingpong ? pongBuffer : pingBuffer);
+				}
 				// rreusserFFT.SetFloats("resolution", displacement.width, displacement.height);
 				rreusserFFT.SetFloats("resolution", 1f / displacement.width, 1f / displacement.height);
 				rreusserFFT.SetFloat("subtransformSize", subtransformSize);
@@ -156,25 +168,22 @@ public class OceanMeshGenerator : MonoBehaviour {
 				rreusserFFT.SetFloats("test5", test2d5.x, test2d5.y);
 				rreusserFFT.SetFloats("test5", test2d5.x, test2d5.y);
 				rreusserFFT.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
-				// subtransformSize /= 2;
 				subtransformSize *= 2;
 				pingpong = !pingpong;
 				++i;
 			}
 
-			// subtransformSize = displacement.height;
 			subtransformSize = 2;
-			pingpong = true;
+			// pingpong = true;
 			i = 0;
-			// while (subtransformSize > 1) {
-			while (subtransformSize <= displacement.height) {
-				// if (subtransformSize == displacement.height) {
-					// rreusserFFT.SetTexture(0, "src", HY2);
-					// rreusserFFT.SetTexture(0, "output", displacement);
-				// }else {
-					rreusserFFT.SetTexture(0, "src", pingpong ? HY : HY2);
-					rreusserFFT.SetTexture(0, "output", pingpong ? HY2 : HY);
-				// }
+			while (subtransformSize <= displacement.height && i < maxIteractions) {
+				if (subtransformSize == displacement.height || i == maxIteractions - 1) {
+					rreusserFFT.SetTexture(0, "src", pongBuffer);
+					rreusserFFT.SetTexture(0, "output", HY2);
+				}else {
+					rreusserFFT.SetTexture(0, "src", pingpong ? pingBuffer : pongBuffer);
+					rreusserFFT.SetTexture(0, "output", pingpong ? pongBuffer : pingBuffer);
+				}
 				// rreusserFFT.SetFloats("resolution", displacement.width, displacement.height);
 				rreusserFFT.SetFloats("resolution", 1f / displacement.width, 1f / displacement.height);
 				rreusserFFT.SetFloat("subtransformSize", subtransformSize);
@@ -191,7 +200,6 @@ public class OceanMeshGenerator : MonoBehaviour {
 				rreusserFFT.SetFloats("test4", test2d4.x, test2d4.y);
 				rreusserFFT.SetFloats("test5", test2d5.x, test2d5.y);
 				rreusserFFT.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
-				// subtransformSize /= 2;
 				subtransformSize *= 2;
 				pingpong = !pingpong;
 				++i;
@@ -199,105 +207,125 @@ public class OceanMeshGenerator : MonoBehaviour {
 		}
 		
 		//X
-		// {
-		// 	int subtransformSize = displacement.width;
-		// 	bool pingpong = true;
-		// 	int i = 0;
-		// 	while (subtransformSize > 1) {
-		// 		rreusserFFT.SetTexture(0, "src", pingpong ? HX : HX2);
-		// 		rreusserFFT.SetTexture(0, "output", pingpong ? HX2 : HX);
-		// 		rreusserFFT.SetFloats("resolution", displacement.width, displacement.height);
-		// 		rreusserFFT.SetFloat("subtransformSize", subtransformSize);
-		// 		rreusserFFT.SetBool("horizontal", true);
-		// 		rreusserFFT.SetBool("forward", false);
-		// 		if (i == 0)
-		// 			rreusserFFT.SetFloat("normalization", 1f / displacement.width);
-		// 		else
-		// 			rreusserFFT.SetFloat("normalization", 1f);
-		// 		rreusserFFT.SetFloats("test", test2d.x, test2d.y);
-		// 		rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
-		// 		rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
-		// 		rreusserFFT.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
-		// 		subtransformSize /= 2;
-		// 		pingpong = !pingpong;
-		// 		++i;
-		// 	}
-		//
-		// 	subtransformSize = displacement.height;
-		// 	pingpong = true;
-		// 	i = 0;
-		// 	while (subtransformSize > 1) {
-		// 		rreusserFFT.SetTexture(0, "src", pingpong ? HX : HX2);
-		// 		rreusserFFT.SetTexture(0, "output", pingpong ? HX2 : HX);
-		// 		rreusserFFT.SetFloats("resolution", displacement.width, displacement.height);
-		// 		rreusserFFT.SetFloat("subtransformSize", subtransformSize);
-		// 		rreusserFFT.SetBool("horizontal", false);
-		// 		rreusserFFT.SetBool("forward", false);
-		// 		if (i == 0)
-		// 			rreusserFFT.SetFloat("normalization", 1f / displacement.height);
-		// 		else
-		// 			rreusserFFT.SetFloat("normalization", 1f);
-		// 		rreusserFFT.SetFloat("normalization", 1f);
-		// 		rreusserFFT.SetFloats("test", test2d.x, test2d.y);
-		// 		rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
-		// 		rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
-		// 		rreusserFFT.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
-		// 		subtransformSize /= 2;
-		// 		pingpong = !pingpong;
-		// 		++i;
-		// 	}
-		// }
-		//
-		// //TODO Merge HX and HZ in the same texture
-		// //Z
-		// {
-		// 	int subtransformSize = displacement.width;
-		// 	bool pingpong = true;
-		// 	int i = 0;
-		// 	while (subtransformSize > 1) {
-		// 		rreusserFFT.SetTexture(0, "src", pingpong ? HZ : HZ2);
-		// 		rreusserFFT.SetTexture(0, "output", pingpong ? HZ2 : HZ);
-		// 		rreusserFFT.SetFloats("resolution", displacement.width, displacement.height);
-		// 		rreusserFFT.SetFloat("subtransformSize", subtransformSize);
-		// 		rreusserFFT.SetBool("horizontal", true);
-		// 		rreusserFFT.SetBool("forward", false);
-		// 		if (i == 0)
-		// 			rreusserFFT.SetFloat("normalization", 1f / displacement.width);
-		// 		else
-		// 			rreusserFFT.SetFloat("normalization", 1f);
-		// 		rreusserFFT.SetFloats("test", test2d.x, test2d.y);
-		// 		rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
-		// 		rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
-		// 		rreusserFFT.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
-		// 		subtransformSize /= 2;
-		// 		pingpong = !pingpong;
-		// 		++i;
-		// 	}
-		//
-		// 	subtransformSize = displacement.height;
-		// 	pingpong = true;
-		// 	i = 0;
-		// 	while (subtransformSize > 1) {
-		// 		rreusserFFT.SetTexture(0, "src", pingpong ? HZ : HZ2);
-		// 		rreusserFFT.SetTexture(0, "output", pingpong ? HZ2 : HZ);
-		// 		rreusserFFT.SetFloats("resolution", displacement.width, displacement.height);
-		// 		rreusserFFT.SetFloat("subtransformSize", subtransformSize);
-		// 		rreusserFFT.SetBool("horizontal", false);
-		// 		rreusserFFT.SetBool("forward", false);
-		// 		if (i == 0)
-		// 			rreusserFFT.SetFloat("normalization", 1f / displacement.height);
-		// 		else
-		// 			rreusserFFT.SetFloat("normalization", 1f);
-		// 		rreusserFFT.SetFloat("normalization", 1f);
-		// 		rreusserFFT.SetFloats("test", test2d.x, test2d.y);
-		// 		rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
-		// 		rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
-		// 		rreusserFFT.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
-		// 		subtransformSize /= 2;
-		// 		pingpong = !pingpong;
-		// 		++i;
-		// 	}
-		// }
+		{
+			int subtransformSize = 2;
+			bool pingpong = true;
+			int i = 0;
+			while (subtransformSize <= displacement.width) {
+				if (i == 0) {
+					rreusserFFT.SetTexture(0, "src", HX);
+					rreusserFFT.SetTexture(0, "output", pongBuffer);
+				}else {
+					rreusserFFT.SetTexture(0, "src", pingpong ? pingBuffer : pongBuffer);
+					rreusserFFT.SetTexture(0, "output", pingpong ? pongBuffer : pingBuffer);
+				}
+				rreusserFFT.SetFloats("resolution", 1f / displacement.width, 1f / displacement.height);
+				rreusserFFT.SetFloat("subtransformSize", subtransformSize);
+				rreusserFFT.SetBool("horizontal", true);
+				rreusserFFT.SetBool("forward", false);
+				// if (i == 0)
+				// 	rreusserFFT.SetFloat("normalization", 1f / displacement.width);
+				// else
+					rreusserFFT.SetFloat("normalization", 1f);
+				rreusserFFT.SetFloats("test", test2d.x, test2d.y);
+				rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
+				rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
+				rreusserFFT.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
+				subtransformSize *= 2;
+				pingpong = !pingpong;
+				++i;
+			}
+		
+			subtransformSize = 2;
+			pingpong = true;
+			i = 0;
+			while (subtransformSize <= displacement.height) {
+				if (subtransformSize == displacement.height || i == maxIteractions - 1) {
+					rreusserFFT.SetTexture(0, "src", pongBuffer);
+					rreusserFFT.SetTexture(0, "output", HX2);
+				}else {
+					rreusserFFT.SetTexture(0, "src", pingpong ? pingBuffer : pongBuffer);
+					rreusserFFT.SetTexture(0, "output", pingpong ? pongBuffer : pingBuffer);
+				}
+				rreusserFFT.SetFloats("resolution", 1f / displacement.width, 1f / displacement.height);
+				rreusserFFT.SetFloat("subtransformSize", subtransformSize);
+				rreusserFFT.SetBool("horizontal", false);
+				rreusserFFT.SetBool("forward", false);
+				// if (i == 0)
+					// rreusserFFT.SetFloat("normalization", 1f / displacement.height);
+				// else
+					rreusserFFT.SetFloat("normalization", 1f);
+				rreusserFFT.SetFloat("normalization", 1f);
+				rreusserFFT.SetFloats("test", test2d.x, test2d.y);
+				rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
+				rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
+				rreusserFFT.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
+				subtransformSize *= 2;
+				pingpong = !pingpong;
+				++i;
+			}
+		}
+		
+		//TODO Merge HX and HZ in the same texture
+		//Z
+		{
+			int subtransformSize = 2;
+			bool pingpong = true;
+			int i = 0;
+			while (subtransformSize <= displacement.width) {
+				if (i == 0) {
+					rreusserFFT.SetTexture(0, "src", HZ);
+					rreusserFFT.SetTexture(0, "output", pongBuffer);
+				}else {
+					rreusserFFT.SetTexture(0, "src", pingpong ? pingBuffer : pongBuffer);
+					rreusserFFT.SetTexture(0, "output", pingpong ? pongBuffer : pingBuffer);
+				}
+				rreusserFFT.SetFloats("resolution", 1f / displacement.width, 1f / displacement.height);
+				rreusserFFT.SetFloat("subtransformSize", subtransformSize);
+				rreusserFFT.SetBool("horizontal", true);
+				rreusserFFT.SetBool("forward", false);
+				// if (i == 0)
+					// rreusserFFT.SetFloat("normalization", 1f / displacement.width);
+				// else
+					rreusserFFT.SetFloat("normalization", 1f);
+				rreusserFFT.SetFloats("test", test2d.x, test2d.y);
+				rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
+				rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
+				rreusserFFT.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
+				subtransformSize *= 2;
+				pingpong = !pingpong;
+				++i;
+			}
+		
+			subtransformSize = 2;
+			pingpong = true;
+			i = 0;
+			while (subtransformSize <= displacement.height) {
+				if (subtransformSize == displacement.height || i == maxIteractions - 1) {
+					rreusserFFT.SetTexture(0, "src", pongBuffer);
+					rreusserFFT.SetTexture(0, "output", HZ2);
+				}else {
+					rreusserFFT.SetTexture(0, "src", pingpong ? pingBuffer : pongBuffer);
+					rreusserFFT.SetTexture(0, "output", pingpong ? pongBuffer : pingBuffer);
+				}
+				rreusserFFT.SetFloats("resolution", 1f / displacement.width, 1f / displacement.height);
+				rreusserFFT.SetFloat("subtransformSize", subtransformSize);
+				rreusserFFT.SetBool("horizontal", false);
+				rreusserFFT.SetBool("forward", false);
+				// if (i == 0)
+					// rreusserFFT.SetFloat("normalization", 1f / displacement.height);
+				// else
+					rreusserFFT.SetFloat("normalization", 1f);
+				rreusserFFT.SetFloat("normalization", 1f);
+				rreusserFFT.SetFloats("test", test2d.x, test2d.y);
+				rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
+				rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
+				rreusserFFT.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
+				subtransformSize *= 2;
+				pingpong = !pingpong;
+				++i;
+			}
+		}
 
 		computeShader.SetFloat("dtest1", dtest1);
 		computeShader.SetFloat("dtest2", dtest2);
@@ -311,10 +339,10 @@ public class OceanMeshGenerator : MonoBehaviour {
 	}
 
 	void Update() {
-		// if (vertices.Length != (xSize + 1) * (zSize + 1)) {
-		// 	CreateShape();
-		// 	UpdateMesh();
-		// }
+		if (vertices.Length != (xSize + 1) * (zSize + 1)) {
+			CreateShape();
+			UpdateMesh();
+		}
 
 		material.SetFloat("_Height", height);
 		material.SetVector("_Resolution", new Vector2(size, size));

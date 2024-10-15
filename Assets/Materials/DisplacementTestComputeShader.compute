@@ -26,20 +26,16 @@ float dtest1;
 float dtest2;
 float dtest3;
 
-float2 complexMul(float2 a, float2 b) {
-	return float2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
-}
-
 [numthreads(8,8,1)]
 void CSMain(uint3 id : SV_DispatchThreadID) {
-	Displacement[id.xy] = float4(
-		length(HX[id.xy]) * dtest1,
-		length(HY[id.xy]) * dtest2,
-		length(HZ[id.xy]) * dtest3,
-		0);
-	Displacement2[id.xy] = float4(
+	Displacement[uint2(id.xy)] = float4(
 		length(HX2[id.xy]) * dtest1,
 		length(HY2[id.xy]) * dtest2,
 		length(HZ2[id.xy]) * dtest3,
+		0);
+	Displacement2[id.xy] = float4(
+		length(HX[id.xy]) * dtest1,
+		length(HY[id.xy]) * dtest2,
+		length(HZ[id.xy]) * dtest3,
 		0);
 }
