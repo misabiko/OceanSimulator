@@ -1,7 +1,8 @@
 //https://github.com/rreusser/glsl-fft/blob/master/index.glsl
 #pragma kernel CSMain
 
-const float TWOPI = 6.283185307179586;
+//For some reason, this is 0
+// const float TWOPI = 6.283185307179586;
 
 Texture2D<float4> src;
 RWTexture2D<float4> output;
@@ -15,25 +16,35 @@ float normalization;
 float2 test;
 float2 test2;
 float2 test3;
+float2 test4;
+float2 test5;
+
+float customFloor(float a) {
+	if (a < 0.0)
+		return -ceil(-a);
+	else
+		return floor(a);
+}
 
 float mod(float a, float b) {
-	return a - b * floor(a / b);
+	return a - b * customFloor(a / b);
 }
 
 [numthreads(8,8,1)]
 void CSMain(uint3 id : SV_DispatchThreadID) {
+	float TWOPI = 6.283185307179586;
+
 	float2 evenPos, oddPos, twiddle, outputA, outputB;
 	float4 even, odd;
 	float index, evenIndex, twiddleArgument;
 
-	float2 idf = float2(id.x / resolution.x, id.y / resolution.y);
-	// float2 idf = float2((float)id.x / subtransformSize, id.y / subtransformSize);
+	float2 idf = float2(id.x, id.y);
 
-	index = (horizontal ? idf.x : idf.y) - 0.5;
+	index = (horizontal ? idf.x : idf.y) - 0.5 + test4.x;
 
-	//Added 0.5 inside the floor
-	evenIndex = floor((index /*+ 0.5*/) / subtransformSize) * (subtransformSize * 0.5) +
-		mod(index, subtransformSize * 0.5) +
+	evenIndex = floor(index / subtransformSize) *
+		(subtransformSize * 0.5) +
+		fmod(index, subtransformSize * 0.5) +
 		0.5;
 
 	if (horizontal)
@@ -47,18 +58,23 @@ void CSMain(uint3 id : SV_DispatchThreadID) {
 		oddPos = float2(idf.x, evenIndex);
 	}
 
-	evenPos *= resolution;
-	oddPos *= resolution;
+	//TODO We might be able to avoid divide and re-multiply by resolution
+	// evenPos *= resolution;
+	// oddPos *= resolution;
 
 	if (horizontal)
-		oddPos.x += 0.5;
+		oddPos.x += 0.5 / resolution;
 	else
-		oddPos.y += 0.5;
+		oddPos.y += 0.5 / resolution;
 
-	even = src[evenPos];
-	odd = src[oddPos];
+	//Not sure if this helps
+	// evenPos = saturate(evenPos);
+	// oddPos = saturate(oddPos);
 
-	twiddleArgument = (forward ? TWOPI : -TWOPI) * (index / subtransformSize);
+	even = src[evenPos/* / resolution*/];
+	odd = src[oddPos/* / resolution*/];
+
+	twiddleArgument = (forward ? TWOPI : -TWOPI) * ((index * test4.y) / subtransformSize);
 	twiddle = float2(cos(twiddleArgument), sin(twiddleArgument));
 
 	output[id.xy] = (even.rgba + float4(
