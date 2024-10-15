@@ -148,16 +148,11 @@ public class OceanMeshGenerator : MonoBehaviour {
 					rreusserFFT.SetTexture(0, "src", pingpong ? pingBuffer : pongBuffer);
 					rreusserFFT.SetTexture(0, "output", pingpong ? pongBuffer : pingBuffer);
 				}
-				// rreusserFFT.SetFloats("resolution", displacement.width, displacement.height);
 				rreusserFFT.SetFloats("resolution", 1f / displacement.width, 1f / displacement.height);
 				rreusserFFT.SetFloat("subtransformSize", subtransformSize);
 				rreusserFFT.SetBool("horizontal", true);
 				rreusserFFT.SetBool("forward", false);
-				// if (i == 0)
-					// rreusserFFT.SetFloat("normalization", 1f / displacement.width);
-					// rreusserFFT.SetFloat("normalization", 1f / Mathf.Sqrt(displacement.width * displacement.height));
-				// else
-					rreusserFFT.SetFloat("normalization", 1f);
+				rreusserFFT.SetFloat("normalization", 1f);
 				rreusserFFT.SetFloats("test", test2d.x, test2d.y);
 				rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
 				rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
@@ -184,15 +179,13 @@ public class OceanMeshGenerator : MonoBehaviour {
 					rreusserFFT.SetTexture(0, "src", pingpong ? pingBuffer : pongBuffer);
 					rreusserFFT.SetTexture(0, "output", pingpong ? pongBuffer : pingBuffer);
 				}
-				// rreusserFFT.SetFloats("resolution", displacement.width, displacement.height);
 				rreusserFFT.SetFloats("resolution", 1f / displacement.width, 1f / displacement.height);
 				rreusserFFT.SetFloat("subtransformSize", subtransformSize);
 				rreusserFFT.SetBool("horizontal", false);
 				rreusserFFT.SetBool("forward", false);
-				// if (i == 7)
-					// rreusserFFT.SetFloat("normalization", 1f / displacement.height);
-					// rreusserFFT.SetFloat("normalization", 1f / displacement.width / displacement.height);
-				// else
+				if (i == Mathf.FloorToInt(Mathf.Log(displacement.height, 2)))
+					rreusserFFT.SetFloat("normalization", 1f / displacement.width / displacement.height);
+				else
 					rreusserFFT.SetFloat("normalization", 1f);
 				rreusserFFT.SetFloats("test", test2d.x, test2d.y);
 				rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
@@ -223,10 +216,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 				rreusserFFT.SetFloat("subtransformSize", subtransformSize);
 				rreusserFFT.SetBool("horizontal", true);
 				rreusserFFT.SetBool("forward", false);
-				// if (i == 0)
-				// 	rreusserFFT.SetFloat("normalization", 1f / displacement.width);
-				// else
-					rreusserFFT.SetFloat("normalization", 1f);
+				rreusserFFT.SetFloat("normalization", 1f);
 				rreusserFFT.SetFloats("test", test2d.x, test2d.y);
 				rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
 				rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
@@ -251,9 +241,9 @@ public class OceanMeshGenerator : MonoBehaviour {
 				rreusserFFT.SetFloat("subtransformSize", subtransformSize);
 				rreusserFFT.SetBool("horizontal", false);
 				rreusserFFT.SetBool("forward", false);
-				// if (i == 0)
-					// rreusserFFT.SetFloat("normalization", 1f / displacement.height);
-				// else
+				if (i == Mathf.FloorToInt(Mathf.Log(displacement.height, 2)))
+					rreusserFFT.SetFloat("normalization", 1f / displacement.width / displacement.height);
+				else
 					rreusserFFT.SetFloat("normalization", 1f);
 				rreusserFFT.SetFloat("normalization", 1f);
 				rreusserFFT.SetFloats("test", test2d.x, test2d.y);
@@ -284,10 +274,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 				rreusserFFT.SetFloat("subtransformSize", subtransformSize);
 				rreusserFFT.SetBool("horizontal", true);
 				rreusserFFT.SetBool("forward", false);
-				// if (i == 0)
-					// rreusserFFT.SetFloat("normalization", 1f / displacement.width);
-				// else
-					rreusserFFT.SetFloat("normalization", 1f);
+				rreusserFFT.SetFloat("normalization", 1f);
 				rreusserFFT.SetFloats("test", test2d.x, test2d.y);
 				rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
 				rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
@@ -312,9 +299,9 @@ public class OceanMeshGenerator : MonoBehaviour {
 				rreusserFFT.SetFloat("subtransformSize", subtransformSize);
 				rreusserFFT.SetBool("horizontal", false);
 				rreusserFFT.SetBool("forward", false);
-				// if (i == 0)
-					// rreusserFFT.SetFloat("normalization", 1f / displacement.height);
-				// else
+				if (i == Mathf.FloorToInt(Mathf.Log(displacement.height, 2)))
+					rreusserFFT.SetFloat("normalization", 1f / displacement.width / displacement.height);
+				else
 					rreusserFFT.SetFloat("normalization", 1f);
 				rreusserFFT.SetFloat("normalization", 1f);
 				rreusserFFT.SetFloats("test", test2d.x, test2d.y);

@@ -1717,9 +1717,9 @@ MonoBehaviour:
   test2d3: {x: 0, y: 0.5}
   test2d4: {x: 0, y: 1}
   test2d5: {x: 0, y: 0}
-  dtest1: 0
-  dtest2: 0.3
-  dtest3: 0
+  dtest1: 0.05
+  dtest2: 0.2
+  dtest3: 0.05
   maxIteractions: 15
   computeShader: {fileID: 7200000, guid: 40e34aac946926740866b917839f1a53, type: 3}
   spectrumComputeShader: {fileID: 7200000, guid: bab3b7ecb79e4d5b9515d87e3efd086e,
