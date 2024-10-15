@@ -4373,8 +4373,8 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 3e998aac-6d05-44af-b6f9-b62e41beb2d5
     m_ActionName: Player/Right Yaw[/XInputControllerWindows/rightShoulder]
-  m_NeverAutoSwitchControlSchemes: 0
-  m_DefaultControlScheme: 
+  m_NeverAutoSwitchControlSchemes: 1
+  m_DefaultControlScheme: Gamepad
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}

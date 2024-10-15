@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -10,17 +7,10 @@ public class InputManager : MonoBehaviour
     
     public PlayerInput playerInput;
     public Vector2 moveDirection;
-    
-    private InputAction move;
-    private InputAction leftYaw;
-    private InputAction RightYaw;
 
     private void OnEnable()
     {
-        move = playerInput.actions["Move"];
-        leftYaw = playerInput.actions["Left Yaw"];
-        RightYaw = playerInput.actions["Right Yaw"];
-
+        /**
         move.started += OnMove;
         move.performed += OnMove;
         move.canceled += OnMove;
@@ -30,11 +20,12 @@ public class InputManager : MonoBehaviour
         
         RightYaw.started += OnRightYaw;
         RightYaw.canceled += OnYawCancel;
+        */
     }
 
     private void OnDestroy()
     {
-        move.started -= OnMove;
+        /*move.started -= OnMove;
         move.performed -= OnMove;
         move.canceled -= OnMove;
         
@@ -42,7 +33,7 @@ public class InputManager : MonoBehaviour
         leftYaw.canceled -= OnYawCancel;
         
         RightYaw.started -= OnRightYaw;
-        RightYaw.canceled -= OnYawCancel;
+        RightYaw.canceled -= OnYawCancel;*/
     }
 
     public void OnMove(InputAction.CallbackContext context)
