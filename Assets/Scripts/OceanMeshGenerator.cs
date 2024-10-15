@@ -56,8 +56,8 @@ public class OceanMeshGenerator : MonoBehaviour {
 		GetComponent<MeshFilter>().mesh = mesh;
 		material = GetComponent<Renderer>().material;
 
-		CreateShape();
-		UpdateMesh();
+		// CreateShape();
+		// UpdateMesh();
 
 		waveNumberTexture = CreateRenderTexture(xSize, zSize);
 		spectrumComputeShader.SetTexture(0, "WaveNumber", waveNumberTexture);
@@ -169,8 +169,8 @@ public class OceanMeshGenerator : MonoBehaviour {
 			// while (subtransformSize > 1) {
 			while (subtransformSize <= displacement.height) {
 				// if (subtransformSize == displacement.height) {
-					// rreusserFFT.SetTexture(0, "src", HY);
-					// rreusserFFT.SetTexture(0, "output", HY2);
+					// rreusserFFT.SetTexture(0, "src", HY2);
+					// rreusserFFT.SetTexture(0, "output", displacement);
 				// }else {
 					rreusserFFT.SetTexture(0, "src", pingpong ? HY : HY2);
 					rreusserFFT.SetTexture(0, "output", pingpong ? HY2 : HY);
@@ -311,10 +311,10 @@ public class OceanMeshGenerator : MonoBehaviour {
 	}
 
 	void Update() {
-		if (vertices.Length != (xSize + 1) * (zSize + 1)) {
-			CreateShape();
-			UpdateMesh();
-		}
+		// if (vertices.Length != (xSize + 1) * (zSize + 1)) {
+		// 	CreateShape();
+		// 	UpdateMesh();
+		// }
 
 		material.SetFloat("_Height", height);
 		material.SetVector("_Resolution", new Vector2(size, size));

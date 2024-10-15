@@ -1703,8 +1703,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 274307af742b4cd41b69fc4ee399a0df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  xSize: 256
-  zSize: 256
+  xSize: 1024
+  zSize: 1024
   size: 64
   noiseResolution: 2.5
   F: 1400000
@@ -1713,9 +1713,9 @@ MonoBehaviour:
   timeScale: 1
   heightTest: 0
   test2d: {x: 0, y: 0}
-  test2d2: {x: 1, y: 1}
-  test2d3: {x: 1, y: 1}
-  test2d4: {x: 0, y: 0}
+  test2d2: {x: 0, y: 0}
+  test2d3: {x: 0, y: 0}
+  test2d4: {x: 0.5, y: 1}
   test2d5: {x: 0, y: 0}
   dtest1: 0
   dtest2: 0.3

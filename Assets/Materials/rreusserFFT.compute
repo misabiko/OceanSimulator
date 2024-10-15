@@ -42,10 +42,10 @@ void CSMain(uint3 id : SV_DispatchThreadID) {
 
 	index = (horizontal ? idf.x : idf.y) - 0.5 + test4.x;
 
-	//Added 0.5 inside the floor
-	evenIndex = customFloor(index / subtransformSize) * (subtransformSize * 0.5) +
-		fmod(index + test5.y, subtransformSize * 0.5) +
-		0.5 + test4.y;
+	evenIndex = floor(index / subtransformSize) *
+		(subtransformSize * 0.5) +
+		fmod(index, subtransformSize * 0.5) +
+		0.5;
 
 	if (horizontal)
 	{
@@ -58,23 +58,23 @@ void CSMain(uint3 id : SV_DispatchThreadID) {
 		oddPos = float2(idf.x, evenIndex);
 	}
 
-	//divide by width/height
-	evenPos *= resolution;
-	oddPos *= resolution;
+	//TODO We might be able to avoid divide and re-multiply by resolution
+	// evenPos *= resolution;
+	// oddPos *= resolution;
 
-	//TODO Not hardcode
 	if (horizontal)
-		oddPos.x += 0.5;
+		oddPos.x += 0.5 / resolution;
 	else
-		oddPos.y += 0.5;
+		oddPos.y += 0.5 / resolution;
 
-	evenPos = saturate(evenPos);
-	oddPos = saturate(oddPos);
+	//Not sure if this helps
+	// evenPos = saturate(evenPos);
+	// oddPos = saturate(oddPos);
 
-	even = src[evenPos / resolution];
-	odd = src[oddPos / resolution];
+	even = src[evenPos/* / resolution*/];
+	odd = src[oddPos/* / resolution*/];
 
-	twiddleArgument = (forward ? TWOPI : -TWOPI) * (index / subtransformSize);
+	twiddleArgument = (forward ? TWOPI : -TWOPI) * ((index * test4.y) / subtransformSize);
 	twiddle = float2(cos(twiddleArgument), sin(twiddleArgument));
 
 	output[id.xy] = (even.rgba + float4(

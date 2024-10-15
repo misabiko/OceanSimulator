@@ -33,13 +33,13 @@ float2 complexMul(float2 a, float2 b) {
 [numthreads(8,8,1)]
 void CSMain(uint3 id : SV_DispatchThreadID) {
 	Displacement[id.xy] = float4(
-		length(HX[id.xy].x) * dtest1,
-		length(HY[id.xy].x) * dtest2,
-		length(HZ[id.xy].x) * dtest3,
+		length(HX[id.xy]) * dtest1,
+		length(HY[id.xy]) * dtest2,
+		length(HZ[id.xy]) * dtest3,
 		0);
 	Displacement2[id.xy] = float4(
-		0,//(length(HX[id.xy].x) / 2.0 + 0.5) * dtest1,
-		(length(HY[id.xy].x) / amplitude + angularFrequency) * dtest2,
-		0,//(length(HZ[id.xy].x) / 2.0 + 0.5) * dtest3,
+		length(HX2[id.xy]) * dtest1,
+		length(HY2[id.xy]) * dtest2,
+		length(HZ2[id.xy]) * dtest3,
 		0);
 }
