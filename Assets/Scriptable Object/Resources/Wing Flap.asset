@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88ce1eb11b890d24d8aeca0a41971d76, type: 3}
+  m_Name: Wing Flap
+  m_EditorClassIdentifier: 
+  name: Wing Flap
+  clips:
+  - {fileID: 8300000, guid: 1fcc805e377cb9249b9441ad72f9a766, type: 3}
+  volume: 0.1
+  maxRandomPitchChange: 0.2
