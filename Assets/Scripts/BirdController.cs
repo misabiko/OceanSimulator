@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class BirdController : MonoBehaviour
 {
+   [SerializeField] private InputManager inputManager;
+
+   [Header("Controller Settings")]
    [SerializeField] private float myPitchSpeed = 2f;  
    [SerializeField] private float myRollSpeed = 2f; 
    [SerializeField] private float myYawSpeed = 2f;   
@@ -11,9 +14,11 @@ public class BirdController : MonoBehaviour
    [SerializeField] private float upperAngleThreshold = 20f;
    [SerializeField] private float lowerAngleThreshold = 20f;
    [SerializeField] private bool momentumEnabled;
-   [SerializeField] private InputManager inputManager;
    [SerializeField] private float lowerHeightCap = 5f;
    [SerializeField] private float higherHeightCap = 200f;
+   [SerializeField] private float upwardsLerpSpeed = 0.7f;
+   [SerializeField] private float downwardsLerpSpeed = 0.7f;
+   [SerializeField] private float decellerationLerpSpeed = 2f;
 
    private float currentSpeed;
    private Rigidbody myRigidbody;
@@ -54,20 +59,16 @@ public class BirdController : MonoBehaviour
       if (angle < 180)// if we go downwards
       {
          if (angle > lowerAngleThreshold)
-            momentumFactor = angle*-1/ myMinAngle;
+            momentumFactor = Mathf.Lerp(momentumFactor, angle * -1 / myMinAngle, downwardsLerpSpeed * Time.deltaTime);
          else
-            momentumFactor = 0;
+            momentumFactor = Mathf.Lerp(momentumFactor, 0, decellerationLerpSpeed * Time.deltaTime);
       }
-      else
+      else // if go upwards
       {
          if (angle < 360 - upperAngleThreshold)
-         {
-            momentumFactor = (360 - angle) / myMaxAngle;
-            momentumFactor *= -1;
-         }
+            momentumFactor = Mathf.Lerp(momentumFactor, ((360 - angle) / myMaxAngle)*-1, upwardsLerpSpeed * Time.deltaTime);
          else
-            momentumFactor = 0;
-         
+            momentumFactor = Mathf.Lerp(momentumFactor, 0, decellerationLerpSpeed * Time.deltaTime);
       }
    }
 

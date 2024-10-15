@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -25,7 +26,7 @@ public class DebugBirdControlUI : MonoBehaviour
         
         forwardVector_txt.text = "Forward Vector: "+birdController.GetForwardMovement();
         eulerAngles_txt.text = "Euler Angles: " + eulerAngles;
-        momentumFactor_txt.text = "Momentum Factor: " + birdController.GetMomentumFactor();
+        momentumFactor_txt.text = "Momentum Factor: " + Math.Round(birdController.GetMomentumFactor(), 3, MidpointRounding.AwayFromZero);
         velocity_txt.text = "Velocity: " + birdController.GetVelocity();
         forwardSpeed_txt.text = "Forward Speed: " + birdController.ForwardSpeed();
     }
