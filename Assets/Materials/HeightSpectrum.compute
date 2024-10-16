@@ -3,6 +3,9 @@
 RWTexture2D<float4> HX;
 RWTexture2D<float4> HY;
 RWTexture2D<float4> HZ;
+RWTexture2D<float4> HX2;
+RWTexture2D<float4> HY2;
+RWTexture2D<float4> HZ2;
 RWTexture2D<float4> WaveNumber;
 //TODO Readonly texture
 Texture2D<float4> Noise;
@@ -24,6 +27,8 @@ float heightTest;
 float2 test;
 float2 test2;
 float2 test3;
+float2 test4;
+float2 test5;
 
 float energySpectrum(float w) {
 	// float F = 1400000;
@@ -65,15 +70,27 @@ void CSMain(uint3 id : SV_DispatchThreadID) {
 	float2 h0y = h0(Noise[id.xy].xy, k);
 	float2 h0ymk = h0(Noise[id.xy].xy, -k);
 	float2 hy = complexMul(h0y, float2(cos(w * time), sin(w * time))) + complexMul(h0ymk, float2(cos(-w * time), sin(-w * time)));
-	HY[id.xy] = float4(hy.x / test.y + test.x, hy.y / test.y + test.x, 0, 0);
+	if (id.x >= 128 && id.x <= 128 && id.y >= 128 && id.y <= 128)
+		HY[id.xy] = float4(0, 0.3, 0, 0);
+	else {
+		HY[id.xy] = float4(hy, 0, 0) * test4.y;
+		// HY[id.xy] = float4(0, 0, 0, 0);
+	}
+	// HY2[id.xy] = float4(hy.x, hy.y, 0, 0) * test4.y;
 	
 	float2 h0x = float2(-k.x / length(k) * h0y.y, k.x / length(k) * h0y.x);
 	float2 h0xmk = float2(k.x / length(k) * h0ymk.y, -k.x / length(k) * h0ymk.x);
 	float2 hx = complexMul(h0x, float2(cos(w * time), sin(w * time))) + complexMul(h0xmk, float2(cos(-w * time), sin(-w * time)));
-	HX[id.xy] = float4(hx.x, hx.y, 0, 0);
+	if (id.x >= 128 && id.x <= 128 && id.y >= 128 && id.y <= 128)
+		HX[id.xy] = float4(0, 0.3, 0, 0);
+	else
+		HX[id.xy] = float4(hx, 0, 0);
 	
 	float2 h0z = float2(-k.y / length(k) * h0y.y, k.y / length(k) * h0y.x);
 	float2 h0zmk = float2(k.y / length(k) * h0ymk.y, -k.y / length(k) * h0ymk.x);
 	float2 hz = complexMul(h0z, float2(cos(w * time), sin(w * time))) + complexMul(h0zmk, float2(cos(-w * time), sin(-w * time)));
-	HZ[id.xy] = float4(hz.x, hz.y, 0, 0);
+	if (id.x >= 128 && id.x <= 128 && id.y >= 128 && id.y <= 128)
+		HZ[id.xy] = float4(0, 0.3, 0, 0);
+	else
+		HZ[id.xy] = float4(hz, 0, 0);
 }
