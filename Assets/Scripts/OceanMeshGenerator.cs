@@ -35,7 +35,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 	[SerializeField] ComputeShader computeShader;
 	[SerializeField] ComputeShader spectrumComputeShader;
 	[SerializeField] ComputeShader rreusserFFT;
-	RenderTexture displacement;
+	public RenderTexture displacement;
 	RenderTexture displacement2;
 	RenderTexture HX;
 	RenderTexture HY;
@@ -55,7 +55,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 
 	Material material;
 
-	void Start() {
+	void Awake() {
 		mesh = new Mesh();
 		GetComponent<MeshFilter>().mesh = mesh;
 		material = GetComponent<Renderer>().material;

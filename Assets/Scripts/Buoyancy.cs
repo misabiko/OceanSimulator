@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using MathNet.Numerics.LinearAlgebra.Single;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class Buoyancy : MonoBehaviour
 {
@@ -14,6 +15,7 @@ public class Buoyancy : MonoBehaviour
     
     /*Buoyancy data*/
     [SerializeField] private float fluidDensity = 1.0f;
+    [SerializeField] private GameObject ocean;
     
     /*Voxel Spawner*/
     private float _voxelBorderDepth;
@@ -29,16 +31,19 @@ public class Buoyancy : MonoBehaviour
     /*Buoyancy data*/
     private float gravity = 9.81f;
     private float submergedVolume = 0.0f;
+    private RenderTexture _displacementTexture;
     
     // Start is called before the first frame update
     void Start()
     {
         _voxelCollider = voxelsBorder.GetComponent<BoxCollider>();
+        _displacementTexture = ocean.GetComponent<OceanMeshGenerator>().displacement;
         _voxelBorderWidth = _voxelCollider.bounds.size.x;
         _voxelBorderHeight = _voxelCollider.bounds.size.y;
         _voxelBorderDepth = _voxelCollider.bounds.size.z;
         CalculateNbrVoxels();
         PlaceVoxels();
+        CalculateSubmergedVolume();
     } 
     
     void CalculateNbrVoxels()
@@ -75,12 +80,26 @@ public class Buoyancy : MonoBehaviour
 
     float CalculateSubmergedVolume()
     {
-        foreach (var voxel in _voxels)
-        {
-            
-        }
+        
+        AsyncGPUReadback.Request(_displacementTexture, 0, RenderCallBack);
+        // foreach (var voxel in _voxels)
+        // {
+        //     /*calculate submerged height*/
+        //     // float submergedHeight = water.transform.y - voxel.transform.y
+        //     // float volume += (voxelSize * voxelSize * submergedHeight)
+        // }
 
         return 0.0f;
+    }
+
+    void RenderCallBack(AsyncGPUReadbackRequest request)
+    {
+        request.GetData<byte>();
+    }
+
+    void CalculatePlane()
+    {
+        
     }
 
     float CalculateBuoyancy()
