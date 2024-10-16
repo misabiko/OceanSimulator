@@ -7,11 +7,15 @@ using UnityEngine;
 
 public class Buoyancy : MonoBehaviour
 {
+    /*Voxel Spawner*/
     [SerializeField] private GameObject voxelPrefab;
     [SerializeField] private float voxelSize = 0.1f;
     [SerializeField] private GameObject voxelsBorder;
-    [SerializeField] private float voxelPaddingPercentage;
-
+    
+    /*Buoyancy data*/
+    [SerializeField] private float fluidDensity = 1.0f;
+    
+    /*Voxel Spawner*/
     private float _voxelBorderDepth;
     private float _voxelBorderWidth;
     private float _voxelBorderHeight;
@@ -21,6 +25,10 @@ public class Buoyancy : MonoBehaviour
     private int voxelCount = 0;
     private ArrayList _voxels = new();
     private BoxCollider _voxelCollider;
+    
+    /*Buoyancy data*/
+    private float gravity = 9.81f;
+    private float submergedVolume = 0.0f;
     
     // Start is called before the first frame update
     void Start()
@@ -59,14 +67,25 @@ public class Buoyancy : MonoBehaviour
                     GameObject voxel = Instantiate(voxelPrefab, position, Quaternion.identity, transform);
                     _voxels.Add(voxel);
                     voxel.transform.localScale = new Vector3(voxelSize, voxelSize, voxelSize);
+                    voxelCount++;
                 }
             }
         }
     }
 
-    void CalculateBuoyancy()
+    float CalculateSubmergedVolume()
     {
-        
+        foreach (var voxel in _voxels)
+        {
+            
+        }
+
+        return 0.0f;
+    }
+
+    float CalculateBuoyancy()
+    {
+        return fluidDensity * submergedVolume * gravity * 1 / voxelCount;
     }
 
     // Update is called once per frame
