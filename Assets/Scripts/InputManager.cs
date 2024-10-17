@@ -34,6 +34,8 @@ public class InputManager : MonoBehaviour
 
     private void MoveInput(Vector2 aVector)
     {
+	    if (aVector.sqrMagnitude > 1f)
+		    aVector.Normalize();
         moveDirection = aVector;
     }
 
