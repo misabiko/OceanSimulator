@@ -540,12 +540,12 @@ PrefabInstance:
     - target: {fileID: 4150059782679785027, guid: 0a89a853a90a81442a6d6b0fad4a8b59,
         type: 3}
       propertyPath: myPitchSpeed
-      value: 5
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4150059782679785027, guid: 0a89a853a90a81442a6d6b0fad4a8b59,
         type: 3}
       propertyPath: myForwardSpeed
-      value: 5
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 6830943766055888427, guid: 0a89a853a90a81442a6d6b0fad4a8b59,
         type: 3}

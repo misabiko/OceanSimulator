@@ -275,7 +275,7 @@
                 {
                     "name": "",
                     "id": "5ab7758f-f63a-4247-8485-d2f6a2723b8f",
-                    "path": "<XInputController>/leftShoulder",
+                    "path": "<Gamepad>/leftShoulder",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
@@ -297,7 +297,7 @@
                 {
                     "name": "",
                     "id": "6c9583e8-25cb-4b20-9bdc-dcafbf80567d",
-                    "path": "<XInputController>/rightShoulder",
+                    "path": "<Gamepad>/rightShoulder",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
