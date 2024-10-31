@@ -7,6 +7,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 	Vector3[] vertices;
 	int[] triangles;
 
+	[Header("Bleh")]
 	[SerializeField, Min(0)] int xSize = 20;
 	[SerializeField, Min(0)] int zSize = 20;
 	[Min(0)] public float size = 100f;
@@ -16,6 +17,12 @@ public class OceanMeshGenerator : MonoBehaviour {
 	[Min(0)] public float U10 = 20;
 	[Min(0)] public float gamma = 3.3f;
 
+	[Header("Phillips Spectrum")]
+	[Min(0)] public float phillipsA;
+	[Min(0)] public float phillipsSmallLength;
+	public Vector2 phillipsWindDir;
+
+	[Header("Bleh")]
 	[Min(0)] public float timeScale = 1;
 	public float heightTest = 20;
 	public Vector2 test2d = new(0, 0);
@@ -126,6 +133,9 @@ public class OceanMeshGenerator : MonoBehaviour {
 		spectrumComputeShader.SetFloat("U10", U10);
 		spectrumComputeShader.SetFloat("gamma", gamma);
 		spectrumComputeShader.SetFloat("heightTest", heightTest);
+		spectrumComputeShader.SetFloat("phillipsA", phillipsA);
+		spectrumComputeShader.SetFloat("phillipsSmallLength", phillipsSmallLength);
+		spectrumComputeShader.SetVector("phillipsWindDir", phillipsWindDir.normalized);
 		spectrumComputeShader.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
 		
 		//Y
