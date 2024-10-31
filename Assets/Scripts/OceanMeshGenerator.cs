@@ -90,9 +90,6 @@ public class OceanMeshGenerator : MonoBehaviour {
 		spectrumComputeShader.SetTexture(0, "HX", HX);
 		spectrumComputeShader.SetTexture(0, "HY", HY);
 		spectrumComputeShader.SetTexture(0, "HZ", HZ);
-		spectrumComputeShader.SetTexture(0, "HX2", HX2);
-		spectrumComputeShader.SetTexture(0, "HY2", pongBuffer);
-		spectrumComputeShader.SetTexture(0, "HZ2", HZ2);
 
 		displacement = CreateRenderTexture(xSize, zSize);
 		computeShader.SetTexture(0, "Displacement", displacement);

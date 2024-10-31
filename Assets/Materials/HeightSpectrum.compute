@@ -3,9 +3,6 @@
 RWTexture2D<float4> HX;
 RWTexture2D<float4> HY;
 RWTexture2D<float4> HZ;
-RWTexture2D<float4> HX2;
-RWTexture2D<float4> HY2;
-RWTexture2D<float4> HZ2;
 RWTexture2D<float4> WaveNumber;
 //TODO Readonly texture
 Texture2D<float4> Noise;
@@ -72,6 +69,13 @@ float2 complexMul(float2 a, float2 b)
 	return float2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
 }
 
+//TODO Better name than hf?
+//hf(k, t) = h0(k) * e^(iwt) + h0(-k) * e^(-iwt) (tess#43)
+float2 hf(float omega, float2 h0, float h0Conjugate)
+{
+	return complexMul(h0, float2(cos(omega * time), sin(omega * time))) + complexMul(h0Conjugate, float2(cos(-omega * time), sin(-omega * time)));
+}
+
 [numthreads(8,8,1)]
 void CSMain(uint3 id : SV_DispatchThreadID)
 {
@@ -85,16 +89,18 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 
 	float2 h0y = h0(Noise[id.xy].xy, k, omega);
 	float2 h0ymk = h0(Noise[id.xy].xy, -k, omega);
-	float2 hy = complexMul(h0y, float2(cos(omega * time), sin(omega * time))) + complexMul(h0ymk, float2(cos(-omega * time), sin(-omega * time)));
+	float2 hy = hf(omega, h0y, h0ymk);
 	HY[id.xy] = float4(hy, 0, 0);
 
-	float2 h0x = float2(-k.x / length(k) * h0y.y, k.x / length(k) * h0y.x);
-	float2 h0xmk = float2(k.x / length(k) * h0ymk.y, -k.x / length(k) * h0ymk.x);
-	float2 hx = complexMul(h0x, float2(cos(omega * time), sin(omega * time))) + complexMul(h0xmk, float2(cos(-omega * time), sin(-omega * time)));
+	float2 hx = hf(omega,
+		float2(-k.x / length(k) * h0y.y, k.x / length(k) * h0y.x),
+		float2(k.x / length(k) * h0ymk.y, -k.x / length(k) * h0ymk.x)
+	);
 	HX[id.xy] = float4(hx, 0, 0);
 
-	float2 h0z = float2(-k.y / length(k) * h0y.y, k.y / length(k) * h0y.x);
-	float2 h0zmk = float2(k.y / length(k) * h0ymk.y, -k.y / length(k) * h0ymk.x);
-	float2 hz = complexMul(h0z, float2(cos(omega * time), sin(omega * time))) + complexMul(h0zmk, float2(cos(-omega * time), sin(-omega * time)));
+	float2 hz = hf(omega,
+		float2(-k.y / length(k) * h0y.y, k.y / length(k) * h0y.x),
+		float2(k.y / length(k) * h0ymk.y, -k.y / length(k) * h0ymk.x)
+	);
 	HZ[id.xy] = float4(hz, 0, 0);
 }
