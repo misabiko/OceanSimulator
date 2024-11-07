@@ -1,8 +1,14 @@
 #pragma kernel CSMain
 
+//Height frequencies
 RWTexture2D<float4> HX;
 RWTexture2D<float4> HY;
 RWTexture2D<float4> HZ;
+//Slope frequencies
+// RWTexture2D<float4> NX;
+RWTexture2D<float4> NY;
+// RWTexture2D<float4> NZ;
+
 RWTexture2D<float4> WaveNumber;
 //TODO Readonly texture
 Texture2D<float4> Noise;
@@ -103,4 +109,10 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 		float2(k.y / length(k) * h0ymk.y, -k.y / length(k) * h0ymk.x)
 	);
 	HZ[id.xy] = float4(hz, 0, 0);
+
+	float2 ikx = float2(0, k.x);
+	float2 ikz = float2(0, k.y);
+	float2 nyx = complexMul(ikx, hy);
+	float2 nyz = complexMul(ikz, hy);
+	NY[id.xy] = float4(nyx, nyz);
 }
