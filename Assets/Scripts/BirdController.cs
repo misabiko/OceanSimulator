@@ -31,12 +31,16 @@ public class BirdController : MonoBehaviour
         myRigidbody = GetComponent<Rigidbody>();
     }
 
-    private void Update()
-    {
-        HandleFlightInput();
-        ClampHeight();
-        ClampRotation();
-    }
+      transform.Rotate(moveInput.y * myPitchSpeed,   moveInput.x * myRollSpeed, -inputManager.Yaw * myYawSpeed, Space.Self);
+      
+      if (momentumEnabled)
+         CalculateMomentum();
+      
+      currentSpeed = myForwardSpeed + (0.75f * myForwardSpeed) * momentumFactor;
+      forwardMovement = transform.forward * currentSpeed;
+      
+      myRigidbody.MovePosition(transform.position + forwardMovement * Time.deltaTime);
+   }
 
     private void HandleFlightInput()
     {

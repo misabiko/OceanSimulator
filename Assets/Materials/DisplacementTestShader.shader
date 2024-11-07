@@ -6,8 +6,9 @@ Shader "Custom/DisplacementTestShader"
         _Resolution ("Resolution", Vector) = (1, 1, 0, 0)
         _Height ("Height", Float) = 3
 
-        _Displacement ("Displacement", 2D) = "black" {}
-    }
+		_Displacement ("Displacement", 2D) = "black" {}
+		_NormalMap ("NormalMap", 2D) = "black" {}
+	}
 
     SubShader
     {
@@ -34,39 +35,41 @@ Shader "Custom/DisplacementTestShader"
                 float4 positionOS : POSITION;
             };
 
-            struct Varyings
-            {
-                // The positions in this struct must have the SV_POSITION semantic.
-                float4 positionHCS : SV_POSITION;
-            };
+			struct Varyings {
+				// The positions in this struct must have the SV_POSITION semantic.
+				float4 positionHCS : SV_POSITION;
+				float3 positionWS : TEXCOORD0;
+			};
 
             float2 _Resolution;
             half4 _Color;
             float _Height;
 
-            sampler2D _Displacement;
+			sampler2D _Displacement;
+			sampler2D _NormalMap;
 
             Varyings vert(Attributes IN)
             {
                 Varyings OUT;
                 float3 worldPos = mul(unity_ObjectToWorld, IN.positionOS);
 
-                float3 d = tex2Dlod(_Displacement, float4(worldPos.xz / _Resolution, 0, 0)).rgb;
-                // OUT.positionHCS = TransformObjectToHClip(IN.positionOS + float4(d.x / _Resolution.x, d.y * _Height, d.z / _Resolution.y, 0));
-                OUT.positionHCS = TransformObjectToHClip(
-                    IN.positionOS + float4(d.x * 2 - 0.5, d.y * 2 - 0.5, d.z * 2 - 0.5, 0));
+				float3 d = tex2Dlod(_Displacement, float4(worldPos.xz / _Resolution, 0, 0)).rgb;
+				OUT.positionHCS = TransformObjectToHClip(IN.positionOS + float4(d.x * 2 - 0.5, d.y * 2 - 0.5, d.z * 2 - 0.5, 0));
+				OUT.positionWS = float3(worldPos);
 
                 return OUT;
             }
 
-            half4 frag() : SV_Target
-            {
-                half4 customColor;
+			half4 frag(Varyings IN) : SV_Target {
+				// half4 customColor;
+				// customColor = _Color;
 
-                customColor = _Color;
-                return customColor;
-            }
-            ENDHLSL
-        }
-    }
+				//float4(nyx real, nyx imaginary, nyz real, nyz imaginary)
+				float4 ny = tex2Dlod(_NormalMap, float4(IN.positionWS.xz / _Resolution, 0, 0));
+				float3 n = normalize(float3(length(ny.xy), 0, length(ny.zw)));
+				return half4(n, 1);
+			}
+			ENDHLSL
+		}
+	}
 }
