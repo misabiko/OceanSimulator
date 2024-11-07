@@ -502,6 +502,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 5060491936881303720, guid: 24d9ba6944bdd3940a1aacabca0be70f,
+        type: 3}
+      propertyPath: phillipsA
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5060491936881303720, guid: 24d9ba6944bdd3940a1aacabca0be70f,
+        type: 3}
+      propertyPath: phillipsWindDir.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5060491936881303720, guid: 24d9ba6944bdd3940a1aacabca0be70f,
+        type: 3}
+      propertyPath: phillipsSmallLength
+      value: 0.1
+      objectReference: {fileID: 0}
     - target: {fileID: 6139999260090699147, guid: 24d9ba6944bdd3940a1aacabca0be70f,
         type: 3}
       propertyPath: m_LocalPosition.x
