@@ -16,6 +16,8 @@ public class BirdSimulation : MonoBehaviour
     //public float maxSpeed;
     //[Range(0f, 100.0f)]
     //public float rotationSpeed;
+    [Range(0f, 100)]
+    public int MaxCountInProximity;
     [Range(0f, 100.0f)]
     public float DetectRadius;
     [Range(0f, 100.0f)]
@@ -32,6 +34,10 @@ public class BirdSimulation : MonoBehaviour
     public float WanderWeight;
     [Range(0f, 100.0f)]
     public float BoundAvoidanceWeight;
+    [Range(0f, 100.0f)]
+    public float ObstacleAvoidanceWeight;
+    [Range(0f, 100.0f)]
+    public float OvercrowdWeight;
     [Range(0f, 100.0f)]
     public float VelocityLerp;
     [Range(0f, 100.0f)]
@@ -59,7 +65,7 @@ public class BirdSimulation : MonoBehaviour
     {
         if (Random.Range(0, 100) < 1)
         {
-            goalPos = Vector3.Lerp(goalPos, this.transform.position + Random.insideUnitSphere * SpaceBoundRadius, 0.5f);
+            goalPos = Vector3.Lerp(goalPos, this.transform.position + Random.insideUnitSphere * SpaceBoundRadius, 0.2f);
         }
     }
 

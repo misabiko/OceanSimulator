@@ -50,7 +50,7 @@ public class Boid : MonoBehaviour
                 avoidance += -deltaPos.normalized * (Simulation.AvoidanceRadius - deltaPos.magnitude);
             }
             else
-            if (dist <= Simulation.DetectRadius) // && Vector3.Dot(vel0.normalized, dist) > -0.5f)
+            if (dist <= Simulation.DetectRadius && Vector3.Dot(vel0.normalized, deltaPos) > 0.5f) // && countInProximity < Simulation.MaxCountInProximity)
             {
                 countInProximity++;
                 avgPos += pos1;
@@ -63,7 +63,6 @@ public class Boid : MonoBehaviour
         wander *= (float) Math.Sin(DateTime.Now.Ticks / TimeSpan.TicksPerSecond);
         vel0 += wander * Simulation.WanderWeight;
 
-
         Vector3 cohesion = Vector3.zero;
         Vector3 align = Vector3.zero;
         // Cohesion + Alignment
@@ -73,10 +72,10 @@ public class Boid : MonoBehaviour
             avgVel /= countInProximity;
             centroid = avgPos;
 
-            cohesion = (avgPos - pos0) * Simulation.Cohesion;
+            cohesion = (centroid - pos0) * Simulation.Cohesion;
             align = (avgVel - vel0) * Simulation.Alignment;
-            Debug.DrawLine(this.transform.position, this.transform.position + cohesion, Color.green);
-            Debug.DrawLine(this.transform.position, this.transform.position + align, Color.blue);
+            Debug.DrawLine(pos0, pos0 + cohesion, Color.green);
+            Debug.DrawLine(pos0, pos0 + align, Color.blue);
             vel0 += cohesion + align;
         }
         // Avoidance
@@ -85,17 +84,30 @@ public class Boid : MonoBehaviour
             //close_d /= countInAvoidance;
             vel0 += avoidance * Simulation.Separation;
         }
+        // Flocking size limitation
+        if (countInProximity > Simulation.MaxCountInProximity)
+        {
+            vel0 -= (centroid - pos0) * Simulation.OvercrowdWeight; // * (Simulation.MaxCountInProximity - countInProximity);
+        }
 
         // Goal
-        vel0 += (Simulation.goalPos - this.transform.position).normalized * Simulation.GoalWeight;
+        vel0 += (Simulation.goalPos - pos0).normalized * Simulation.GoalWeight;
 
         // Avoid Bounds
-        var forwardDetection = this.transform.position + vel0.normalized * Simulation.DetectRadius;
-        if(forwardDetection.magnitude > Simulation.SpaceBoundRadius)
+        var forwardDetection = pos0 + vel0.normalized * Simulation.DetectRadius;
+        if (forwardDetection.magnitude > Simulation.SpaceBoundRadius)
         {
-            var c = Vector3.Cross(forwardDetection, this.transform.position);
-            //vel0 += c * Simulation.BoundAvoidanceWeight;
-            vel0 += -this.transform.position.normalized * Simulation.BoundAvoidanceWeight;
+            var c = Vector3.Cross(forwardDetection, pos0);
+            vel0 += pos0.normalized * (Simulation.SpaceBoundRadius - pos0.magnitude) * Simulation.BoundAvoidanceWeight;
+        }
+
+        // Avoid Obstacles
+        Collider[] hitColliders = Physics.OverlapSphere(pos0, Simulation.DetectRadius);
+        foreach (var hitCollider in hitColliders)
+        {
+            var p = hitCollider.ClosestPoint(pos0);
+            var dpos = p - pos0;
+            vel0 += -dpos * Simulation.ObstacleAvoidanceWeight * (Simulation.DetectRadius - dpos.magnitude);
         }
 
         // Clamp speed
@@ -104,17 +116,16 @@ public class Boid : MonoBehaviour
         vel0 = Vector3.Lerp(previousVelocity, vel0, Simulation.VelocityLerp);
         this.velocity = vel0;
 
-
         // Transform
-        Debug.DrawLine(this.transform.position, this.transform.position + velocity, Color.red);
-        this.transform.LookAt(this.transform.position + velocity);
+        Debug.DrawLine(pos0, pos0 + velocity, Color.red);
+        this.transform.LookAt(pos0 + velocity);
         this.transform.Translate(velocity * Time.deltaTime, Space.World);
     }
 
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = new Color(1, 0, 1);
+        Gizmos.color = new Color(1, 0, 1, 0.1f);
         Gizmos.DrawWireSphere(this.centroid, Simulation.DetectRadius);
     }
 
