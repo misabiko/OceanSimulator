@@ -1,4 +1,5 @@
 using UnityEngine;
+using static UnityEngine.InputSystem.HID.HID;
 
 public class BirdSimulation : MonoBehaviour
 {
@@ -6,7 +7,6 @@ public class BirdSimulation : MonoBehaviour
     public GameObject boidPrefab;
     public int boidCount = 20;
     public GameObject[] allBoids;
-    public Vector3 spaceBounds = new Vector3(5, 5, 5);
     public Vector3 goalPos =  new Vector3(0, 0, 0);
 
     [Header("Boid settings")]
@@ -31,7 +31,13 @@ public class BirdSimulation : MonoBehaviour
     [Range(0f, 100.0f)]
     public float WanderWeight;
     [Range(0f, 100.0f)]
+    public float BoundAvoidanceWeight;
+    [Range(0f, 100.0f)]
     public float VelocityLerp;
+    [Range(0f, 100.0f)]
+    public float MaxSpeed = 5f;
+    [Range(10f, 100.0f)]
+    public float SpaceBoundRadius;
 
 
 
@@ -41,11 +47,7 @@ public class BirdSimulation : MonoBehaviour
         allBoids = new GameObject[boidCount];
         for (int i = 0; i < boidCount; i++)
         {
-            Vector3 pos = this.transform.position + new Vector3(
-                Random.Range(-spaceBounds.x, spaceBounds.x),
-                Random.Range(-spaceBounds.y, spaceBounds.y),
-                Random.Range(-spaceBounds.z, spaceBounds.z)
-            );
+            Vector3 pos = this.transform.position + Random.insideUnitSphere * SpaceBoundRadius;
             allBoids[i] = Instantiate(boidPrefab, pos, Quaternion.identity);
         }
         instance = this;
@@ -55,13 +57,18 @@ public class BirdSimulation : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Random.Range(0, 100) < 10)
+        if (Random.Range(0, 100) < 1)
         {
-            goalPos = this.transform.position + new Vector3(
-                Random.Range(-spaceBounds.x, spaceBounds.x),
-                Random.Range(-spaceBounds.y, spaceBounds.y),
-                Random.Range(-spaceBounds.z, spaceBounds.z)
-            );
+            goalPos = Vector3.Lerp(goalPos, this.transform.position + Random.insideUnitSphere * SpaceBoundRadius, 0.5f);
         }
     }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = new Color(0, 1, 0);
+        Gizmos.DrawWireSphere(this.goalPos, 1);
+        Gizmos.color = new Color(1, 0, 0);
+        Gizmos.DrawWireSphere(Vector3.zero, SpaceBoundRadius);
+    }
+
 }
