@@ -1691,9 +1691,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   voxelPrefab: {fileID: 3467094168026759594, guid: a06790367dc25e34aa210fe082b1d0d4,
     type: 3}
-  nbrVoxels: 9
+  voxelSize: 0.5
   voxelsBorder: {fileID: 234701503}
-  voxelPaddingPercentage: 0.1
+  fluidDensity: 1
+  ocean: {fileID: 2017735626}
 --- !u!1 &2017735626
 GameObject:
   m_ObjectHideFlags: 0
@@ -1797,6 +1798,7 @@ MonoBehaviour:
   spectrumComputeShader: {fileID: 7200000, guid: bab3b7ecb79e4d5b9515d87e3efd086e,
     type: 3}
   rreusserFFT: {fileID: 7200000, guid: 402468975e3d45a0bd984b415e9e8878, type: 3}
+  displacement: {fileID: 0}
   waveVector: {x: 0, y: 0}
   amplitude: 1
   angularFrequency: 0
