@@ -1,9 +1,5 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditor.Rendering;
 using UnityEngine;
-using static UnityEditor.Searcher.SearcherWindow;
 using Random = UnityEngine.Random;
 
 public class Boid : MonoBehaviour
@@ -116,4 +112,3 @@ public class Boid : MonoBehaviour
     }
 
 }
-
