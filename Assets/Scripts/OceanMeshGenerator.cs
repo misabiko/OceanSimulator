@@ -1,17 +1,11 @@
 using UnityEngine;
-using UnityEngine.Experimental.Rendering;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
-public class OceanMeshGenerator : MonoBehaviour
-{
-    [SerializeField] [Min(0)] private int xSize = 20;
-    [SerializeField] [Min(0)] private int zSize = 20;
-    [Min(0)] public float size = 100f;
-    [Min(0)] public float noiseResolution = 10f;
+public class OceanMeshGenerator : MonoBehaviour {
+	Mesh mesh;
 
-    [Min(0)] public float F = 1400000;
-    [Min(0)] public float U10 = 20;
-    [Min(0)] public float gamma = 3.3f;
+	Vector3[] vertices;
+	int[] triangles;
 
 	[Header("Bleh")]
 	//TODO Make square
@@ -22,7 +16,9 @@ public class OceanMeshGenerator : MonoBehaviour
 	[Min(0)] public float size = 100f;
 	[Min(0)] public float noiseResolution = 10f;
 
-    [Range(0, 15)] public int maxIteractions = 15;
+	[Min(0)] public float F = 1400000;
+	[Min(0)] public float U10 = 20;
+	[Min(0)] public float gamma = 3.3f;
 
 	[Header("Phillips Spectrum")] [Min(0)] public float phillipsA;
 	[Min(0)] public float phillipsSmallLength;
@@ -42,7 +38,7 @@ public class OceanMeshGenerator : MonoBehaviour
 	[SerializeField] ComputeShader computeShader;
 	[SerializeField] ComputeShader spectrumComputeShader;
 	[SerializeField] ComputeShader rreusserFFT;
-	RenderTexture displacement;
+	public RenderTexture displacement;
 	RenderTexture HX;
 	RenderTexture HY;
 	RenderTexture HZ;
@@ -56,24 +52,20 @@ public class OceanMeshGenerator : MonoBehaviour
 	RenderTexture waveNumberTexture;
 	Texture2D noiseTexture;
 
-    private Material material;
-    private Mesh mesh;
-    private Texture2D noiseTexture;
-    private RenderTexture pingBuffer;
-    private RenderTexture pongBuffer;
-    private int[] triangles;
+	[SerializeField] Vector2 waveVector = Vector2.one;
+	[SerializeField] float amplitude = 1;
+	[SerializeField] float angularFrequency = 1;
+	[SerializeField] float height = 1;
 
-    private Vector3[] vertices;
-    private RenderTexture waveNumberTexture;
+	Material material;
 
-    private void Awake()
-    {
-        mesh = new Mesh();
-        GetComponent<MeshFilter>().mesh = mesh;
-        material = GetComponent<Renderer>().material;
+	void Start() {
+		mesh = new Mesh();
+		GetComponent<MeshFilter>().mesh = mesh;
+		material = GetComponent<Renderer>().material;
 
-        CreateShape();
-        UpdateMesh();
+		CreateShape();
+		UpdateMesh();
 
 		waveNumberTexture = CreateRenderTexture(xSize, zSize);
 		spectrumComputeShader.SetTexture(0, "WaveNumber", waveNumberTexture);
@@ -104,33 +96,33 @@ public class OceanMeshGenerator : MonoBehaviour
 		spectrumComputeShader.SetTexture(0, "HZ", HZ);
 		spectrumComputeShader.SetTexture(0, "NY", NY);
 
-        displacement = CreateRenderTexture(xSize, zSize);
-        computeShader.SetTexture(0, "Displacement", displacement);
-        computeShader.SetTexture(0, "HX", HX);
-        computeShader.SetTexture(0, "HY", HY);
-        computeShader.SetTexture(0, "HZ", HZ);
-        computeShader.SetTexture(0, "HX2", HX2);
-        computeShader.SetTexture(0, "HY2", HY2);
-        computeShader.SetTexture(0, "HZ2", HZ2);
-        computeShader.SetFloat("Resolution", xSize);
-        computeShader.SetFloat("PI", Mathf.PI);
-        computeShader.SetFloat("g", -Physics.gravity.y);
-        SetupComputeShader();
+		displacement = CreateRenderTexture(xSize, zSize);
+		computeShader.SetTexture(0, "Displacement", displacement);
+		computeShader.SetTexture(0, "HX", HX);
+		computeShader.SetTexture(0, "HY", HY);
+		computeShader.SetTexture(0, "HZ", HZ);
+		computeShader.SetTexture(0, "HX2", HX2);
+		computeShader.SetTexture(0, "HY2", HY2);
+		computeShader.SetTexture(0, "HZ2", HZ2);
+		computeShader.SetFloat("Resolution", xSize);
+		computeShader.SetFloat("PI", Mathf.PI);
+		computeShader.SetFloat("g", -Physics.gravity.y);
+		SetupComputeShader();
 
 		material.SetTexture("_Displacement", displacement);
 		material.SetTexture("_NormalMap", NY2);
 
-        //TODO Try rendering texture to UI?
-        GameObject.Find("RenderTextureDisplay").GetComponent<Renderer>().material.mainTexture = displacement;
-        GameObject.Find("RenderTextureNoise").GetComponent<Renderer>().material.mainTexture = noiseTexture;
-        GameObject.Find("RenderTextureWaveNumber").GetComponent<Renderer>().material.mainTexture = waveNumberTexture;
-        GameObject.Find("RenderTextureHY").GetComponent<Renderer>().material.mainTexture = HY;
-        GameObject.Find("RenderTextureHX").GetComponent<Renderer>().material.mainTexture = HX;
-        GameObject.Find("RenderTextureHZ").GetComponent<Renderer>().material.mainTexture = HZ;
-        GameObject.Find("RenderTextureHY2").GetComponent<Renderer>().material.mainTexture = HY2;
-        GameObject.Find("RenderTextureHX2").GetComponent<Renderer>().material.mainTexture = HX2;
-        GameObject.Find("RenderTextureHZ2").GetComponent<Renderer>().material.mainTexture = HZ2;
-    }
+		//TODO Try rendering texture to UI?
+		GameObject.Find("RenderTextureDisplay").GetComponent<Renderer>().material.mainTexture = displacement;
+		GameObject.Find("RenderTextureNoise").GetComponent<Renderer>().material.mainTexture = noiseTexture;
+		GameObject.Find("RenderTextureWaveNumber").GetComponent<Renderer>().material.mainTexture = waveNumberTexture;
+		GameObject.Find("RenderTextureHY").GetComponent<Renderer>().material.mainTexture = HY;
+		GameObject.Find("RenderTextureHX").GetComponent<Renderer>().material.mainTexture = HX;
+		GameObject.Find("RenderTextureHZ").GetComponent<Renderer>().material.mainTexture = HZ;
+		GameObject.Find("RenderTextureHY2").GetComponent<Renderer>().material.mainTexture = HY2;
+		GameObject.Find("RenderTextureHX2").GetComponent<Renderer>().material.mainTexture = HX2;
+		GameObject.Find("RenderTextureHZ2").GetComponent<Renderer>().material.mainTexture = HZ2;
+	}
 
 	void SetupComputeShader() {
 		spectrumComputeShader.SetFloats("test", test2d.x, test2d.y);
@@ -409,289 +401,71 @@ public class OceanMeshGenerator : MonoBehaviour
 		computeShader.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
 	}
 
-        //Y
-        {
-            var subtransformSize = 2;
-            var pingpong = true;
-            var i = 0;
-            while (subtransformSize <= displacement.width && i < maxIteractions)
-            {
-                if (i == 0)
-                {
-                    rreusserFFT.SetTexture(0, "src", HY);
-                    rreusserFFT.SetTexture(0, "output", pongBuffer);
-                }
-                else
-                {
-                    rreusserFFT.SetTexture(0, "src", pingpong ? pingBuffer : pongBuffer);
-                    rreusserFFT.SetTexture(0, "output", pingpong ? pongBuffer : pingBuffer);
-                }
+	void Update() {
+		if (vertices.Length != (xSize + 1) * (zSize + 1)) {
+			CreateShape();
+			UpdateMesh();
+		}
 
-                rreusserFFT.SetFloats("resolution", 1f / displacement.width, 1f / displacement.height);
-                rreusserFFT.SetFloat("subtransformSize", subtransformSize);
-                rreusserFFT.SetBool("horizontal", true);
-                rreusserFFT.SetBool("forward", false);
-                rreusserFFT.SetFloat("normalization", 1f);
-                rreusserFFT.SetFloats("test", test2d.x, test2d.y);
-                rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
-                rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
-                rreusserFFT.SetFloats("test4", test2d4.x, test2d4.y);
-                rreusserFFT.SetFloats("test5", test2d5.x, test2d5.y);
-                rreusserFFT.SetFloats("test5", test2d5.x, test2d5.y);
-                rreusserFFT.SetFloats("test5", test2d5.x, test2d5.y);
-                rreusserFFT.SetFloats("test5", test2d5.x, test2d5.y);
-                rreusserFFT.SetFloats("test5", test2d5.x, test2d5.y);
-                rreusserFFT.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
-                subtransformSize *= 2;
-                pingpong = !pingpong;
-                ++i;
-            }
+		material.SetFloat("_Height", height);
+		material.SetVector("_Resolution", new Vector2(size, size));
+		SetupComputeShader();
+	}
 
-            subtransformSize = 2;
-            // pingpong = true;
-            i = 0;
-            while (subtransformSize <= displacement.height && i < maxIteractions)
-            {
-                if (subtransformSize == displacement.height || i == maxIteractions - 1)
-                {
-                    rreusserFFT.SetTexture(0, "src", pongBuffer);
-                    rreusserFFT.SetTexture(0, "output", HY2);
-                }
-                else
-                {
-                    rreusserFFT.SetTexture(0, "src", pingpong ? pingBuffer : pongBuffer);
-                    rreusserFFT.SetTexture(0, "output", pingpong ? pongBuffer : pingBuffer);
-                }
+	void CreateShape() {
+		vertices = new Vector3[(xSize + 1) * (zSize + 1)];
 
-                rreusserFFT.SetFloats("resolution", 1f / displacement.width, 1f / displacement.height);
-                rreusserFFT.SetFloat("subtransformSize", subtransformSize);
-                rreusserFFT.SetBool("horizontal", false);
-                rreusserFFT.SetBool("forward", false);
-                if (i == Mathf.FloorToInt(Mathf.Log(displacement.height, 2)))
-                    rreusserFFT.SetFloat("normalization", 1f / displacement.width / displacement.height);
-                else
-                    rreusserFFT.SetFloat("normalization", 1f);
-                rreusserFFT.SetFloats("test", test2d.x, test2d.y);
-                rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
-                rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
-                rreusserFFT.SetFloats("test4", test2d4.x, test2d4.y);
-                rreusserFFT.SetFloats("test5", test2d5.x, test2d5.y);
-                rreusserFFT.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
-                subtransformSize *= 2;
-                pingpong = !pingpong;
-                ++i;
-            }
-        }
+		for (int i = 0, z = 0; z <= zSize; ++z)
+		for (int x = 0; x <= xSize; ++x) {
+			vertices[i] = new Vector3((float)x / xSize, 0f, (float)z / zSize) * size;
+			++i;
+		}
 
-        //X
-        {
-            var subtransformSize = 2;
-            var pingpong = true;
-            var i = 0;
-            while (subtransformSize <= displacement.width)
-            {
-                if (i == 0)
-                {
-                    rreusserFFT.SetTexture(0, "src", HX);
-                    rreusserFFT.SetTexture(0, "output", pongBuffer);
-                }
-                else
-                {
-                    rreusserFFT.SetTexture(0, "src", pingpong ? pingBuffer : pongBuffer);
-                    rreusserFFT.SetTexture(0, "output", pingpong ? pongBuffer : pingBuffer);
-                }
+		triangles = new int[xSize * zSize * 6];
 
-                rreusserFFT.SetFloats("resolution", 1f / displacement.width, 1f / displacement.height);
-                rreusserFFT.SetFloat("subtransformSize", subtransformSize);
-                rreusserFFT.SetBool("horizontal", true);
-                rreusserFFT.SetBool("forward", false);
-                rreusserFFT.SetFloat("normalization", 1f);
-                rreusserFFT.SetFloats("test", test2d.x, test2d.y);
-                rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
-                rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
-                rreusserFFT.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
-                subtransformSize *= 2;
-                pingpong = !pingpong;
-                ++i;
-            }
+		int vert = 0;
+		int tris = 0;
+		for (int z = 0; z < zSize; ++z) {
+			for (int x = 0; x < xSize; ++x) {
+				triangles[tris + 0] = vert + 0;
+				triangles[tris + 1] = vert + xSize + 1;
+				triangles[tris + 2] = vert + 1;
+				triangles[tris + 3] = vert + 1;
+				triangles[tris + 4] = vert + xSize + 1;
+				triangles[tris + 5] = vert + xSize + 2;
 
-            subtransformSize = 2;
-            pingpong = true;
-            i = 0;
-            while (subtransformSize <= displacement.height)
-            {
-                if (subtransformSize == displacement.height || i == maxIteractions - 1)
-                {
-                    rreusserFFT.SetTexture(0, "src", pongBuffer);
-                    rreusserFFT.SetTexture(0, "output", HX2);
-                }
-                else
-                {
-                    rreusserFFT.SetTexture(0, "src", pingpong ? pingBuffer : pongBuffer);
-                    rreusserFFT.SetTexture(0, "output", pingpong ? pongBuffer : pingBuffer);
-                }
+				++vert;
+				tris += 6;
+			}
 
-                rreusserFFT.SetFloats("resolution", 1f / displacement.width, 1f / displacement.height);
-                rreusserFFT.SetFloat("subtransformSize", subtransformSize);
-                rreusserFFT.SetBool("horizontal", false);
-                rreusserFFT.SetBool("forward", false);
-                if (i == Mathf.FloorToInt(Mathf.Log(displacement.height, 2)))
-                    rreusserFFT.SetFloat("normalization", 1f / displacement.width / displacement.height);
-                else
-                    rreusserFFT.SetFloat("normalization", 1f);
-                rreusserFFT.SetFloat("normalization", 1f);
-                rreusserFFT.SetFloats("test", test2d.x, test2d.y);
-                rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
-                rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
-                rreusserFFT.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
-                subtransformSize *= 2;
-                pingpong = !pingpong;
-                ++i;
-            }
-        }
+			++vert;
+		}
 
-        //TODO Merge HX and HZ in the same texture
-        //Z
-        {
-            var subtransformSize = 2;
-            var pingpong = true;
-            var i = 0;
-            while (subtransformSize <= displacement.width)
-            {
-                if (i == 0)
-                {
-                    rreusserFFT.SetTexture(0, "src", HZ);
-                    rreusserFFT.SetTexture(0, "output", pongBuffer);
-                }
-                else
-                {
-                    rreusserFFT.SetTexture(0, "src", pingpong ? pingBuffer : pongBuffer);
-                    rreusserFFT.SetTexture(0, "output", pingpong ? pongBuffer : pingBuffer);
-                }
+		material.SetVector("_Resolution", new Vector2(size, size));
+	}
 
-                rreusserFFT.SetFloats("resolution", 1f / displacement.width, 1f / displacement.height);
-                rreusserFFT.SetFloat("subtransformSize", subtransformSize);
-                rreusserFFT.SetBool("horizontal", true);
-                rreusserFFT.SetBool("forward", false);
-                rreusserFFT.SetFloat("normalization", 1f);
-                rreusserFFT.SetFloats("test", test2d.x, test2d.y);
-                rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
-                rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
-                rreusserFFT.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
-                subtransformSize *= 2;
-                pingpong = !pingpong;
-                ++i;
-            }
+	void UpdateMesh() {
+		mesh.Clear();
 
-            subtransformSize = 2;
-            pingpong = true;
-            i = 0;
-            while (subtransformSize <= displacement.height)
-            {
-                if (subtransformSize == displacement.height || i == maxIteractions - 1)
-                {
-                    rreusserFFT.SetTexture(0, "src", pongBuffer);
-                    rreusserFFT.SetTexture(0, "output", HZ2);
-                }
-                else
-                {
-                    rreusserFFT.SetTexture(0, "src", pingpong ? pingBuffer : pongBuffer);
-                    rreusserFFT.SetTexture(0, "output", pingpong ? pongBuffer : pingBuffer);
-                }
+		mesh.vertices = vertices;
+		mesh.triangles = triangles;
 
-                rreusserFFT.SetFloats("resolution", 1f / displacement.width, 1f / displacement.height);
-                rreusserFFT.SetFloat("subtransformSize", subtransformSize);
-                rreusserFFT.SetBool("horizontal", false);
-                rreusserFFT.SetBool("forward", false);
-                if (i == Mathf.FloorToInt(Mathf.Log(displacement.height, 2)))
-                    rreusserFFT.SetFloat("normalization", 1f / displacement.width / displacement.height);
-                else
-                    rreusserFFT.SetFloat("normalization", 1f);
-                rreusserFFT.SetFloat("normalization", 1f);
-                rreusserFFT.SetFloats("test", test2d.x, test2d.y);
-                rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
-                rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
-                rreusserFFT.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
-                subtransformSize *= 2;
-                pingpong = !pingpong;
-                ++i;
-            }
-        }
+		mesh.RecalculateNormals();
+	}
 
-        computeShader.SetFloat("dtest1", dtest1);
-        computeShader.SetFloat("dtest2", dtest2);
-        computeShader.SetFloat("dtest3", dtest3);
-        computeShader.SetVector("waveVector", waveVector);
-        computeShader.SetFloat("amplitude", amplitude);
-        computeShader.SetFloat("angularFrequency", angularFrequency);
-        computeShader.SetFloat("time", Time.time * timeScale);
-        computeShader.SetFloat("L", size);
-        computeShader.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
-    }
+	static RenderTexture CreateRenderTexture(int width, int height) {
+		var rt = new RenderTexture(width, height, 24) {
+			enableRandomWrite = true,
+			filterMode = FilterMode.Point,
+			graphicsFormat = UnityEngine.Experimental.Rendering.GraphicsFormat.R16G16B16A16_SFloat,
+		};
+		rt.Create();
+		return rt;
+	}
 
-    private void CreateShape()
-    {
-        vertices = new Vector3[(xSize + 1) * (zSize + 1)];
-
-        for (int i = 0, z = 0; z <= zSize; ++z)
-        for (var x = 0; x <= xSize; ++x)
-        {
-            vertices[i] = new Vector3((float)x / xSize, 0f, (float)z / zSize) * size;
-            ++i;
-        }
-
-        triangles = new int[xSize * zSize * 6];
-
-        var vert = 0;
-        var tris = 0;
-        for (var z = 0; z < zSize; ++z)
-        {
-            for (var x = 0; x < xSize; ++x)
-            {
-                triangles[tris + 0] = vert + 0;
-                triangles[tris + 1] = vert + xSize + 1;
-                triangles[tris + 2] = vert + 1;
-                triangles[tris + 3] = vert + 1;
-                triangles[tris + 4] = vert + xSize + 1;
-                triangles[tris + 5] = vert + xSize + 2;
-
-                ++vert;
-                tris += 6;
-            }
-
-            ++vert;
-        }
-
-        material.SetVector("_Resolution", new Vector2(size, size));
-    }
-
-    private void UpdateMesh()
-    {
-        mesh.Clear();
-
-        mesh.vertices = vertices;
-        mesh.triangles = triangles;
-
-        mesh.RecalculateNormals();
-    }
-
-    private static RenderTexture CreateRenderTexture(int width, int height)
-    {
-        var rt = new RenderTexture(width, height, 24)
-        {
-            enableRandomWrite = true,
-            filterMode = FilterMode.Point,
-            graphicsFormat = GraphicsFormat.R32G32B32A32_SFloat
-        };
-        rt.Create();
-        return rt;
-    }
-
-    private static Texture2D CreateTexture(int width, int height)
-    {
-        return new Texture2D(width, height)
-        {
-            filterMode = FilterMode.Point
-        };
-    }
+	static Texture2D CreateTexture(int width, int height) {
+		return new Texture2D(width, height) {
+			filterMode = FilterMode.Point,
+		};
+	}
 }
