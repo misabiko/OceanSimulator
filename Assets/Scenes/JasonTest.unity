@@ -627,21 +627,6 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 5c2891b1541b5b042a952833aa73b0b7, type: 2}
     - target: {fileID: 5060491936881303720, guid: 24d9ba6944bdd3940a1aacabca0be70f,
         type: 3}
-      propertyPath: dtest1
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 5060491936881303720, guid: 24d9ba6944bdd3940a1aacabca0be70f,
-        type: 3}
-      propertyPath: dtest2
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5060491936881303720, guid: 24d9ba6944bdd3940a1aacabca0be70f,
-        type: 3}
-      propertyPath: dtest3
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5060491936881303720, guid: 24d9ba6944bdd3940a1aacabca0be70f,
-        type: 3}
       propertyPath: phillipsA
       value: 1
       objectReference: {fileID: 0}

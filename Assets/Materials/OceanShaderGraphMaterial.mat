@@ -66,6 +66,7 @@ Material:
     - _Height: 0
     - _QueueControl: 0
     - _QueueOffset: 0
+    - _ShowNormals: 0
     m_Colors:
     - _Color: {r: 0.2688679, g: 0.51960784, b: 1, a: 0}
     - _Resolution: {r: 0, g: 0, b: 0, a: 0}
