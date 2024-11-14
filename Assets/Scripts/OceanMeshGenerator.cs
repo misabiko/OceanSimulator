@@ -25,6 +25,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 	public Vector2 phillipsWindDir;
 
 	[Header("Bleh")] [Min(0)] public float timeScale = 1;
+	public float timeOffset;
 	public float heightTest = 20;
 	public Vector2 test2d = new(0, 0);
 	public Vector2 test2d2 = new(0, 0);
@@ -47,6 +48,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 	RenderTexture HZ2;
 	RenderTexture NY;
 	RenderTexture NY2;
+	RenderTexture approximateNormals;
 	RenderTexture pingBuffer;
 	RenderTexture pongBuffer;
 	RenderTexture waveNumberTexture;
@@ -60,6 +62,9 @@ public class OceanMeshGenerator : MonoBehaviour {
 	Material material;
 
 	void Start() {
+		//For now, limiting to 512
+		Debug.Assert(xSize <= 512 && zSize <= 512);
+
 		mesh = new Mesh();
 		GetComponent<MeshFilter>().mesh = mesh;
 		material = GetComponent<Renderer>().material;
@@ -89,6 +94,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 		HZ2 = CreateRenderTexture(xSize, zSize);
 		NY = CreateRenderTexture(xSize, zSize);
 		NY2 = CreateRenderTexture(xSize, zSize);
+		approximateNormals = CreateRenderTexture(xSize, zSize);
 		pingBuffer = CreateRenderTexture(xSize, zSize);
 		pongBuffer = CreateRenderTexture(xSize, zSize);
 		spectrumComputeShader.SetTexture(0, "HX", HX);
@@ -104,6 +110,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 		computeShader.SetTexture(0, "HX2", HX2);
 		computeShader.SetTexture(0, "HY2", HY2);
 		computeShader.SetTexture(0, "HZ2", HZ2);
+		computeShader.SetTexture(0, "approximateNormals", approximateNormals);
 		computeShader.SetFloat("Resolution", xSize);
 		computeShader.SetFloat("PI", Mathf.PI);
 		computeShader.SetFloat("g", -Physics.gravity.y);
@@ -111,6 +118,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 
 		material.SetTexture("_Displacement", displacement);
 		material.SetTexture("_NormalMap", NY2);
+		material.SetTexture("_ApproximateNormalMap", approximateNormals);
 
 		//TODO Try rendering texture to UI?
 		GameObject.Find("RenderTextureDisplay").GetComponent<Renderer>().material.mainTexture = displacement;
@@ -130,7 +138,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 		spectrumComputeShader.SetFloats("test3", test2d3.x, test2d3.y);
 		spectrumComputeShader.SetFloats("test4", test2d4.x, test2d4.y);
 		spectrumComputeShader.SetFloats("test5", test2d5.x, test2d5.y);
-		spectrumComputeShader.SetFloat("time", Time.time * timeScale);
+		spectrumComputeShader.SetFloat("time", Time.time * timeScale + timeOffset);
 		spectrumComputeShader.SetFloat("L", size);
 		spectrumComputeShader.SetFloat("F", F);
 		spectrumComputeShader.SetFloat("U10", U10);
@@ -396,7 +404,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 		computeShader.SetVector("waveVector", waveVector);
 		computeShader.SetFloat("amplitude", amplitude);
 		computeShader.SetFloat("angularFrequency", angularFrequency);
-		computeShader.SetFloat("time", Time.time * timeScale);
+		computeShader.SetFloat("time", Time.time * timeScale + timeOffset);
 		computeShader.SetFloat("L", size);
 		computeShader.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
 	}

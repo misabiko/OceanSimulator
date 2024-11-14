@@ -6,6 +6,7 @@ Shader "Custom/DisplacementTestShader" {
 
 		_Displacement ("Displacement", 2D) = "black" {}
 		_NormalMap ("NormalMap", 2D) = "black" {}
+		_ApproximateNormalMap ("ApproximateNormalMap", 2D) = "black" {}
 	}
 
 	SubShader {
@@ -39,6 +40,7 @@ Shader "Custom/DisplacementTestShader" {
 
 			sampler2D _Displacement;
 			sampler2D _NormalMap;
+			sampler2D _ApproximateNormalMap;
 
 			Varyings vert(Attributes IN) {
 				Varyings OUT;
@@ -56,8 +58,15 @@ Shader "Custom/DisplacementTestShader" {
 				// customColor = _Color;
 
 				//float4(nyx real, nyx imaginary, nyz real, nyz imaginary)
-				float4 ny = tex2Dlod(_NormalMap, float4(IN.positionWS.xz / _Resolution, 0, 0));
-				float3 n = normalize(float3(length(ny.xy), 0, length(ny.zw)));
+				// float4 ny = tex2Dlod(_NormalMap, float4(IN.positionWS.xz / _Resolution, 0, 0));
+				// float3 normalYTangentX = float3(1, length(ny.xy), 0);
+				// float3 normalYTangentZ = float3(0, length(ny.zw), 1);
+				// float3 n = normalize(cross(normalYTangentX, normalYTangentZ));
+
+				//Approximate normal
+				float3 n = float3(
+					tex2Dlod(_ApproximateNormalMap, float4(IN.positionWS.xz / _Resolution, 0, 0)).xyz
+				);
 				return half4(n, 1);
 			}
 			ENDHLSL
