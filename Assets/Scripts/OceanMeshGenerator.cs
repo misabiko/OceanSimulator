@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class OceanMeshGenerator : MonoBehaviour {
@@ -59,14 +61,8 @@ public class OceanMeshGenerator : MonoBehaviour {
 
 	Material material;
 
-	void Start() {
-		mesh = new Mesh();
-		GetComponent<MeshFilter>().mesh = mesh;
-		material = GetComponent<Renderer>().material;
-
-		CreateShape();
-		UpdateMesh();
-
+	private void Awake()
+	{
 		waveNumberTexture = CreateRenderTexture(xSize, zSize);
 		spectrumComputeShader.SetTexture(0, "WaveNumber", waveNumberTexture);
 		noiseTexture = CreateTexture(xSize, zSize);
@@ -107,6 +103,16 @@ public class OceanMeshGenerator : MonoBehaviour {
 		computeShader.SetFloat("Resolution", xSize);
 		computeShader.SetFloat("PI", Mathf.PI);
 		computeShader.SetFloat("g", -Physics.gravity.y);
+	}
+
+	void Start() {
+		mesh = new Mesh();
+		GetComponent<MeshFilter>().mesh = mesh;
+		material = GetComponent<Renderer>().material;
+
+		CreateShape();
+		UpdateMesh();
+		
 		SetupComputeShader();
 
 		material.SetTexture("_Displacement", displacement);
@@ -457,7 +463,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 		var rt = new RenderTexture(width, height, 24) {
 			enableRandomWrite = true,
 			filterMode = FilterMode.Point,
-			graphicsFormat = UnityEngine.Experimental.Rendering.GraphicsFormat.R16G16B16A16_SFloat,
+			graphicsFormat = UnityEngine.Experimental.Rendering.GraphicsFormat.R32G32B32A32_SFloat,
 		};
 		rt.Create();
 		return rt;
