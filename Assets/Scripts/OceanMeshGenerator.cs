@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UIElements;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class OceanMeshGenerator : MonoBehaviour {
@@ -39,19 +40,19 @@ public class OceanMeshGenerator : MonoBehaviour {
 	[SerializeField] ComputeShader computeShader;
 	[SerializeField] ComputeShader spectrumComputeShader;
 	[SerializeField] ComputeShader rreusserFFT;
-	RenderTexture displacement;
-	RenderTexture HX;
-	RenderTexture HY;
-	RenderTexture HZ;
-	RenderTexture HX2;
-	RenderTexture HY2;
-	RenderTexture HZ2;
-	RenderTexture NY;
-	RenderTexture NY2;
-	RenderTexture approximateNormals;
-	RenderTexture pingBuffer;
-	RenderTexture pongBuffer;
-	RenderTexture waveNumberTexture;
+	public RenderTexture displacement;
+	public RenderTexture HX;
+	public RenderTexture HY;
+	public RenderTexture HZ;
+	public RenderTexture HX2;
+	public RenderTexture HY2;
+	public RenderTexture HZ2;
+	public RenderTexture NY;
+	public RenderTexture NY2;
+	public RenderTexture approximateNormals;
+	public RenderTexture pingBuffer;
+	public RenderTexture pongBuffer;
+	public RenderTexture waveNumberTexture;
 	Texture2D noiseTexture;
 
 	[SerializeField] Vector2 waveVector = Vector2.one;
@@ -130,6 +131,24 @@ public class OceanMeshGenerator : MonoBehaviour {
 		GameObject.Find("RenderTextureHY2").GetComponent<Renderer>().material.mainTexture = HY2;
 		GameObject.Find("RenderTextureHX2").GetComponent<Renderer>().material.mainTexture = HX2;
 		GameObject.Find("RenderTextureHZ2").GetComponent<Renderer>().material.mainTexture = HZ2;
+
+		var uiDocument = GetComponent<UIDocument>();
+		if (uiDocument.enabled) {
+			uiDocument.rootVisualElement.Add(new Image { image = displacement });
+			// uiDocument.rootVisualElement.Add(new Image { image = noiseTexture });
+			// uiDocument.rootVisualElement.Add(new Image { image = waveNumberTexture });
+			uiDocument.rootVisualElement.Add(new Image { image = HX });
+			uiDocument.rootVisualElement.Add(new Image { image = HY });
+			uiDocument.rootVisualElement.Add(new Image { image = HZ });
+			uiDocument.rootVisualElement.Add(new Image { image = HX2 });
+			uiDocument.rootVisualElement.Add(new Image { image = HY2 });
+			uiDocument.rootVisualElement.Add(new Image { image = HZ2 });
+			uiDocument.rootVisualElement.Add(new Image { image = NY });
+			uiDocument.rootVisualElement.Add(new Image { image = NY2 });
+			uiDocument.rootVisualElement.Add(new Image { image = approximateNormals });
+			uiDocument.rootVisualElement.Add(new Image { image = pingBuffer });
+			uiDocument.rootVisualElement.Add(new Image { image = pongBuffer });
+		}
 	}
 
 	void SetupComputeShader() {
