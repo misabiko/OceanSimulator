@@ -109,8 +109,8 @@ public class Buoyancy : MonoBehaviour
             StartGPURequest();
         }
         
-        Debug.Log((_oceanCachedData[2] + " " + _oceanCachedData[3] + " " + _oceanCachedData[4]));
-        Debug.Log((_oceanCachedData[255] + " " + _oceanCachedData[256] + " " + _oceanCachedData[257]));
+       // Debug.Log((_oceanCachedData[2] + " " + _oceanCachedData[3] + " " + _oceanCachedData[4]));
+       // Debug.Log((_oceanCachedData[255] + " " + _oceanCachedData[256] + " " + _oceanCachedData[257]));
         
         if (_oceanCachedData != null)
         {
@@ -151,9 +151,9 @@ public class Buoyancy : MonoBehaviour
 
     private float CalculateBuoyancy()
     {
-        Debug.Log(voxelCount + " voxels");
-        Debug.Log(CalculateSubmergedVolume() + " submerged");
-        Debug.Log(fluidDensity + " fluid density");
+       // Debug.Log(voxelCount + " voxels");
+       // Debug.Log(CalculateSubmergedVolume() + " submerged");
+       // Debug.Log(fluidDensity + " fluid density");
         return fluidDensity * CalculateSubmergedVolume() * gravity * 1 / voxelCount;
     }
 
@@ -162,8 +162,7 @@ public class Buoyancy : MonoBehaviour
         _isRequestSent = true;
         try
         {
-            Debug.Log("Requesting buoyancy");
-            await Task.Delay(1000);
+          //  Debug.Log("Requesting buoyancy");
             AsyncGPUReadbackRequest request = await AsyncGPUReadback.RequestAsync(_displacementTexture, 0);
             if (request.hasError)
             {
