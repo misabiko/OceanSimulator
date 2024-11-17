@@ -726,7 +726,6 @@ MonoBehaviour:
     type: 3}
   boidCount: 20
   allBoids: []
-  spaceBounds: {x: 20, y: 20, z: 20}
   goalPos: {x: 0, y: 0, z: 0}
   DetectRadius: 30
   AvoidanceRadius: 6
@@ -735,7 +734,10 @@ MonoBehaviour:
   Separation: 3
   GoalWeight: 0
   WanderWeight: 0.1
+  BoundAvoidanceWeight: 0.4
   VelocityLerp: 0.2
+  MaxSpeed: 5
+  SpaceBoundRadius: 30
 --- !u!114 &1183812887 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4150059782679785027, guid: 0a89a853a90a81442a6d6b0fad4a8b59,
