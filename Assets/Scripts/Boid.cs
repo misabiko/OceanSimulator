@@ -10,24 +10,19 @@ public class Boid : MonoBehaviour
     private BirdSimulation Simulation => BirdSimulation.instance;
 
     // Start is called before the first frame update
-    private void Start()
+    void Start()
     {
         velocity = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1), Random.Range(-1, 1)).normalized * Random.Range(1, Simulation.MaxSpeed);
     }
 
     // Update is called once per frame
-    private void Update()
+    void Update()
     {
         ApplyRulesBoids();
     }
 
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = new Color(1, 0, 1);
-        Gizmos.DrawWireSphere(centroid, BirdSimulation.instance.DetectRadius);
-    }
 
-    private void OnDrawGizmosSelected()
+    void ApplyRulesBoids()
     {
         Vector3 avgPos = Vector3.zero;
         Vector3 avgVel = Vector3.zero;
@@ -85,6 +80,7 @@ public class Boid : MonoBehaviour
         }
         // Avoidance
         if (countInAvoidance > 0)
+        {
             //close_d /= countInAvoidance;
             vel0 += avoidance * Simulation.Separation;
         }

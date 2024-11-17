@@ -21,25 +21,11 @@ public class BirdSimulation : MonoBehaviour
     [Range(0f, 100.0f)]
     public float DetectRadius;
     [Range(0f, 100.0f)]
-    public float AvoidanceRadius;
-    [Range(0f, 100.0f)]
-    public float Cohesion;
-    [Range(0f, 100.0f)]
-    public float Alignment;
-    [Range(0f, 100.0f)]
-    public float Separation;
-    [Range(0f, 100.0f)]
-    public float GoalWeight;
-    [Range(0f, 100.0f)]
-    public float WanderWeight;
-    [Range(0f, 100.0f)]
     public float BoundAvoidanceWeight;
     [Range(0f, 100.0f)]
     public float ObstacleAvoidanceWeight;
     [Range(0f, 100.0f)]
     public float OvercrowdWeight;
-    [Range(0f, 100.0f)]
-    public float VelocityLerp;
     [Range(0f, 100.0f)]
     public float MaxSpeed = 5f;
     [Range(10f, 100.0f)]

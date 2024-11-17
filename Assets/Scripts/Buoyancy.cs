@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -68,7 +69,7 @@ public class Buoyancy : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        CalculateSubmergedVolume();
+       GetComponent<Rigidbody>().AddForce(Vector3.up * CalculateBuoyancy());
     }
 
     private void CalculateNbrVoxels()
@@ -107,38 +108,40 @@ public class Buoyancy : MonoBehaviour
         {
             StartGPURequest();
         }
-
-        // if (_oceanCachedData != null)
-        // {
-        //     Debug.Log("ocean cached first value " + _oceanCachedData[0]);
-        //     float x_OceanPosition = _oceanPosition.x;
-        //     float y_OceanPosition = _oceanPosition.y;
-        //     float z_OceanPosition = _oceanPosition.z;
-        //     foreach (var data in _oceanCachedData)
-        //     {
-        //         float x_dataPosition = data.g + x_OceanPosition;
-        //         float y_dataPosition = data.r + y_OceanPosition;
-        //         float z_dataPosition = data.b + z_OceanPosition; 
-        //         foreach (var voxel  in _voxels)
-        //         {
-        //             if (x_dataPosition <= voxel.Position.x + voxelSize && x_dataPosition > voxel.Position.x - voxelSize 
-        //                                                                 && z_dataPosition <= voxel.Position.z + voxelSize 
-        //                                                                 && z_dataPosition > voxel.Position.z - voxelSize)
-        //             {
-        //                 if (y_dataPosition <= voxel.Position.y + voxelSize &&
-        //                     y_dataPosition > voxel.Position.y - voxelSize)
-        //                 {
-        //                     float voxel_submergedVolume = voxelSize * voxelSize * (y_dataPosition - voxel.Position.y - voxelSize);
-        //                     totalVolume += voxel_submergedVolume;
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-        // else
-        // {
-        //     Debug.LogWarning("Cached data not created");
-        // }
+        
+        Debug.Log((_oceanCachedData[2] + " " + _oceanCachedData[3] + " " + _oceanCachedData[4]));
+        Debug.Log((_oceanCachedData[255] + " " + _oceanCachedData[256] + " " + _oceanCachedData[257]));
+        
+        if (_oceanCachedData != null)
+        {
+            float x_OceanPosition = _oceanPosition.x;
+            float y_OceanPosition = _oceanPosition.y;
+            float z_OceanPosition = _oceanPosition.z;
+            foreach (var data in _oceanCachedData)
+            {
+                float x_dataPosition = data.g + x_OceanPosition;
+                float y_dataPosition = data.r + y_OceanPosition;
+                float z_dataPosition = data.b + z_OceanPosition; 
+                foreach (var voxel  in _voxels)
+                {
+                    if (x_dataPosition <= voxel.Position.x + voxelSize && x_dataPosition > voxel.Position.x - voxelSize 
+                                                                        && z_dataPosition <= voxel.Position.z + voxelSize 
+                                                                        && z_dataPosition > voxel.Position.z - voxelSize)
+                    {
+                        if (y_dataPosition <= voxel.Position.y + voxelSize &&
+                            y_dataPosition > voxel.Position.y - voxelSize)
+                        {
+                            float voxel_submergedVolume = voxelSize * voxelSize * (y_dataPosition - voxel.Position.y - voxelSize);
+                            totalVolume += voxel_submergedVolume;
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Cached data not created");
+        }
         return totalVolume;
     }
     
@@ -148,6 +151,9 @@ public class Buoyancy : MonoBehaviour
 
     private float CalculateBuoyancy()
     {
+        Debug.Log(voxelCount + " voxels");
+        Debug.Log(CalculateSubmergedVolume() + " submerged");
+        Debug.Log(fluidDensity + " fluid density");
         return fluidDensity * CalculateSubmergedVolume() * gravity * 1 / voxelCount;
     }
 
@@ -156,6 +162,8 @@ public class Buoyancy : MonoBehaviour
         _isRequestSent = true;
         try
         {
+            Debug.Log("Requesting buoyancy");
+            await Task.Delay(1000);
             AsyncGPUReadbackRequest request = await AsyncGPUReadback.RequestAsync(_displacementTexture, 0);
             if (request.hasError)
             {
