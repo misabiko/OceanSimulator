@@ -14,37 +14,34 @@ public class OceanMeshGeneratorInspector : Editor {
 		InspectorElement.FillDefaultInspector(inspector.Q("DefaultInspector"), serializedObject, this);
 
 		var textureFoldout = inspector.Q<Foldout>("TextureFoldout");
-		textureFoldout.schedule.Execute((e) => {
-			foreach (var texture in textureFoldout.Children())
-				texture.MarkDirtyRepaint();
+		textureFoldout.schedule.Execute(() => {
+			foreach (var e in textureFoldout.Children())
+				if (e is Foldout foldout)
+					foreach (var e2 in foldout.Children())
+						if (e2 is Image image)
+							image.MarkDirtyRepaint();
 		}).Every(16);
 		var ocean = (OceanMeshGenerator)target;
-		textureFoldout.Add(new Label("Displacement"));
-		textureFoldout.Add(new Image { image = ocean.displacement });
-		textureFoldout.Add(new Label("HX"));
-		textureFoldout.Add(new Image { image = ocean.HX });
-		textureFoldout.Add(new Label("HY"));
-		textureFoldout.Add(new Image { image = ocean.HY });
-		textureFoldout.Add(new Label("HZ"));
-		textureFoldout.Add(new Image { image = ocean.HZ });
-		textureFoldout.Add(new Label("HX2"));
-		textureFoldout.Add(new Image { image = ocean.HX2 });
-		textureFoldout.Add(new Label("HY2"));
-		textureFoldout.Add(new Image { image = ocean.HY2 });
-		textureFoldout.Add(new Label("HZ2"));
-		textureFoldout.Add(new Image { image = ocean.HZ2 });
-		textureFoldout.Add(new Label("NY"));
-		textureFoldout.Add(new Image { image = ocean.NY });
-		textureFoldout.Add(new Label("NY2"));
-		textureFoldout.Add(new Image { image = ocean.NY2 });
-		textureFoldout.Add(new Label("Approximate Normals"));
-		textureFoldout.Add(new Image { image = ocean.approximateNormals });
-		textureFoldout.Add(new Label("PingBuffer"));
-		textureFoldout.Add(new Image { image = ocean.pingBuffer });
-		textureFoldout.Add(new Label("PongBuffer"));
-		textureFoldout.Add(new Image { image = ocean.pongBuffer });
+		AddTexture(textureFoldout, "Displacement", ocean.displacement);
+		AddTexture(textureFoldout, "HX", ocean.HX);
+		AddTexture(textureFoldout, "HY", ocean.HY);
+		AddTexture(textureFoldout, "HZ", ocean.HZ);
+		AddTexture(textureFoldout, "HX2", ocean.HX2);
+		AddTexture(textureFoldout, "HY2", ocean.HY2);
+		AddTexture(textureFoldout, "HZ2", ocean.HZ2);
+		AddTexture(textureFoldout, "NY", ocean.NY);
+		AddTexture(textureFoldout, "NY2", ocean.NY2);
+		AddTexture(textureFoldout, "Approximate Normals", ocean.approximateNormals);
+		AddTexture(textureFoldout, "PingBuffer", ocean.pingBuffer);
+		AddTexture(textureFoldout, "PongBuffer", ocean.pongBuffer);
 		inspector.Add(textureFoldout);
 
 		return inspector;
+	}
+
+	static void AddTexture(VisualElement parent, string name, RenderTexture texture) {
+		var foldout = new Foldout { text = name };
+		foldout.Add(new Image { image = texture });
+		parent.Add(foldout);
 	}
 }

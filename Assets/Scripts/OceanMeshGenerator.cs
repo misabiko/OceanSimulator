@@ -36,29 +36,40 @@ public class OceanMeshGenerator : MonoBehaviour {
 	public float dtest1 = 0;
 	public float dtest2 = 0;
 	public float dtest3 = 0;
+	public Vector3 normalTestX = Vector3.one;
+	public Vector3 normalTestZ = Vector3.one;
+	public float normalTest2 = 2f;
+	public Vector3 normalTest3 = Vector3.zero;
 
 	[SerializeField] ComputeShader computeShader;
 	[SerializeField] ComputeShader spectrumComputeShader;
 	[SerializeField] ComputeShader rreusserFFT;
-	public RenderTexture displacement;
-	public RenderTexture HX;
-	public RenderTexture HY;
-	public RenderTexture HZ;
-	public RenderTexture HX2;
-	public RenderTexture HY2;
-	public RenderTexture HZ2;
-	public RenderTexture NY;
-	public RenderTexture NY2;
-	public RenderTexture approximateNormals;
-	public RenderTexture pingBuffer;
-	public RenderTexture pongBuffer;
-	public RenderTexture waveNumberTexture;
+	[SerializeField] ComputeShader simpleSinusoid;
+	[HideInInspector] public RenderTexture displacement;
+	[HideInInspector] public RenderTexture HX;
+	[HideInInspector] public RenderTexture HY;
+	[HideInInspector] public RenderTexture HZ;
+	[HideInInspector] public RenderTexture HX2;
+	[HideInInspector] public RenderTexture HY2;
+	[HideInInspector] public RenderTexture HZ2;
+	[HideInInspector] public RenderTexture NY;
+	[HideInInspector] public RenderTexture NY2;
+	[HideInInspector] public RenderTexture approximateNormals;
+	[HideInInspector] public RenderTexture pingBuffer;
+	[HideInInspector] public RenderTexture pongBuffer;
+	[HideInInspector] public RenderTexture waveNumberTexture;
 	Texture2D noiseTexture;
 
 	[SerializeField] Vector2 waveVector = Vector2.one;
 	[SerializeField] float amplitude = 1;
 	[SerializeField] float angularFrequency = 1;
 	[SerializeField] float height = 1;
+	
+	[Header("SimpleSinusoid")]
+	public float simpleSinusoidAmplitude = 1;
+	public Vector2 simpleSinusoidFrequency = Vector2.one;
+	public Vector2 simpleSinusoidAngularFrequency = Vector2.one;
+	public Vector2 simpleSinusoidPhase = Vector2.zero;
 
 	Material material;
 
@@ -115,13 +126,17 @@ public class OceanMeshGenerator : MonoBehaviour {
 		computeShader.SetFloat("Resolution", xSize);
 		computeShader.SetFloat("PI", Mathf.PI);
 		computeShader.SetFloat("g", -Physics.gravity.y);
+		
+		simpleSinusoid.SetTexture(0, "HX2", HY2);
+		simpleSinusoid.SetTexture(0, "HY2", HX2);
+		simpleSinusoid.SetTexture(0, "HZ2", HZ2);
+		
 		SetupComputeShader();
 
 		material.SetTexture("_Displacement", displacement);
 		material.SetTexture("_NormalMap", NY2);
 		material.SetTexture("_ApproximateNormalMap", approximateNormals);
 
-		//TODO Try rendering texture to UI?
 		GameObject.Find("RenderTextureDisplay").GetComponent<Renderer>().material.mainTexture = displacement;
 		GameObject.Find("RenderTextureNoise").GetComponent<Renderer>().material.mainTexture = noiseTexture;
 		GameObject.Find("RenderTextureWaveNumber").GetComponent<Renderer>().material.mainTexture = waveNumberTexture;
@@ -417,9 +432,21 @@ public class OceanMeshGenerator : MonoBehaviour {
 			}
 		}
 
+		simpleSinusoid.SetFloat("time", Time.time * timeScale + timeOffset);
+		simpleSinusoid.SetFloat("resolution", xSize);
+		simpleSinusoid.SetVector("frequency", simpleSinusoidFrequency);
+		simpleSinusoid.SetVector("angularFrequency", simpleSinusoidAngularFrequency);
+		simpleSinusoid.SetFloat("amplitude", simpleSinusoidAmplitude);
+		simpleSinusoid.SetVector("phase", simpleSinusoidPhase);
+		simpleSinusoid.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
+
 		computeShader.SetFloat("dtest1", dtest1);
 		computeShader.SetFloat("dtest2", dtest2);
 		computeShader.SetFloat("dtest3", dtest3);
+		computeShader.SetVector("normalTestX", normalTestX);
+		computeShader.SetVector("normalTestZ", normalTestZ);
+		computeShader.SetFloat("normalTest2", normalTest2);
+		computeShader.SetVector("normalTest3", normalTest3);
 		computeShader.SetVector("waveVector", waveVector);
 		computeShader.SetFloat("amplitude", amplitude);
 		computeShader.SetFloat("angularFrequency", angularFrequency);
