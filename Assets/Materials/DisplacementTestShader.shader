@@ -1,58 +1,73 @@
-Shader "Custom/DisplacementTestShader" {
-	Properties {
-		_Color ("Color", Color) = (1,1,1,1)
-		_Resolution ("Resolution", Vector) = (1, 1, 0, 0)
-		_Height ("Height", Float) = 3
+Shader "Custom/DisplacementTestShader"
+{
+    Properties
+    {
+        _Color ("Color", Color) = (1,1,1,1)
+        _Resolution ("Resolution", Vector) = (1, 1, 0, 0)
+        _Height ("Height", Float) = 3
 
 		_Displacement ("Displacement", 2D) = "black" {}
+		_NormalMap ("NormalMap", 2D) = "black" {}
 	}
 
-	SubShader {
-		Tags { "RenderType" = "Opaque" "RenderPipeline" = "UniversalRenderPipeline" }
+    SubShader
+    {
+        Tags
+        {
+            "RenderType" = "Opaque" "RenderPipeline" = "UniversalRenderPipeline"
+        }
 
-		Pass {
-			HLSLPROGRAM
-			#pragma vertex vert
-			#pragma fragment frag
+        Pass
+        {
+            HLSLPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
 
-			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
-			// The structure definition defines which variables it contains.
-			// This example uses the Attributes structure as an input structure in
-			// the vertex shader.
-			struct Attributes {
-				// The positionOS variable contains the vertex positions in object
-				// space.
-				float4 positionOS : POSITION;
-			};
+            // The structure definition defines which variables it contains.
+            // This example uses the Attributes structure as an input structure in
+            // the vertex shader.
+            struct Attributes
+            {
+                // The positionOS variable contains the vertex positions in object
+                // space.
+                float4 positionOS : POSITION;
+            };
 
 			struct Varyings {
 				// The positions in this struct must have the SV_POSITION semantic.
 				float4 positionHCS : SV_POSITION;
+				float3 positionWS : TEXCOORD0;
 			};
 
-			float2 _Resolution;
-			half4 _Color;
-			float _Height;
+            float2 _Resolution;
+            half4 _Color;
+            float _Height;
 
 			sampler2D _Displacement;
+			sampler2D _NormalMap;
 
-			Varyings vert(Attributes IN) {
-				Varyings OUT;
-				float3 worldPos = mul(unity_ObjectToWorld, IN.positionOS);
+            Varyings vert(Attributes IN)
+            {
+                Varyings OUT;
+                float3 worldPos = mul(unity_ObjectToWorld, IN.positionOS);
 
 				float3 d = tex2Dlod(_Displacement, float4(worldPos.xz / _Resolution, 0, 0)).rgb;
-				// OUT.positionHCS = TransformObjectToHClip(IN.positionOS + float4(d.x / _Resolution.x, d.y * _Height, d.z / _Resolution.y, 0));
 				OUT.positionHCS = TransformObjectToHClip(IN.positionOS + float4(d.x * 2 - 0.5, d.y * 2 - 0.5, d.z * 2 - 0.5, 0));
+				OUT.positionWS = float3(worldPos);
 
-				return OUT;
-			}
+                return OUT;
+            }
 
-			half4 frag() : SV_Target {
-				half4 customColor;
+			half4 frag(Varyings IN) : SV_Target {
+				// half4 customColor;
+				// customColor = _Color;
 
-				customColor = _Color;
-				return customColor;
+				//float4(nyx real, nyx imaginary, nyz real, nyz imaginary)
+				float4 ny = tex2Dlod(_NormalMap, float4(IN.positionWS.xz / _Resolution, 0, 0));
+				float3 n = normalize(float3(length(ny.xy), 0, length(ny.zw)));
+				return half4(n, 1);
 			}
 			ENDHLSL
 		}

@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -6,10 +5,10 @@ public class InputManager : MonoBehaviour
 {
     public Vector2 moveDirection;
     public float Yaw;
-    
+    private InputAction LeftYawAction;
+
     private PlayerInput myPlayerInput;
     private InputAction RightYawAction;
-    private InputAction LeftYawAction;
 
     private void Awake()
     {
@@ -20,7 +19,7 @@ public class InputManager : MonoBehaviour
         RightYawAction.canceled += OnYawCancel;
         LeftYawAction.canceled += OnYawCancel;
     }
-    
+
     private void OnDestroy()
     {
         RightYawAction.canceled -= OnYawCancel;
@@ -34,6 +33,8 @@ public class InputManager : MonoBehaviour
 
     private void MoveInput(Vector2 aVector)
     {
+	    if (aVector.sqrMagnitude > 1f)
+		    aVector.Normalize();
         moveDirection = aVector;
     }
 
@@ -41,7 +42,7 @@ public class InputManager : MonoBehaviour
     {
         Yaw = aValue.isPressed ? -1f : 0f;
     }
-    
+
     public void OnRightYaw(InputValue aValue)
     {
         Yaw = aValue.isPressed ? 1f : 0f;

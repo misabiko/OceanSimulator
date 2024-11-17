@@ -46,7 +46,7 @@ public class BirdController : MonoBehaviour
       if (momentumEnabled)
          CalculateMomentum();
       
-      currentSpeed = myForwardSpeed + (myForwardSpeed - 10) * momentumFactor;
+      currentSpeed = myForwardSpeed + (0.75f * myForwardSpeed) * momentumFactor;
       forwardMovement = transform.forward * currentSpeed;
       
       myRigidbody.MovePosition(transform.position + forwardMovement * Time.deltaTime);
@@ -109,7 +109,7 @@ public class BirdController : MonoBehaviour
 
    public Vector3  GetVelocity()
    {
-      return myRigidbody.velocity;
+      return myRigidbody.linearVelocity;
    }
 
    public float ForwardSpeed()
