@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class PlayerStateManager : MonoBehaviour
 {
-    [SerializeField] private static PlayerState state;
+    private static PlayerState state;
     private static PlayerStateManager Instance { get; set; }
     
     public static event Action<PlayerState> OnStateChange;
@@ -22,6 +22,11 @@ public class PlayerStateManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+    }
+
+    public static PlayerState GetState()
+    {
+        return state;
     }
 
     public static void SwitchTo(PlayerState aState)

@@ -17,5 +17,6 @@ public class PlayerStateComponent : MonoBehaviour
     private void SetObjectRelativeToState(PlayerState aState)
     {
         controller.SetActive(aState == type);
+        Cursor.lockState = aState == PlayerState.Boat ? CursorLockMode.Locked : CursorLockMode.None;
     }
 }

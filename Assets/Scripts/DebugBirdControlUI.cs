@@ -14,9 +14,15 @@ public class DebugBirdControlUI : MonoBehaviour
     [SerializeField] private GameObject container;
     [SerializeField] private Image filling_img;
     [SerializeField] private BirdController birdController;
-    
+
     private void Update()
     {
+        if (PlayerStateManager.GetState() != PlayerState.Bird)
+        {
+            container.SetActive(false);
+            return;
+        }
+
         Transform t_bird = birdController.transform;
         Vector3 eulerAngles = t_bird.eulerAngles;
         float altitude = t_bird.position.y;
@@ -30,6 +36,11 @@ public class DebugBirdControlUI : MonoBehaviour
         momentumFactor_txt.text = "Acceleration Multiplier: " + Math.Round(birdController.GetAccelerationMultiplier(), 3, MidpointRounding.AwayFromZero);
         velocity_txt.text = "Velocity: " + birdController.GetVelocity();
         forwardSpeed_txt.text = "Forward Speed: " + birdController.ForwardSpeed();
+    }
+
+    private void ActivateContainer()
+    {
+        
     }
 
     public void ToggleContainer()

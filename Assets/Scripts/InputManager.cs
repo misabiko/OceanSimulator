@@ -4,6 +4,8 @@ using UnityEngine.InputSystem;
 public class InputManager : MonoBehaviour
 {
     public Vector2 moveDirection;
+    public Vector2 lookDirection;
+
     public float Yaw;
     
     private PlayerInput myPlayerInput;
@@ -37,6 +39,19 @@ public class InputManager : MonoBehaviour
 		    aVector.Normalize();
         moveDirection = aVector;
     }
+    
+    public void OnLook(InputValue aValue)
+    {
+        LookInput(aValue.Get<Vector2>());
+    }
+
+    private void LookInput(Vector2 aVector)
+    {
+        if (aVector.sqrMagnitude > 1f)
+            aVector.Normalize();
+        lookDirection = aVector;
+    }
+
 
     public void OnLeftYaw(InputValue aValue)
     {
