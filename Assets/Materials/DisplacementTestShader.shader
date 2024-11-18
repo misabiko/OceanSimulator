@@ -31,7 +31,8 @@ Shader "Custom/DisplacementTestShader" {
 			struct Varyings {
 				// The positions in this struct must have the SV_POSITION semantic.
 				float4 positionHCS : SV_POSITION;
-				float3 positionWS : TEXCOORD0;
+				//Not a great name
+				float2 positionCoord : TEXCOORD0;
 			};
 
 			float2 _Resolution;
@@ -44,11 +45,11 @@ Shader "Custom/DisplacementTestShader" {
 
 			Varyings vert(Attributes IN) {
 				Varyings OUT;
-				float3 worldPos = mul(unity_ObjectToWorld, IN.positionOS);
+				float2 coords = mul(unity_ObjectToWorld, IN.positionOS).xz - mul(unity_ObjectToWorld, float4(0, 0, 0, 1)).xz;
 
-				float3 d = tex2Dlod(_Displacement, float4(worldPos.xz / _Resolution, 0, 0)).rgb;
+				float3 d = tex2Dlod(_Displacement, float4(coords / _Resolution, 0, 0)).rgb;
 				OUT.positionHCS = TransformObjectToHClip(IN.positionOS + float4(d.x, d.y, d.z, 0));
-				OUT.positionWS = float3(worldPos);
+				OUT.positionCoord = coords;
 
 				return OUT;
 			}
@@ -63,11 +64,8 @@ Shader "Custom/DisplacementTestShader" {
 				// float3 normalYTangentZ = float3(0, length(ny.zw), 1);
 				// float3 n = normalize(cross(normalYTangentX, normalYTangentZ));
 
-				//Approximate normal
-				float3 n = float3(
-					tex2Dlod(_ApproximateNormalMap, float4(IN.positionWS.xz / _Resolution, 0, 0)).xyz
-				);
-				return half4(n, 1);
+				float3 approximateNormal = tex2Dlod(_ApproximateNormalMap, float4(IN.positionCoord / _Resolution, 0, 0)).xyz;
+				return half4(approximateNormal, 1);
 			}
 			ENDHLSL
 		}
