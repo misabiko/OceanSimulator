@@ -10,13 +10,12 @@ public class Ocean : MonoBehaviour {
 		var firstTileGO= Instantiate(oceanTilePrefab, Vector3.zero, Quaternion.identity, transform);
 		//TODO Move properties to Ocean
 		var firstOcean = firstTileGO.GetComponent<OceanMeshGenerator>();
-		Instantiate(oceanTilePrefab, Vector3.right * firstOcean.size, Quaternion.identity, transform);
 
-		// for (int x = -tileRadius; x <= tileRadius; ++x)
-		// 	for (int z = -tileRadius; z <= tileRadius; ++z) {
-		// 		if (x == 0 && z == 0)
-		// 			continue;
-		// 		Instantiate(oceanTilePrefab, new Vector3(x * firstOcean.size, 0f, z * firstOcean.size), Quaternion.identity, transform);
-		// 	}
+		for (int x = -tileRadius; x <= tileRadius; ++x)
+			for (int z = -tileRadius; z <= tileRadius; ++z) {
+				if (x == 0 && z == 0)
+					continue;
+				Instantiate(oceanTilePrefab, new Vector3(x * firstOcean.size, 0f, z * firstOcean.size), Quaternion.identity, transform);
+			}
 	}
 }

@@ -72,10 +72,10 @@ MonoBehaviour:
   normalTestZ: {x: 1, y: 1, z: 1}
   normalTest2: 2
   normalTest3: {x: 0, y: 0, z: 0}
-  computeShader: {fileID: 7200000, guid: 40e34aac946926740866b917839f1a53, type: 3}
-  spectrumComputeShader: {fileID: 7200000, guid: bab3b7ecb79e4d5b9515d87e3efd086e,
+  computeShaderSource: {fileID: 7200000, guid: 40e34aac946926740866b917839f1a53, type: 3}
+  spectrumComputeShaderSource: {fileID: 7200000, guid: bab3b7ecb79e4d5b9515d87e3efd086e,
     type: 3}
-  rreusserFFT: {fileID: 7200000, guid: 402468975e3d45a0bd984b415e9e8878, type: 3}
+  rreusserFFTSource: {fileID: 7200000, guid: 402468975e3d45a0bd984b415e9e8878, type: 3}
   displacement: {fileID: 8400000, guid: 0ccdbece8e1fbe740a79d91b9c3c9a57, type: 2}
   HX: {fileID: 0}
   HY: {fileID: 0}

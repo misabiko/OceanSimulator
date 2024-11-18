@@ -41,9 +41,12 @@ public class OceanMeshGenerator : MonoBehaviour {
 	public float normalTest2 = 2f;
 	public Vector3 normalTest3 = Vector3.zero;
 
-	[SerializeField] ComputeShader computeShader;
-	[SerializeField] ComputeShader spectrumComputeShader;
-	[SerializeField] ComputeShader rreusserFFT;
+	[SerializeField] ComputeShader computeShaderSource;
+	[SerializeField] ComputeShader spectrumComputeShaderSource;
+	[SerializeField] ComputeShader rreusserFFTSource;
+	ComputeShader computeShader;
+	ComputeShader spectrumComputeShader;
+	ComputeShader rreusserFFT;
 	[HideInInspector] public RenderTexture displacement;
 	[HideInInspector] public RenderTexture HX;
 	[HideInInspector] public RenderTexture HY;
@@ -72,6 +75,12 @@ public class OceanMeshGenerator : MonoBehaviour {
 	// public Vector2 simpleSinusoidPhase = Vector2.zero;
 
 	Material material;
+
+	void Awake() {
+		computeShader = Instantiate(computeShaderSource);
+		spectrumComputeShader = Instantiate(spectrumComputeShaderSource);
+		rreusserFFT = Instantiate(rreusserFFTSource);
+	}
 
 	void Start() {
 		//For now, limiting to 512
