@@ -47,7 +47,7 @@ Shader "Custom/DisplacementTestShader" {
 				float3 worldPos = mul(unity_ObjectToWorld, IN.positionOS);
 
 				float3 d = tex2Dlod(_Displacement, float4(worldPos.xz / _Resolution, 0, 0)).rgb;
-				OUT.positionHCS = TransformObjectToHClip(IN.positionOS + float4(d.x * 2 - 0.5, d.y * 2 - 0.5, d.z * 2 - 0.5, 0));
+				OUT.positionHCS = TransformObjectToHClip(IN.positionOS + float4(d.x, d.y, d.z, 0));
 				OUT.positionWS = float3(worldPos);
 
 				return OUT;

@@ -41,44 +41,28 @@ void CSMain(uint3 id : SV_DispatchThreadID) {
 	// Displacement[id.xy] = float4(normalize(displacement) * min(length(displacement), 1.0), 0);
 	Displacement[id.xy] = float4(displacement, 0);
 	float3 x1 = float3(
-		length(HX2[id.xy + int2(-1, 0)].xy) - 1.0 / L,
-		length(HY2[id.xy + int2(-1, 0)].xy),
-		length(HZ2[id.xy + int2(-1, 0)].xy)
+		dtest1 * length(HX2[id.xy + int2(-1, 0)].xy) - Resolution / 2.0 / L,
+		dtest2 * length(HY2[id.xy + int2(-1, 0)].xy),
+		dtest3 * length(HZ2[id.xy + int2(-1, 0)].xy)
 	);
 	float3 x2 = float3(
-		length(HX2[id.xy + int2(1, 0)].xy) + 1.0 / L,
-		length(HY2[id.xy + int2(1, 0)].xy),
-		length(HZ2[id.xy + int2(1, 0)].xy)
+		dtest1 * length(HX2[id.xy + int2(1, 0)].xy) + Resolution / 2.0 / L,
+		dtest2 * length(HY2[id.xy + int2(1, 0)].xy),
+		dtest3 * length(HZ2[id.xy + int2(1, 0)].xy)
 	);
 	float3 z1 = float3(
-		length(HX2[id.xy + int2(0, -1)].xy),
-		length(HY2[id.xy + int2(0, -1)].xy),
-		length(HZ2[id.xy + int2(0, -1)].xy) - 1.0 / L
+		dtest1 * length(HX2[id.xy + int2(0, -1)].xy),
+		dtest2 * length(HY2[id.xy + int2(0, -1)].xy),
+		dtest3 * length(HZ2[id.xy + int2(0, -1)].xy) - Resolution / 2.0 / L
 	);
 	float3 z2 = float3(
-		length(HX2[id.xy + int2(0, 1)].xy),
-		length(HY2[id.xy + int2(0, 1)].xy),
-		length(HZ2[id.xy + int2(0, 1)].xy) + 1.0 / L
+		dtest1 * length(HX2[id.xy + int2(0, 1)].xy),
+		dtest2 * length(HY2[id.xy + int2(0, 1)].xy),
+		dtest3 * length(HZ2[id.xy + int2(0, 1)].xy) + Resolution / 2.0 / L
 	);
 	float3 x = x2 - x1;
 	float3 z = z2 - z1;
-	approximateNormals[id.xy] = float4(
-		normalize(float3(
-			cross(
-				float3(
-					normalTestZ.x * (z.x),
-					normalTestZ.y * (z.y),
-					normalTestZ.z * (z.z) + 2 * normalTest2 / L
-				),
-				float3(
-					normalTestX.x * (x.x) + 2 * normalTest2 / L,
-					normalTestX.y * (x.y),
-					normalTestX.z * (x.z)
-				)
-			)
-		) + normalTest3).xyz / 2 + float3(0.5, 0.5, 0.5),
-		0
-		);
+	approximateNormals[id.xy] = float4(normalize(cross(z, x)), 0);
 	//TODO Draw textures in ui with alpha 0
 	//Setting alpha to 1 so it shows up on UI Toolkit, will probably cause issues
 	{

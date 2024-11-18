@@ -44,7 +44,6 @@ public class OceanMeshGenerator : MonoBehaviour {
 	[SerializeField] ComputeShader computeShader;
 	[SerializeField] ComputeShader spectrumComputeShader;
 	[SerializeField] ComputeShader rreusserFFT;
-	[SerializeField] ComputeShader simpleSinusoid;
 	[HideInInspector] public RenderTexture displacement;
 	[HideInInspector] public RenderTexture HX;
 	[HideInInspector] public RenderTexture HY;
@@ -64,12 +63,13 @@ public class OceanMeshGenerator : MonoBehaviour {
 	[SerializeField] float amplitude = 1;
 	[SerializeField] float angularFrequency = 1;
 	[SerializeField] float height = 1;
-	
-	[Header("SimpleSinusoid")]
-	public float simpleSinusoidAmplitude = 1;
-	public Vector2 simpleSinusoidFrequency = Vector2.one;
-	public Vector2 simpleSinusoidAngularFrequency = Vector2.one;
-	public Vector2 simpleSinusoidPhase = Vector2.zero;
+
+	// [Header("SimpleSinusoid")]
+	// [SerializeField] ComputeShader simpleSinusoid;
+	// public Vector3 simpleSinusoidAmplitude = Vector3.one;
+	// public Vector2 simpleSinusoidFrequency = Vector2.one;
+	// public Vector2 simpleSinusoidAngularFrequency = Vector2.one;
+	// public Vector2 simpleSinusoidPhase = Vector2.zero;
 
 	Material material;
 
@@ -126,11 +126,11 @@ public class OceanMeshGenerator : MonoBehaviour {
 		computeShader.SetFloat("Resolution", xSize);
 		computeShader.SetFloat("PI", Mathf.PI);
 		computeShader.SetFloat("g", -Physics.gravity.y);
-		
-		simpleSinusoid.SetTexture(0, "HX2", HY2);
-		simpleSinusoid.SetTexture(0, "HY2", HX2);
-		simpleSinusoid.SetTexture(0, "HZ2", HZ2);
-		
+
+		// simpleSinusoid.SetTexture(0, "HX2", HX2);
+		// simpleSinusoid.SetTexture(0, "HY2", HY2);
+		// simpleSinusoid.SetTexture(0, "HZ2", HZ2);
+
 		SetupComputeShader();
 
 		material.SetTexture("_Displacement", displacement);
@@ -432,13 +432,6 @@ public class OceanMeshGenerator : MonoBehaviour {
 			}
 		}
 
-		simpleSinusoid.SetFloat("time", Time.time * timeScale + timeOffset);
-		simpleSinusoid.SetFloat("resolution", xSize);
-		simpleSinusoid.SetVector("frequency", simpleSinusoidFrequency);
-		simpleSinusoid.SetVector("angularFrequency", simpleSinusoidAngularFrequency);
-		simpleSinusoid.SetFloat("amplitude", simpleSinusoidAmplitude);
-		simpleSinusoid.SetVector("phase", simpleSinusoidPhase);
-		simpleSinusoid.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
 
 		computeShader.SetFloat("dtest1", dtest1);
 		computeShader.SetFloat("dtest2", dtest2);
@@ -454,6 +447,16 @@ public class OceanMeshGenerator : MonoBehaviour {
 		computeShader.SetFloat("L", size);
 		computeShader.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
 	}
+
+	// void SetupSimpleSinusoid() {
+	// 	simpleSinusoid.SetFloat("time", Time.time * timeScale + timeOffset);
+	// 	simpleSinusoid.SetFloat("resolution", xSize);
+	// 	simpleSinusoid.SetVector("frequency", simpleSinusoidFrequency);
+	// 	simpleSinusoid.SetVector("angularFrequency", simpleSinusoidAngularFrequency);
+	// 	simpleSinusoid.SetVector("amplitude", simpleSinusoidAmplitude);
+	// 	simpleSinusoid.SetVector("phase", simpleSinusoidPhase);
+	// 	simpleSinusoid.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
+	// }
 
 	void Update() {
 		if (vertices.Length != (xSize + 1) * (zSize + 1)) {

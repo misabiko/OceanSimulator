@@ -7,14 +7,14 @@ float time;
 float resolution;
 float2 frequency;
 float2 angularFrequency;
-float amplitude;
+float3 amplitude;
 float2 phase;
 
 [numthreads(8,8,1)]
 void CSMain(uint3 id : SV_DispatchThreadID) {
 	float2 m = angularFrequency / resolution;
 	float2 p = frequency * time + phase;
-	HX2[id.xy] = float4(amplitude * sin(id.x * m.x + p.x), amplitude * cos(id.y * m.y + p.y), 0, 1);
-	HY2[id.xy] = float4(amplitude * sin(id.x * m.x + p.x), amplitude * cos(id.y * m.y + p.y), 0, 1);
-	HZ2[id.xy] = float4(amplitude * sin(id.x * m.x + p.x), amplitude * cos(id.y * m.y + p.y), 0, 1);
+	HX2[id.xy] = float4(amplitude.x * (sin(id.x * m.x + p.x) + cos(id.y * m.y + p.y)), 0, 0, 1);
+	HY2[id.xy] = float4(amplitude.y * (sin(id.x * m.x + p.x) + cos(id.y * m.y + p.y)), 0, 0, 1);
+	HZ2[id.xy] = float4(amplitude.z * (sin(id.x * m.x + p.x) + cos(id.y * m.y + p.y)), 0, 0, 1);
 }
