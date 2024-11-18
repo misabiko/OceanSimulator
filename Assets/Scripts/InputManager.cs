@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,7 +12,8 @@ public class InputManager : MonoBehaviour
     private PlayerInput myPlayerInput;
     private InputAction RightYawAction;
     private InputAction LeftYawAction;
-
+    public event Action fire;
+    
     private void Awake()
     {
         myPlayerInput = GetComponent<PlayerInput>();
@@ -45,14 +47,18 @@ public class InputManager : MonoBehaviour
         LookInput(aValue.Get<Vector2>());
     }
 
+    public void OnFire(InputValue aValue)
+    {
+        fire?.Invoke();
+    }
+
     private void LookInput(Vector2 aVector)
     {
         if (aVector.sqrMagnitude > 1f)
             aVector.Normalize();
         lookDirection = aVector;
     }
-
-
+    
     public void OnLeftYaw(InputValue aValue)
     {
         Yaw = aValue.isPressed ? -1f : 0f;

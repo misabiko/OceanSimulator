@@ -17,12 +17,6 @@ public class DebugBirdControlUI : MonoBehaviour
 
     private void Update()
     {
-        if (PlayerStateManager.GetState() != PlayerState.Bird)
-        {
-            container.SetActive(false);
-            return;
-        }
-
         Transform t_bird = birdController.transform;
         Vector3 eulerAngles = t_bird.eulerAngles;
         float altitude = t_bird.position.y;

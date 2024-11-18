@@ -6,7 +6,7 @@ using UnityEngine;
 public class BoatRaycaster : MonoBehaviour
 {
     private Camera mainCamera;
-    private BoidSelection currentSelectedBoid;
+    public BoidSelection currentSelectedBoid;
     
     private void Awake()
     {

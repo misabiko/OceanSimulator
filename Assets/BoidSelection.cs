@@ -13,6 +13,17 @@ public class BoidSelection : MonoBehaviour
         myOutline = GetComponent<Outline>();
     }
 
+    private void Start()
+    {
+        PlayerStateManager.OnStateChange += ResetSelection;
+    }
+
+
+    private void OnDestroy()
+    {
+        PlayerStateManager.OnStateChange -= ResetSelection;
+    }
+
     private void Update()
     {
         myOutline.OutlineColor = myIsSelected ? Color.green : Color.clear;
@@ -27,5 +38,10 @@ public class BoidSelection : MonoBehaviour
     {
         myIsSelected = true;
         return this;
+    }
+
+    private void ResetSelection(PlayerState aState)
+    {
+        myIsSelected = false;
     }
 }

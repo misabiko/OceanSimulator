@@ -121,6 +121,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2f244c42cc5f3449acf058e2e685d4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentSelectedBoid: {fileID: 0}
 --- !u!1 &3148578393068034077
 GameObject:
   m_ObjectHideFlags: 0
@@ -437,6 +438,8 @@ MonoBehaviour:
   inputManager: {fileID: 5118312989139307759}
   forwardSpeed: 30
   rotationSpeed: 0.5
+  boatRaycaster: {fileID: 4631748205465303249}
+  birdController: {fileID: 0}
 --- !u!54 &546443728347341381
 Rigidbody:
   m_ObjectHideFlags: 0
