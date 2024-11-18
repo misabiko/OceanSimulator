@@ -70,7 +70,7 @@ Material:
     - _ShowNormals: 0
     - _Test: 1
     - _Test2: 1
-    - _UseApproximateNormals: 0
+    - _UseApproximateNormals: 1
     - _UseNormals: 1
     m_Colors:
     - _Color: {r: 0.2688679, g: 0.51960784, b: 1, a: 0}
