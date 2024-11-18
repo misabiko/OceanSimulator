@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UIElements;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class OceanMeshGenerator : MonoBehaviour {
@@ -25,6 +26,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 	public Vector2 phillipsWindDir;
 
 	[Header("Bleh")] [Min(0)] public float timeScale = 1;
+	public float timeOffset;
 	public float heightTest = 20;
 	public Vector2 test2d = new(0, 0);
 	public Vector2 test2d2 = new(0, 0);
@@ -34,22 +36,30 @@ public class OceanMeshGenerator : MonoBehaviour {
 	public float dtest1 = 0;
 	public float dtest2 = 0;
 	public float dtest3 = 0;
+	public Vector3 normalTestX = Vector3.one;
+	public Vector3 normalTestZ = Vector3.one;
+	public float normalTest2 = 2f;
+	public Vector3 normalTest3 = Vector3.zero;
 
-	[SerializeField] ComputeShader computeShader;
-	[SerializeField] ComputeShader spectrumComputeShader;
-	[SerializeField] ComputeShader rreusserFFT;
-	RenderTexture displacement;
-	RenderTexture HX;
-	RenderTexture HY;
-	RenderTexture HZ;
-	RenderTexture HX2;
-	RenderTexture HY2;
-	RenderTexture HZ2;
-	RenderTexture NY;
-	RenderTexture NY2;
-	RenderTexture pingBuffer;
-	RenderTexture pongBuffer;
-	RenderTexture waveNumberTexture;
+	[SerializeField] ComputeShader computeShaderSource;
+	[SerializeField] ComputeShader spectrumComputeShaderSource;
+	[SerializeField] ComputeShader rreusserFFTSource;
+	ComputeShader computeShader;
+	ComputeShader spectrumComputeShader;
+	ComputeShader rreusserFFT;
+	[HideInInspector] public RenderTexture displacement;
+	[HideInInspector] public RenderTexture HX;
+	[HideInInspector] public RenderTexture HY;
+	[HideInInspector] public RenderTexture HZ;
+	[HideInInspector] public RenderTexture HX2;
+	[HideInInspector] public RenderTexture HY2;
+	[HideInInspector] public RenderTexture HZ2;
+	[HideInInspector] public RenderTexture NY;
+	[HideInInspector] public RenderTexture NY2;
+	[HideInInspector] public RenderTexture approximateNormals;
+	[HideInInspector] public RenderTexture pingBuffer;
+	[HideInInspector] public RenderTexture pongBuffer;
+	[HideInInspector] public RenderTexture waveNumberTexture;
 	Texture2D noiseTexture;
 
 	[SerializeField] Vector2 waveVector = Vector2.one;
@@ -57,10 +67,27 @@ public class OceanMeshGenerator : MonoBehaviour {
 	[SerializeField] float angularFrequency = 1;
 	[SerializeField] float height = 1;
 
+	// [Header("SimpleSinusoid")]
+	// [SerializeField] ComputeShader simpleSinusoid;
+	// public Vector3 simpleSinusoidAmplitude = Vector3.one;
+	// public Vector2 simpleSinusoidFrequency = Vector2.one;
+	// public Vector2 simpleSinusoidAngularFrequency = Vector2.one;
+	// public Vector2 simpleSinusoidPhase = Vector2.zero;
+
 	Material material;
 
+	void Awake() {
+		computeShader = Instantiate(computeShaderSource);
+		spectrumComputeShader = Instantiate(spectrumComputeShaderSource);
+		rreusserFFT = Instantiate(rreusserFFTSource);
+	}
+
 	void Start() {
+		//For now, limiting to 512
+		Debug.Assert(xSize <= 512 && zSize <= 512);
+
 		mesh = new Mesh();
+		mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
 		GetComponent<MeshFilter>().mesh = mesh;
 		material = GetComponent<Renderer>().material;
 
@@ -89,6 +116,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 		HZ2 = CreateRenderTexture(xSize, zSize);
 		NY = CreateRenderTexture(xSize, zSize);
 		NY2 = CreateRenderTexture(xSize, zSize);
+		approximateNormals = CreateRenderTexture(xSize, zSize);
 		pingBuffer = CreateRenderTexture(xSize, zSize);
 		pongBuffer = CreateRenderTexture(xSize, zSize);
 		spectrumComputeShader.SetTexture(0, "HX", HX);
@@ -104,15 +132,21 @@ public class OceanMeshGenerator : MonoBehaviour {
 		computeShader.SetTexture(0, "HX2", HX2);
 		computeShader.SetTexture(0, "HY2", HY2);
 		computeShader.SetTexture(0, "HZ2", HZ2);
+		computeShader.SetTexture(0, "approximateNormals", approximateNormals);
 		computeShader.SetFloat("Resolution", xSize);
 		computeShader.SetFloat("PI", Mathf.PI);
 		computeShader.SetFloat("g", -Physics.gravity.y);
+
+		// simpleSinusoid.SetTexture(0, "HX2", HX2);
+		// simpleSinusoid.SetTexture(0, "HY2", HY2);
+		// simpleSinusoid.SetTexture(0, "HZ2", HZ2);
+
 		SetupComputeShader();
 
 		material.SetTexture("_Displacement", displacement);
 		material.SetTexture("_NormalMap", NY2);
+		material.SetTexture("_ApproximateNormalMap", approximateNormals);
 
-		//TODO Try rendering texture to UI?
 		GameObject.Find("RenderTextureDisplay").GetComponent<Renderer>().material.mainTexture = displacement;
 		GameObject.Find("RenderTextureNoise").GetComponent<Renderer>().material.mainTexture = noiseTexture;
 		GameObject.Find("RenderTextureWaveNumber").GetComponent<Renderer>().material.mainTexture = waveNumberTexture;
@@ -122,6 +156,24 @@ public class OceanMeshGenerator : MonoBehaviour {
 		GameObject.Find("RenderTextureHY2").GetComponent<Renderer>().material.mainTexture = HY2;
 		GameObject.Find("RenderTextureHX2").GetComponent<Renderer>().material.mainTexture = HX2;
 		GameObject.Find("RenderTextureHZ2").GetComponent<Renderer>().material.mainTexture = HZ2;
+
+		var uiDocument = GetComponent<UIDocument>();
+		if (uiDocument.enabled) {
+			uiDocument.rootVisualElement.Add(new Image { image = displacement });
+			// uiDocument.rootVisualElement.Add(new Image { image = noiseTexture });
+			// uiDocument.rootVisualElement.Add(new Image { image = waveNumberTexture });
+			uiDocument.rootVisualElement.Add(new Image { image = HX });
+			uiDocument.rootVisualElement.Add(new Image { image = HY });
+			uiDocument.rootVisualElement.Add(new Image { image = HZ });
+			uiDocument.rootVisualElement.Add(new Image { image = HX2 });
+			uiDocument.rootVisualElement.Add(new Image { image = HY2 });
+			uiDocument.rootVisualElement.Add(new Image { image = HZ2 });
+			uiDocument.rootVisualElement.Add(new Image { image = NY });
+			uiDocument.rootVisualElement.Add(new Image { image = NY2 });
+			uiDocument.rootVisualElement.Add(new Image { image = approximateNormals });
+			uiDocument.rootVisualElement.Add(new Image { image = pingBuffer });
+			uiDocument.rootVisualElement.Add(new Image { image = pongBuffer });
+		}
 	}
 
 	void SetupComputeShader() {
@@ -130,7 +182,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 		spectrumComputeShader.SetFloats("test3", test2d3.x, test2d3.y);
 		spectrumComputeShader.SetFloats("test4", test2d4.x, test2d4.y);
 		spectrumComputeShader.SetFloats("test5", test2d5.x, test2d5.y);
-		spectrumComputeShader.SetFloat("time", Time.time * timeScale);
+		spectrumComputeShader.SetFloat("time", Time.time * timeScale + timeOffset);
 		spectrumComputeShader.SetFloat("L", size);
 		spectrumComputeShader.SetFloat("F", F);
 		spectrumComputeShader.SetFloat("U10", U10);
@@ -390,16 +442,32 @@ public class OceanMeshGenerator : MonoBehaviour {
 			}
 		}
 
+		// SetupSimpleSinusoid();
+
 		computeShader.SetFloat("dtest1", dtest1);
 		computeShader.SetFloat("dtest2", dtest2);
 		computeShader.SetFloat("dtest3", dtest3);
+		computeShader.SetVector("normalTestX", normalTestX);
+		computeShader.SetVector("normalTestZ", normalTestZ);
+		computeShader.SetFloat("normalTest2", normalTest2);
+		computeShader.SetVector("normalTest3", normalTest3);
 		computeShader.SetVector("waveVector", waveVector);
 		computeShader.SetFloat("amplitude", amplitude);
 		computeShader.SetFloat("angularFrequency", angularFrequency);
-		computeShader.SetFloat("time", Time.time * timeScale);
+		computeShader.SetFloat("time", Time.time * timeScale + timeOffset);
 		computeShader.SetFloat("L", size);
 		computeShader.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
 	}
+
+	// void SetupSimpleSinusoid() {
+	// 	simpleSinusoid.SetFloat("time", Time.time * timeScale + timeOffset);
+	// 	simpleSinusoid.SetFloat("resolution", xSize);
+	// 	simpleSinusoid.SetVector("frequency", simpleSinusoidFrequency);
+	// 	simpleSinusoid.SetVector("angularFrequency", simpleSinusoidAngularFrequency);
+	// 	simpleSinusoid.SetVector("amplitude", simpleSinusoidAmplitude);
+	// 	simpleSinusoid.SetVector("phase", simpleSinusoidPhase);
+	// 	simpleSinusoid.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
+	// }
 
 	void Update() {
 		if (vertices.Length != (xSize + 1) * (zSize + 1)) {
@@ -449,8 +517,6 @@ public class OceanMeshGenerator : MonoBehaviour {
 
 		mesh.vertices = vertices;
 		mesh.triangles = triangles;
-
-		mesh.RecalculateNormals();
 	}
 
 	static RenderTexture CreateRenderTexture(int width, int height) {
