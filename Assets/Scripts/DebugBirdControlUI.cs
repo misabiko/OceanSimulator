@@ -32,11 +32,6 @@ public class DebugBirdControlUI : MonoBehaviour
         forwardSpeed_txt.text = "Forward Speed: " + birdController.ForwardSpeed();
     }
 
-    private void ActivateContainer()
-    {
-        
-    }
-
     public void ToggleContainer()
     {
         container.SetActive(!container.activeSelf);
