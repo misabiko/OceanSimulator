@@ -87,6 +87,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 		Debug.Assert(xSize <= 512 && zSize <= 512);
 
 		mesh = new Mesh();
+		mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
 		GetComponent<MeshFilter>().mesh = mesh;
 		material = GetComponent<Renderer>().material;
 
@@ -516,8 +517,6 @@ public class OceanMeshGenerator : MonoBehaviour {
 
 		mesh.vertices = vertices;
 		mesh.triangles = triangles;
-
-		mesh.RecalculateNormals();
 	}
 
 	static RenderTexture CreateRenderTexture(int width, int height) {

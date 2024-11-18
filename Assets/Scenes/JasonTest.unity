@@ -408,7 +408,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   oceanTilePrefab: {fileID: 8205180036587047388, guid: 24d9ba6944bdd3940a1aacabca0be70f,
     type: 3}
-  tileRadius: 2
+  tileRadius: 1
 --- !u!4 &800982378
 Transform:
   m_ObjectHideFlags: 0
