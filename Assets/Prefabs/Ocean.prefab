@@ -57,7 +57,7 @@ MonoBehaviour:
   phillipsSmallLength: 0
   phillipsWindDir: {x: 0, y: 0}
   timeScale: 1
-  timeOffset: 0
+  timeOffset: 1000
   heightTest: 0
   test2d: {x: 128, y: 128}
   test2d2: {x: 0, y: 0}
@@ -75,7 +75,6 @@ MonoBehaviour:
   spectrumComputeShader: {fileID: 7200000, guid: bab3b7ecb79e4d5b9515d87e3efd086e,
     type: 3}
   rreusserFFT: {fileID: 7200000, guid: 402468975e3d45a0bd984b415e9e8878, type: 3}
-  simpleSinusoid: {fileID: 7200000, guid: b5d908c339f542d9bdb8f7fefb60adad, type: 3}
   displacement: {fileID: 0}
   HX: {fileID: 0}
   HY: {fileID: 0}
@@ -93,11 +92,6 @@ MonoBehaviour:
   amplitude: 1
   angularFrequency: 0
   height: 0.02
-  simpleSinusoidAmplitude: {x: 1, y: 1, z: 1}
-  simpleSinusoidFrequency: {x: 1, y: 1}
-  simpleSinusoidAngularFrequency: {x: 1, y: 1}
-  simpleSinusoidPhase: {x: 0, y: 0}
-  testTransform: {fileID: 0}
 --- !u!33 &2774912547760016204
 MeshFilter:
   m_ObjectHideFlags: 0

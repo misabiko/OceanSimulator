@@ -432,6 +432,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 			}
 		}
 
+		// SetupSimpleSinusoid();
 
 		computeShader.SetFloat("dtest1", dtest1);
 		computeShader.SetFloat("dtest2", dtest2);
