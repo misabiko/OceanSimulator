@@ -86,8 +86,9 @@ public class OceanMeshGenerator : MonoBehaviour {
 		//For now, limiting to 512
 		Debug.Assert(xSize <= 512 && zSize <= 512);
 
-		mesh = new Mesh();
-		mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+		mesh = new Mesh {
+			indexFormat = UnityEngine.Rendering.IndexFormat.UInt32
+		};
 		GetComponent<MeshFilter>().mesh = mesh;
 		material = GetComponent<Renderer>().material;
 
