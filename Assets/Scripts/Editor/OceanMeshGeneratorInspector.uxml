@@ -1,0 +1,5 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <Style src="project://database/Assets/Scripts/Editor/OceanMeshGeneratorInspector.uss?fileID=7433441132597879392&amp;guid=9d52ccc270dac2248b9dde57074d1716&amp;type=3#OceanMeshGeneratorInspector" />
+    <ui:Foldout text="Default Inspector" name="DefaultInspector" />
+    <ui:Foldout text="Foldout" name="TextureFoldout" />
+</ui:UXML>

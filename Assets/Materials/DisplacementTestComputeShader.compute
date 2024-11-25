@@ -8,6 +8,7 @@ RWTexture2D<float4> HZ;
 RWTexture2D<float4> HX2;
 RWTexture2D<float4> HY2;
 RWTexture2D<float4> HZ2;
+RWTexture2D<float4> approximateNormals;
 
 float Resolution;
 float L;
@@ -24,14 +25,48 @@ float g;
 float dtest1;
 float dtest2;
 float dtest3;
+float3 normalTestX;
+float3 normalTestZ;
+float normalTest2;
+float3 normalTest3;
 
 [numthreads(8,8,1)]
 void CSMain(uint3 id : SV_DispatchThreadID) {
+	//TODO Get rid of coefficients
 	float3 displacement = float3(
-		length(HX2[id.xy]) * dtest1,
-		length(HY2[id.xy]) * dtest2,
-		length(HZ2[id.xy]) * dtest3
+		length(HX2[id.xy].xy) * dtest1,
+		length(HY2[id.xy].xy) * dtest2,
+		length(HZ2[id.xy].xy) * dtest3
 	);
 	// Displacement[id.xy] = float4(normalize(displacement) * min(length(displacement), 1.0), 0);
 	Displacement[id.xy] = float4(displacement, 0);
+	float3 x1 = float3(
+		dtest1 * length(HX2[id.xy + int2(-1, 0)].xy) - Resolution / 2.0 / L,
+		dtest2 * length(HY2[id.xy + int2(-1, 0)].xy),
+		dtest3 * length(HZ2[id.xy + int2(-1, 0)].xy)
+	);
+	float3 x2 = float3(
+		dtest1 * length(HX2[id.xy + int2(1, 0)].xy) + Resolution / 2.0 / L,
+		dtest2 * length(HY2[id.xy + int2(1, 0)].xy),
+		dtest3 * length(HZ2[id.xy + int2(1, 0)].xy)
+	);
+	float3 z1 = float3(
+		dtest1 * length(HX2[id.xy + int2(0, -1)].xy),
+		dtest2 * length(HY2[id.xy + int2(0, -1)].xy),
+		dtest3 * length(HZ2[id.xy + int2(0, -1)].xy) - Resolution / 2.0 / L
+	);
+	float3 z2 = float3(
+		dtest1 * length(HX2[id.xy + int2(0, 1)].xy),
+		dtest2 * length(HY2[id.xy + int2(0, 1)].xy),
+		dtest3 * length(HZ2[id.xy + int2(0, 1)].xy) + Resolution / 2.0 / L
+	);
+	float3 x = x2 - x1;
+	float3 z = z2 - z1;
+	approximateNormals[id.xy] = float4(normalize(cross(z, x)), 0);
+	//TODO Draw textures in ui with alpha 0
+	//Setting alpha to 1 so it shows up on UI Toolkit, will probably cause issues
+	{
+		Displacement[id.xy] = float4(Displacement[id.xy].xyz, 1);
+		approximateNormals[id.xy] = float4(approximateNormals[id.xy].xyz, 1);
+	}
 }
