@@ -94,12 +94,10 @@ public class Buoyancy : MonoBehaviour
         for (var y = 0; y < _gridSizeY; y++)
         for (var z = 0; z < _gridSizeZ; z++)
         {
+            
             var position = startPosition + new Vector3(x * voxelSize,
                 y * voxelSize,
                 z * voxelSize);
-            //Debug.DrawLine(position, position + voxelSize, Color.yellow);
-            
-           // Gizmos.DrawCube(position, new Vector3(voxelSize, voxelSize, voxelSize));
             _voxels.Add(new GizmosData(position, Color.red, Vector3.one * voxelSize));
             voxelCount++;
         }
@@ -125,8 +123,8 @@ public class Buoyancy : MonoBehaviour
                 float x_basePosition = i % _oceanMeshGenerator.xSize * step;
                 float z_basePosition = Mathf.Floor(i / _oceanMeshGenerator.xSize) * step;
                 
-                float x_dataPosition = data.g + x_basePosition + x_OceanPosition;
-                float y_dataPosition = data.r + y_OceanPosition;
+                float x_dataPosition = data.r + x_basePosition + x_OceanPosition;
+                float y_dataPosition = data.g + y_OceanPosition;
                 float z_dataPosition = data.b + z_basePosition + z_OceanPosition; 
                 foreach (var voxel  in _voxels)
                 {
@@ -170,7 +168,7 @@ public class Buoyancy : MonoBehaviour
     private float CalculateBuoyancy()
     {
         float submergedVolume = CalculateSubmergedVolume();
-        return fluidDensity * submergedVolume * gravity * 1 / voxelCount;
+        return -(fluidDensity * submergedVolume * Physics.gravity.y * 1 / voxelCount * buoyancyAdjustment);
     }
 
     private async void StartGPURequest()
@@ -198,5 +196,28 @@ public class Buoyancy : MonoBehaviour
             _isRequestSent = false;
         }
     }
-    
+
+    private void OnDrawGizmos()
+    {
+        if (_oceanMeshGenerator != null)
+        {
+            float x_OceanPosition = _oceanPosition.x;
+            float y_OceanPosition = _oceanPosition.y;
+            float z_OceanPosition = _oceanPosition.z;
+            float step = _oceanMeshGenerator.size / _oceanMeshGenerator.xSize;
+            int i = 0;
+            foreach (var data in _oceanCachedData)
+            {
+                float x_basePosition = i % _oceanMeshGenerator.xSize * step;
+                float z_basePosition = Mathf.Floor(i / _oceanMeshGenerator.xSize) * step;
+
+                float x_dataPosition = data.r + x_basePosition + x_OceanPosition;
+                float y_dataPosition = data.g + y_OceanPosition;
+                float z_dataPosition = data.b + z_basePosition + z_OceanPosition;
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawSphere(new Vector3(x_dataPosition, y_dataPosition, z_dataPosition), 0.1f);
+                i++;
+            }
+        }
+    }
 }
