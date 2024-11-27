@@ -11,9 +11,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 
 	[Header("Bleh")]
 	//TODO Make square
-	[SerializeField, Min(0)]
-	int xSize = 20;
-
+	[SerializeField, Min(0)] public int xSize = 20;
 	[SerializeField, Min(0)] int zSize = 20;
 	[Min(0)] public float size = 100f;
 	[Min(0)] public float noiseResolution = 10f;

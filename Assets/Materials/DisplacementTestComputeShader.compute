@@ -33,7 +33,6 @@ void CSMain(uint3 id : SV_DispatchThreadID)
         length(HY2[id.xy]) * dtest2,
         length(HZ2[id.xy]) * dtest3
     );
+    //Displacement[id.xy] = float4(0,0,0,0);
     Displacement[id.xy] = float4(normalize(displacement) * min(length(displacement), 1.0), 0);
-    //Displacement[id.xy] = float4(displacement, 0);
-    //Displacement[id.xy] = float4(id.x, id.y, 0, 0);
 }
