@@ -8,7 +8,8 @@ public class InputManager : MonoBehaviour
     public Vector2 lookDirection;
 
     public float Yaw;
-    
+    private InputAction LeftYawAction;
+
     private PlayerInput myPlayerInput;
     private InputAction RightYawAction;
     private InputAction LeftYawAction;
@@ -23,7 +24,7 @@ public class InputManager : MonoBehaviour
         RightYawAction.canceled += OnYawCancel;
         LeftYawAction.canceled += OnYawCancel;
     }
-    
+
     private void OnDestroy()
     {
         RightYawAction.canceled -= OnYawCancel;
@@ -63,7 +64,7 @@ public class InputManager : MonoBehaviour
     {
         Yaw = aValue.isPressed ? -1f : 0f;
     }
-    
+
     public void OnRightYaw(InputValue aValue)
     {
         Yaw = aValue.isPressed ? 1f : 0f;
