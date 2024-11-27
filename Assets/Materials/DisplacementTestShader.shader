@@ -8,6 +8,7 @@ Shader "Custom/DisplacementTestShader"
 
 		_Displacement ("Displacement", 2D) = "black" {}
 		_NormalMap ("NormalMap", 2D) = "black" {}
+		_ApproximateNormalMap ("ApproximateNormalMap", 2D) = "black" {}
 	}
 
     SubShader
@@ -38,7 +39,8 @@ Shader "Custom/DisplacementTestShader"
 			struct Varyings {
 				// The positions in this struct must have the SV_POSITION semantic.
 				float4 positionHCS : SV_POSITION;
-				float3 positionWS : TEXCOORD0;
+				//Not a great name
+				float2 positionCoord : TEXCOORD0;
 			};
 
             float2 _Resolution;
@@ -47,15 +49,15 @@ Shader "Custom/DisplacementTestShader"
 
 			sampler2D _Displacement;
 			sampler2D _NormalMap;
+			sampler2D _ApproximateNormalMap;
 
-            Varyings vert(Attributes IN)
-            {
-                Varyings OUT;
-                float3 worldPos = mul(unity_ObjectToWorld, IN.positionOS);
+			Varyings vert(Attributes IN) {
+				Varyings OUT;
+				float2 coords = mul(unity_ObjectToWorld, IN.positionOS).xz - mul(unity_ObjectToWorld, float4(0, 0, 0, 1)).xz;
 
-				float3 d = tex2Dlod(_Displacement, float4(worldPos.xz / _Resolution, 0, 0)).rgb;
+				float3 d = tex2Dlod(_Displacement, float4(coords / _Resolution, 0, 0)).rgb;
 				OUT.positionHCS = TransformObjectToHClip(IN.positionOS + float4(d.x, d.y, d.z, 0));
-				OUT.positionWS = float3(worldPos);
+				OUT.positionCoord = coords;
 
                 return OUT;
             }
@@ -65,9 +67,13 @@ Shader "Custom/DisplacementTestShader"
 				// customColor = _Color;
 
 				//float4(nyx real, nyx imaginary, nyz real, nyz imaginary)
-				float4 ny = tex2Dlod(_NormalMap, float4(IN.positionWS.xz / _Resolution, 0, 0));
-				float3 n = normalize(float3(length(ny.xy), 0, length(ny.zw)));
-				return half4(n, 1);
+				// float4 ny = tex2Dlod(_NormalMap, float4(IN.positionWS.xz / _Resolution, 0, 0));
+				// float3 normalYTangentX = float3(1, length(ny.xy), 0);
+				// float3 normalYTangentZ = float3(0, length(ny.zw), 1);
+				// float3 n = normalize(cross(normalYTangentX, normalYTangentZ));
+
+				float3 approximateNormal = tex2Dlod(_ApproximateNormalMap, float4(IN.positionCoord / _Resolution, 0, 0)).xyz;
+				return half4(approximateNormal, 1);
 			}
 			ENDHLSL
 		}

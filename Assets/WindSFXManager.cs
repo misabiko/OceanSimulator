@@ -15,6 +15,6 @@ public class WindSFXManager : MonoBehaviour
 
     private void Update()
     {
-        audioSource.volume = birdController.GetMomentumFactor();
+        audioSource.volume = birdController.GetAccelerationMultiplier();
     }
 }

@@ -115,4 +115,13 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 	float2 nyx = complexMul(ikx, hy);
 	float2 nyz = complexMul(ikz, hy);
 	NY[id.xy] = float4(nyx, nyz);
+
+	//TODO Draw textures in ui with alpha 0
+	//Setting alpha to 1 so it shows up on UI Toolkit, will probably cause issues
+	{
+		WaveNumber[id.xy] = float4(WaveNumber[id.xy].xyz, 1);
+		HY[id.xy] = float4(HY[id.xy].xyz, 1);
+		HX[id.xy] = float4(HX[id.xy].xyz, 1);
+		HZ[id.xy] = float4(HZ[id.xy].xyz, 1);
+	}
 }
