@@ -1,3 +1,4 @@
+using FMODUnity;
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -8,9 +9,12 @@ public class InputListener : MonoBehaviour
     private BoatInputAction _inputActions;
     private Boolean isMoving = false;
 
+
     [SerializeField] private Vector2 moveInput;
     [SerializeField] private Component rightpaddle;
     [SerializeField] private Component leftpaddle;
+    [SerializeField] private float intensity =0f;
+
     private void Awake()
     {
         _inputActions = new BoatInputAction();
@@ -21,11 +25,14 @@ public class InputListener : MonoBehaviour
         _inputActions.BoatController.Moveforward.performed += onMove;
         _inputActions.BoatController.Moveforward.canceled += stopMove;
         _inputActions.Enable();
+        //Test- to remove
+        AudioManager.instance.PlayOneShotWParameters(FMODEvents.instance.waveLtoR, this.transform.position,"WaveSize",intensity);
     }
     private void onMove(UnityEngine.InputSystem.InputAction.CallbackContext context)
     {
         // Dampen towards the target rotation
         isMoving = true;
+        
     }
 
     private void stopMove(UnityEngine.InputSystem.InputAction.CallbackContext context)

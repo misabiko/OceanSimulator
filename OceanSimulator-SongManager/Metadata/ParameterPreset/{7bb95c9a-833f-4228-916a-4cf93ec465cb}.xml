@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="ParameterPreset" id="{7bb95c9a-833f-4228-916a-4cf93ec465cb}">
+		<property name="name">
+			<value>WaveSize</value>
+		</property>
+		<relationship name="folder">
+			<destination>{34b18621-85b2-4d88-bfb5-ca5d473bbc6f}</destination>
+		</relationship>
+		<relationship name="parameter">
+			<destination>{3de49b01-708e-465c-b6ee-b76287cb8492}</destination>
+		</relationship>
+	</object>
+	<object class="GameParameter" id="{3de49b01-708e-465c-b6ee-b76287cb8492}">
+		<property name="initialValue">
+			<value>0</value>
+		</property>
+	</object>
+</objects>
