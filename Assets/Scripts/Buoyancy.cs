@@ -59,7 +59,7 @@ public class Buoyancy : MonoBehaviour
     private void Start()
     {
         _voxelCollider = voxelsBorder.GetComponent<BoxCollider>();
-        _oceanMeshGenerator = ocean.GetComponent<OceanMeshGenerator>(); 
+        _oceanMeshGenerator = ocean.GetComponentInChildren<OceanMeshGenerator>(); 
         _displacementTexture = _oceanMeshGenerator.displacement;
         _voxelBorderWidth = _voxelCollider.bounds.size.x;
         _voxelBorderHeight = _voxelCollider.bounds.size.y;

@@ -8,7 +8,6 @@ public class InputManager : MonoBehaviour
     public Vector2 lookDirection;
 
     public float Yaw;
-    private InputAction LeftYawAction;
 
     private PlayerInput myPlayerInput;
     private InputAction RightYawAction;

@@ -1838,6 +1838,7 @@ MonoBehaviour:
   voxelsBorder: {fileID: 234701503}
   fluidDensity: 1
   ocean: {fileID: 2017735626}
+  buoyancyAdjustment: 10
 --- !u!54 &1850245279
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1960,6 +1961,7 @@ MonoBehaviour:
   phillipsSmallLength: 0
   phillipsWindDir: {x: 0, y: 0}
   timeScale: 1
+  timeOffset: 0
   heightTest: 0
   test2d: {x: 0, y: 0}
   test2d2: {x: 0, y: 0}
@@ -1969,11 +1971,27 @@ MonoBehaviour:
   dtest1: 0
   dtest2: 0.3
   dtest3: 0
-  computeShader: {fileID: 7200000, guid: 40e34aac946926740866b917839f1a53, type: 3}
-  spectrumComputeShader: {fileID: 7200000, guid: bab3b7ecb79e4d5b9515d87e3efd086e,
+  normalTestX: {x: 1, y: 1, z: 1}
+  normalTestZ: {x: 1, y: 1, z: 1}
+  normalTest2: 2
+  normalTest3: {x: 0, y: 0, z: 0}
+  computeShaderSource: {fileID: 7200000, guid: 40e34aac946926740866b917839f1a53, type: 3}
+  spectrumComputeShaderSource: {fileID: 7200000, guid: bab3b7ecb79e4d5b9515d87e3efd086e,
     type: 3}
-  rreusserFFT: {fileID: 7200000, guid: 402468975e3d45a0bd984b415e9e8878, type: 3}
+  rreusserFFTSource: {fileID: 7200000, guid: 402468975e3d45a0bd984b415e9e8878, type: 3}
   displacement: {fileID: 0}
+  HX: {fileID: 0}
+  HY: {fileID: 0}
+  HZ: {fileID: 0}
+  HX2: {fileID: 0}
+  HY2: {fileID: 0}
+  HZ2: {fileID: 0}
+  NY: {fileID: 0}
+  NY2: {fileID: 0}
+  approximateNormals: {fileID: 0}
+  pingBuffer: {fileID: 0}
+  pongBuffer: {fileID: 0}
+  waveNumberTexture: {fileID: 0}
   waveVector: {x: 0, y: 0}
   amplitude: 1
   angularFrequency: 0
