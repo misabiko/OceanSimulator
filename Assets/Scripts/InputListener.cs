@@ -27,6 +27,7 @@ public class InputListener : MonoBehaviour
         _inputActions.Enable();
         //Test- to remove
         AudioManager.instance.PlayOneShotWParameters(FMODEvents.instance.waveLtoR, this.transform.position,"WaveSize",intensity);
+        DSXManager.instance.changeTrigger(1);
     }
     private void onMove(UnityEngine.InputSystem.InputAction.CallbackContext context)
     {
