@@ -80,33 +80,8 @@ public class OceanMeshGenerator : MonoBehaviour {
 		computeShader = Instantiate(computeShaderSource);
 		spectrumComputeShader = Instantiate(spectrumComputeShaderSource);
 		rreusserFFT = Instantiate(rreusserFFTSource);
-	}
-
-	void Start() {
-		//For now, limiting to 512
-		Debug.Assert(xSize <= 512 && zSize <= 512);
-
-		mesh = new Mesh();
-		mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
-		GetComponent<MeshFilter>().mesh = mesh;
-		material = GetComponent<Renderer>().material;
-
-		CreateShape();
-		UpdateMesh();
-
 		waveNumberTexture = CreateRenderTexture(xSize, zSize);
-		spectrumComputeShader.SetTexture(0, "WaveNumber", waveNumberTexture);
 		noiseTexture = CreateTexture(xSize, zSize);
-		int greenNoise = Random.Range(0, 10000);
-		for (int x = 0; x < xSize; ++x)
-		for (int y = 0; y < zSize; ++y)
-			noiseTexture.SetPixel(x, y, new Color(Mathf.PerlinNoise(x / noiseResolution, y / noiseResolution), Mathf.PerlinNoise(x / noiseResolution + greenNoise, y / noiseResolution + greenNoise), 0, 0));
-		// noiseTexture.SetPixel(x, y, new Color(.5f, .5f, 0, 0));
-		noiseTexture.Apply();
-		spectrumComputeShader.SetTexture(0, "Noise", noiseTexture);
-		spectrumComputeShader.SetFloat("Resolution", xSize);
-		spectrumComputeShader.SetFloat("PI", Mathf.PI);
-		spectrumComputeShader.SetFloat("g", -Physics.gravity.y);
 		//TODO Create every textures in a block
 		HX = CreateRenderTexture(xSize, zSize);
 		HY = CreateRenderTexture(xSize, zSize);
@@ -119,12 +94,37 @@ public class OceanMeshGenerator : MonoBehaviour {
 		approximateNormals = CreateRenderTexture(xSize, zSize);
 		pingBuffer = CreateRenderTexture(xSize, zSize);
 		pongBuffer = CreateRenderTexture(xSize, zSize);
+		displacement = CreateRenderTexture(xSize, zSize);
+	}
+
+	void Start() {
+		//For now, limiting to 512
+		Debug.Assert(xSize <= 512 && zSize <= 512);
+
+		mesh = new Mesh();
+		mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+		GetComponent<MeshFilter>().mesh = mesh;
+		material = GetComponent<Renderer>().material;
+		
+		CreateShape();
+		UpdateMesh();
+
+		spectrumComputeShader.SetTexture(0, "WaveNumber", waveNumberTexture);
+		int greenNoise = Random.Range(0, 10000);
+		for (int x = 0; x < xSize; ++x)
+		for (int y = 0; y < zSize; ++y)
+			noiseTexture.SetPixel(x, y, new Color(Mathf.PerlinNoise(x / noiseResolution, y / noiseResolution), Mathf.PerlinNoise(x / noiseResolution + greenNoise, y / noiseResolution + greenNoise), 0, 0));
+		// noiseTexture.SetPixel(x, y, new Color(.5f, .5f, 0, 0));
+		noiseTexture.Apply();
+		spectrumComputeShader.SetTexture(0, "Noise", noiseTexture);
+		spectrumComputeShader.SetFloat("Resolution", xSize);
+		spectrumComputeShader.SetFloat("PI", Mathf.PI);
+		spectrumComputeShader.SetFloat("g", -Physics.gravity.y);
 		spectrumComputeShader.SetTexture(0, "HX", HX);
 		spectrumComputeShader.SetTexture(0, "HY", HY);
 		spectrumComputeShader.SetTexture(0, "HZ", HZ);
 		spectrumComputeShader.SetTexture(0, "NY", NY);
-
-		displacement = CreateRenderTexture(xSize, zSize);
+		
 		computeShader.SetTexture(0, "Displacement", displacement);
 		computeShader.SetTexture(0, "HX", HX);
 		computeShader.SetTexture(0, "HY", HY);
