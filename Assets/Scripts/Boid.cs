@@ -97,7 +97,6 @@ public class Boid : MonoBehaviour
         var forwardDetection = pos0 + vel0.normalized * Simulation.DetectRadius;
         if (forwardDetection.magnitude > Simulation.SpaceBoundRadius)
         {
-            var c = Vector3.Cross(forwardDetection, pos0);
             vel0 += pos0.normalized * (Simulation.SpaceBoundRadius - pos0.magnitude) * Simulation.BoundAvoidanceWeight;
         }
 
