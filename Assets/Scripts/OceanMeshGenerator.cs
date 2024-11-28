@@ -1,7 +1,5 @@
-using System;
 using UnityEngine;
 using UnityEngine.UIElements;
-using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class OceanMeshGenerator : MonoBehaviour {
@@ -11,9 +9,8 @@ public class OceanMeshGenerator : MonoBehaviour {
 	int[] triangles;
 
 	[Header("Bleh")]
-	//TODO Make square
-	[SerializeField, Min(0)] public int xSize = 20;
-	[SerializeField, Min(0)] int zSize = 20;
+	[Min(0)] public int sideVertexCount = 256;
+
 	[Min(0)] public float size = 100f;
 	[Min(0)] public float noiseResolution = 10f;
 
@@ -84,47 +81,50 @@ public class OceanMeshGenerator : MonoBehaviour {
 
 	void Start() {
 		//For now, limiting to 512
-		Debug.Assert(xSize <= 512 && zSize <= 512);
+		Debug.Assert(sideVertexCount <= 512);
 
-		mesh = new Mesh();
-		mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+		mesh = new Mesh {
+			indexFormat = UnityEngine.Rendering.IndexFormat.UInt32
+		};
 		GetComponent<MeshFilter>().mesh = mesh;
 		material = GetComponent<Renderer>().material;
 
 		CreateShape();
 		UpdateMesh();
 
-		waveNumberTexture = CreateRenderTexture(xSize, zSize);
+		waveNumberTexture = CreateRenderTexture(sideVertexCount, sideVertexCount);
 		spectrumComputeShader.SetTexture(0, "WaveNumber", waveNumberTexture);
-		noiseTexture = CreateTexture(xSize, zSize);
+		noiseTexture = CreateTexture(sideVertexCount, sideVertexCount);
+		//TODO Actual gaussian noise
+		//https://stackoverflow.com/a/218600/2692695
 		int greenNoise = Random.Range(0, 10000);
-		for (int x = 0; x < xSize; ++x)
-		for (int y = 0; y < zSize; ++y)
+		for (int x = 0; x < sideVertexCount; ++x)
+		for (int y = 0; y < sideVertexCount; ++y)
 			noiseTexture.SetPixel(x, y, new Color(Mathf.PerlinNoise(x / noiseResolution, y / noiseResolution), Mathf.PerlinNoise(x / noiseResolution + greenNoise, y / noiseResolution + greenNoise), 0, 0));
 		// noiseTexture.SetPixel(x, y, new Color(.5f, .5f, 0, 0));
 		noiseTexture.Apply();
 		spectrumComputeShader.SetTexture(0, "Noise", noiseTexture);
-		spectrumComputeShader.SetFloat("Resolution", xSize);
+		spectrumComputeShader.SetFloat("Resolution", sideVertexCount);
 		spectrumComputeShader.SetFloat("PI", Mathf.PI);
 		spectrumComputeShader.SetFloat("g", -Physics.gravity.y);
 		//TODO Create every textures in a block
-		HX = CreateRenderTexture(xSize, zSize);
-		HY = CreateRenderTexture(xSize, zSize);
-		HZ = CreateRenderTexture(xSize, zSize);
-		HX2 = CreateRenderTexture(xSize, zSize);
-		HY2 = CreateRenderTexture(xSize, zSize);
-		HZ2 = CreateRenderTexture(xSize, zSize);
-		NY = CreateRenderTexture(xSize, zSize);
-		NY2 = CreateRenderTexture(xSize, zSize);
-		approximateNormals = CreateRenderTexture(xSize, zSize);
-		pingBuffer = CreateRenderTexture(xSize, zSize);
-		pongBuffer = CreateRenderTexture(xSize, zSize);
+		HX = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		HY = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		HZ = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		HX2 = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		HY2 = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		HZ2 = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		NY = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		NY2 = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		approximateNormals = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		pingBuffer = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		pongBuffer = CreateRenderTexture(sideVertexCount, sideVertexCount);
 		spectrumComputeShader.SetTexture(0, "HX", HX);
 		spectrumComputeShader.SetTexture(0, "HY", HY);
 		spectrumComputeShader.SetTexture(0, "HZ", HZ);
 		spectrumComputeShader.SetTexture(0, "NY", NY);
 
-		displacement = CreateRenderTexture(xSize, zSize);
+		displacement = CreateRenderTexture(sideVertexCount, sideVertexCount);
 		computeShader.SetTexture(0, "Displacement", displacement);
 		computeShader.SetTexture(0, "HX", HX);
 		computeShader.SetTexture(0, "HY", HY);
@@ -133,7 +133,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 		computeShader.SetTexture(0, "HY2", HY2);
 		computeShader.SetTexture(0, "HZ2", HZ2);
 		computeShader.SetTexture(0, "approximateNormals", approximateNormals);
-		computeShader.SetFloat("Resolution", xSize);
+		computeShader.SetFloat("Resolution", sideVertexCount);
 		computeShader.SetFloat("PI", Mathf.PI);
 		computeShader.SetFloat("g", -Physics.gravity.y);
 
@@ -469,8 +469,9 @@ public class OceanMeshGenerator : MonoBehaviour {
 	// 	simpleSinusoid.Dispatch(0, displacement.width / 8, displacement.height / 8, 1);
 	// }
 
+	float? lastSize;
 	void Update() {
-		if (vertices.Length != (xSize + 1) * (zSize + 1)) {
+		if (vertices.Length != (sideVertexCount + 1) * (sideVertexCount + 1) || lastSize != size) {
 			CreateShape();
 			UpdateMesh();
 		}
@@ -481,26 +482,26 @@ public class OceanMeshGenerator : MonoBehaviour {
 	}
 
 	void CreateShape() {
-		vertices = new Vector3[(xSize + 1) * (zSize + 1)];
+		vertices = new Vector3[(sideVertexCount + 1) * (sideVertexCount + 1)];
 
-		for (int i = 0, z = 0; z <= zSize; ++z)
-		for (int x = 0; x <= xSize; ++x) {
-			vertices[i] = new Vector3((float)x / xSize, 0f, (float)z / zSize) * size;
+		for (int i = 0, z = 0; z <= sideVertexCount; ++z)
+		for (int x = 0; x <= sideVertexCount; ++x) {
+			vertices[i] = new Vector3((float)x / sideVertexCount, 0f, (float)z / sideVertexCount) * size;
 			++i;
 		}
 
-		triangles = new int[xSize * zSize * 6];
+		triangles = new int[sideVertexCount * sideVertexCount * 6];
 
 		int vert = 0;
 		int tris = 0;
-		for (int z = 0; z < zSize; ++z) {
-			for (int x = 0; x < xSize; ++x) {
+		for (int z = 0; z < sideVertexCount; ++z) {
+			for (int x = 0; x < sideVertexCount; ++x) {
 				triangles[tris + 0] = vert + 0;
-				triangles[tris + 1] = vert + xSize + 1;
+				triangles[tris + 1] = vert + sideVertexCount + 1;
 				triangles[tris + 2] = vert + 1;
 				triangles[tris + 3] = vert + 1;
-				triangles[tris + 4] = vert + xSize + 1;
-				triangles[tris + 5] = vert + xSize + 2;
+				triangles[tris + 4] = vert + sideVertexCount + 1;
+				triangles[tris + 5] = vert + sideVertexCount + 2;
 
 				++vert;
 				tris += 6;
@@ -510,6 +511,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 		}
 
 		material.SetVector("_Resolution", new Vector2(size, size));
+		lastSize = size;
 	}
 
 	void UpdateMesh() {
