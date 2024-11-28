@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class WindSFXManager : MonoBehaviour
@@ -8,16 +5,16 @@ public class WindSFXManager : MonoBehaviour
     [SerializeField] private BirdController birdController;
 
     private AudioSource audioSource;
-    
+
     private void Awake()
     {
-        birdController = GameObject.FindObjectOfType<BirdController>();
+        birdController = FindFirstObjectByType<BirdController>();
         audioSource = GetComponent<AudioSource>();
         audioSource.volume = 0;
     }
 
     private void Update()
     {
-        audioSource.volume = birdController.GetMomentumFactor();
+        audioSource.volume = birdController.GetAccelerationMultiplier();
     }
 }

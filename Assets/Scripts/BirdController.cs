@@ -22,7 +22,7 @@ public class BirdController : MonoBehaviour
 
    private float currentSpeed;
    private Rigidbody myRigidbody;
-   private float momentumFactor;
+   private float acceleration;
    private Vector3 forwardMovement;
    
    void Start()
@@ -32,6 +32,9 @@ public class BirdController : MonoBehaviour
 
    void Update()
    {
+      if(Input.GetKeyDown(KeyCode.M))
+         PlayerStateManager.SwitchTo(PlayerState.Boat);
+      
       HandleFlightInput();
       ClampHeight();
       ClampRotation();
@@ -44,34 +47,32 @@ public class BirdController : MonoBehaviour
       transform.Rotate(moveInput.y * myPitchSpeed,   moveInput.x * myRollSpeed, -inputManager.Yaw * myYawSpeed, Space.Self);
       
       if (momentumEnabled)
-         CalculateMomentum();
+         CalculateAcceleration();
       
-      currentSpeed = myForwardSpeed + (myForwardSpeed - 10) * momentumFactor;
+      currentSpeed = myForwardSpeed + (0.75f * myForwardSpeed) * acceleration;
       forwardMovement = transform.forward * currentSpeed;
       
       myRigidbody.MovePosition(transform.position + forwardMovement * Time.deltaTime);
    }
 
-   private void CalculateMomentum()
+   private void CalculateAcceleration()
    {
       if (transform.position.y <= lowerHeightCap+1 || transform.position.y >= upperHeightCap-1 ) 
-         momentumFactor = Mathf.Lerp(momentumFactor, 0, decellerationLerpSpeed * Time.deltaTime);
+         acceleration = Mathf.Lerp(acceleration, 0, decellerationLerpSpeed * Time.deltaTime);
       
       float angle = transform.eulerAngles.x;
 
       if (angle < 180)// if we go downwards
       {
-         if (angle > lowerAngleThreshold)
-            momentumFactor = Mathf.Lerp(momentumFactor, angle * -1 / myMinAngle, downwardsLerpSpeed * Time.deltaTime);
-         else
-            momentumFactor = Mathf.Lerp(momentumFactor, 0, decellerationLerpSpeed * Time.deltaTime);
+         float acceleration = angle > lowerAngleThreshold ? angle * -1 / myMinAngle : 0;
+         
+         this.acceleration = Mathf.Lerp(this.acceleration, acceleration, downwardsLerpSpeed * Time.deltaTime);
       }
       else // if go upwards
       {
-         if (angle < 360 - upperAngleThreshold)
-            momentumFactor = Mathf.Lerp(momentumFactor, ((360 - angle) / myMaxAngle)*-1, upwardsLerpSpeed * Time.deltaTime);
-         else
-            momentumFactor = Mathf.Lerp(momentumFactor, 0, decellerationLerpSpeed * Time.deltaTime);
+         float acceleration =angle < 360 - upperAngleThreshold ? ((360 - angle) / myMaxAngle)*-1 : 0;
+         
+         this.acceleration = Mathf.Lerp(this.acceleration, acceleration, decellerationLerpSpeed * Time.deltaTime);
       }
    }
 
@@ -102,14 +103,14 @@ public class BirdController : MonoBehaviour
       return forwardMovement;
    }
 
-   public float GetMomentumFactor()
+   public float GetAccelerationMultiplier()
    {
-      return momentumFactor;
+      return acceleration;
    }
 
    public Vector3  GetVelocity()
    {
-      return myRigidbody.velocity;
+      return myRigidbody.linearVelocity;
    }
 
    public float ForwardSpeed()
