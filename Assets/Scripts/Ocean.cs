@@ -6,7 +6,7 @@ public class Ocean : MonoBehaviour {
 	[Min(0)]
 	public int tileRadius;
 
-	void Start() {
+	void Awake() {
 		var firstTileGO= Instantiate(oceanTilePrefab, Vector3.zero, Quaternion.identity, transform);
 		//TODO Move properties to Ocean
 		var firstOcean = firstTileGO.GetComponent<OceanMeshGenerator>();
