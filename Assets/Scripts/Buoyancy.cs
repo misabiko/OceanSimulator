@@ -37,6 +37,8 @@ public class Buoyancy : MonoBehaviour
     private OceanMeshGenerator _oceanMeshGenerator;
     [SerializeField] float _boatDensity = 2f;
 
+    private Rigidbody rb;
+    
     [SerializeField]
     private class GizmosData
     {
@@ -66,14 +68,15 @@ public class Buoyancy : MonoBehaviour
         _oceanPosition = ocean.transform.position;
         CalculateNbrVoxels();
         PlaceVoxels();
+        rb = GetComponent<Rigidbody>();
     }
 
     // Update is called once per frame
     private void Update()
     {
-        GetComponent<Rigidbody>().mass = _boatDensity * _gridSizeX * voxelSize * _gridSizeY * voxelSize * _gridSizeZ * voxelSize;
+        rb.mass = _boatDensity * _gridSizeX * voxelSize * _gridSizeY * voxelSize * _gridSizeZ * voxelSize;
         float buoyancy = CalculateBuoyancy();
-        GetComponentInChildren<Rigidbody>().AddForce(Vector3.up * buoyancy, ForceMode.Force);
+        rb.AddForce(Vector3.up * buoyancy, ForceMode.Force);
     }
 
     private void getCurrentOceanMesh()
