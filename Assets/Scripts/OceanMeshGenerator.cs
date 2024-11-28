@@ -9,8 +9,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 	int[] triangles;
 
 	[Header("Bleh")]
-	[SerializeField, Min(0)]
-	int sideVertexCount = 256;
+	[Min(0)] public int sideVertexCount = 256;
 
 	[Min(0)] public float size = 100f;
 	[Min(0)] public float noiseResolution = 10f;
