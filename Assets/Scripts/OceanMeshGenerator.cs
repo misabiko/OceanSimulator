@@ -77,21 +77,21 @@ public class OceanMeshGenerator : MonoBehaviour {
 		computeShader = Instantiate(computeShaderSource);
 		spectrumComputeShader = Instantiate(spectrumComputeShaderSource);
 		rreusserFFT = Instantiate(rreusserFFTSource);
-		waveNumberTexture = CreateRenderTexture(xSize, zSize);
-		noiseTexture = CreateTexture(xSize, zSize);
+		waveNumberTexture = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		noiseTexture = CreateTexture(sideVertexCount, sideVertexCount);
 		//TODO Create every textures in a block
-		HX = CreateRenderTexture(xSize, zSize);
-		HY = CreateRenderTexture(xSize, zSize);
-		HZ = CreateRenderTexture(xSize, zSize);
-		HX2 = CreateRenderTexture(xSize, zSize);
-		HY2 = CreateRenderTexture(xSize, zSize);
-		HZ2 = CreateRenderTexture(xSize, zSize);
-		NY = CreateRenderTexture(xSize, zSize);
-		NY2 = CreateRenderTexture(xSize, zSize);
-		approximateNormals = CreateRenderTexture(xSize, zSize);
-		pingBuffer = CreateRenderTexture(xSize, zSize);
-		pongBuffer = CreateRenderTexture(xSize, zSize);
-		displacement = CreateRenderTexture(xSize, zSize);
+		HX = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		HY = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		HZ = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		HX2 = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		HY2 = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		HZ2 = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		NY = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		NY2 = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		approximateNormals = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		pingBuffer = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		pongBuffer = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		displacement = CreateRenderTexture(sideVertexCount, sideVertexCount);
 	}
 
 	void Start() {
