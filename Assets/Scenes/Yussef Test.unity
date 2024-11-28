@@ -3206,11 +3206,6 @@ PrefabInstance:
       propertyPath: ocean
       value: 
       objectReference: {fileID: 1590730109}
-    - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
-        type: 3}
-      propertyPath: voxelSize
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 1807191335915035936, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
       propertyPath: m_LocalPosition.x
