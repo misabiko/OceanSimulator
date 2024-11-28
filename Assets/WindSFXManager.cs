@@ -8,7 +8,7 @@ public class WindSFXManager : MonoBehaviour
 
     private void Awake()
     {
-        birdController = FindObjectOfType<BirdController>();
+        birdController = FindFirstObjectByType<BirdController>();
         audioSource = GetComponent<AudioSource>();
         audioSource.volume = 0;
     }

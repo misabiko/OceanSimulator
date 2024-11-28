@@ -122,11 +122,11 @@ public class Buoyancy : MonoBehaviour
             float y_OceanPosition = _oceanPosition.y;
             float z_OceanPosition = _oceanPosition.z;
             int i = 0;
-            float step = _oceanMeshGenerator.size / _oceanMeshGenerator.xSize;
+            float step = _oceanMeshGenerator.size / _oceanMeshGenerator.sideVertexCount;
             foreach (var data in _oceanCachedData)
             {
-                float x_basePosition = i % _oceanMeshGenerator.xSize * step;
-                float z_basePosition = Mathf.Floor(i / _oceanMeshGenerator.xSize) * step;
+                float x_basePosition = i % _oceanMeshGenerator.sideVertexCount * step;
+                float z_basePosition = Mathf.Floor(i / _oceanMeshGenerator.sideVertexCount) * step;
                 
                 float x_dataPosition = data.r + x_basePosition + x_OceanPosition;
                 float y_dataPosition = data.g + y_OceanPosition;
@@ -209,12 +209,12 @@ public class Buoyancy : MonoBehaviour
             float x_OceanPosition = _oceanPosition.x;
             float y_OceanPosition = _oceanPosition.y;
             float z_OceanPosition = _oceanPosition.z;
-            float step = _oceanMeshGenerator.size / _oceanMeshGenerator.xSize;
+            float step = _oceanMeshGenerator.size / _oceanMeshGenerator.sideVertexCount;
             int i = 0;
             foreach (var data in _oceanCachedData)
             {
-                float x_basePosition = i % _oceanMeshGenerator.xSize * step;
-                float z_basePosition = Mathf.Floor(i / _oceanMeshGenerator.xSize) * step;
+                float x_basePosition = i % _oceanMeshGenerator.sideVertexCount * step;
+                float z_basePosition = Mathf.Floor(i / _oceanMeshGenerator.sideVertexCount) * step;
 
                 float x_dataPosition = data.r + x_basePosition + x_OceanPosition;
                 float y_dataPosition = data.g + y_OceanPosition;

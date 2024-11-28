@@ -47,8 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 274307af742b4cd41b69fc4ee399a0df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  xSize: 64
-  zSize: 64
+  sideVertexCount: 256
   size: 64
   noiseResolution: 2.5
   F: 1400000
