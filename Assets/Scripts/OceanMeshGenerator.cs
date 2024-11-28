@@ -526,7 +526,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 		var rt = new RenderTexture(width, height, 24) {
 			enableRandomWrite = true,
 			filterMode = FilterMode.Point,
-			graphicsFormat = UnityEngine.Experimental.Rendering.GraphicsFormat.R16G16B16A16_SFloat,
+			graphicsFormat = UnityEngine.Experimental.Rendering.GraphicsFormat.R32G32B32A32_SFloat,
 		};
 		rt.Create();
 		return rt;

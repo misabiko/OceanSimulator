@@ -21,47 +21,47 @@ public class BirdSimulation : MonoBehaviour
     [Range(0f, 100.0f)]
     public float DetectRadius;
     [Range(0f, 100.0f)]
-    public float AvoidanceRadius;
-    [Range(0f, 100.0f)]
-    public float Cohesion;
-    [Range(0f, 100.0f)]
-    public float Alignment;
-    [Range(0f, 100.0f)]
-    public float Separation;
-    [Range(0f, 100.0f)]
-    public float GoalWeight;
-    [Range(0f, 100.0f)]
-    public float WanderWeight;
-    [Range(0f, 100.0f)]
     public float BoundAvoidanceWeight;
     [Range(0f, 100.0f)]
     public float ObstacleAvoidanceWeight;
     [Range(0f, 100.0f)]
     public float OvercrowdWeight;
     [Range(0f, 100.0f)]
-    public float VelocityLerp;
-    [Range(0f, 100.0f)]
     public float MaxSpeed = 5f;
     [Range(10f, 100.0f)]
     public float SpaceBoundRadius;
 
+    [Range(0f, 100.0f)] public float AvoidanceRadius;
+
+    [Range(0f, 100.0f)] public float Cohesion;
+
+    [Range(0f, 100.0f)] public float Alignment;
+
+    [Range(0f, 100.0f)] public float Separation;
+
+    [Range(0f, 100.0f)] public float GoalWeight;
+
+    [Range(0f, 100.0f)] public float WanderWeight;
+
+    [Range(0f, 100.0f)] public float VelocityLerp;
 
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         allBoids = new GameObject[boidCount];
-        for (int i = 0; i < boidCount; i++)
+        for (var i = 0; i < boidCount; i++)
         {
             Vector3 pos = this.transform.position + Random.insideUnitSphere * SpaceBoundRadius;
             allBoids[i] = Instantiate(boidPrefab, pos, Quaternion.identity);
         }
+
         instance = this;
-        goalPos = this.transform.position;
+        goalPos = transform.position;
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
         if (Random.Range(0, 100) < 1)
         {

@@ -20,66 +20,68 @@ float2 test4;
 float2 test5;
 
 //Not sure if this helps
-float customFloor(float a) {
-	if (a < 0.0)
-		return -ceil(-a);
-	else
-		return floor(a);
+float customFloor(float a)
+{
+    if (a < 0.0)
+        return -ceil(-a);
+    return floor(a);
 }
 
-float mod(float a, float b) {
-	return a - b * customFloor(a / b);
+float mod(float a, float b)
+{
+    return a - b * customFloor(a / b);
 }
 
 [numthreads(8,8,1)]
-void CSMain(uint3 id : SV_DispatchThreadID) {
-	float TWOPI = 6.283185307179586;
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    float TWOPI = 6.283185307179586;
 
-	float2 evenPos, oddPos, twiddle, outputA, outputB;
-	float4 even, odd;
-	float index, evenIndex, twiddleArgument;
+    float2 evenPos, oddPos, twiddle, outputA, outputB;
+    float4 even, odd;
+    float index, evenIndex, twiddleArgument;
 
-	float2 idf = float2(id.x, id.y);
+    float2 idf = float2(id.x, id.y);
 
-	index = (horizontal ? idf.x : idf.y) - 0.5;
+    index = (horizontal ? idf.x : idf.y) - 0.5;
 
-	evenIndex = customFloor(index / subtransformSize) *
-		(subtransformSize * 0.5) +
-		mod(index, subtransformSize * 0.5) +
-		0.5;
+    evenIndex = customFloor(index / subtransformSize) *
+        (subtransformSize * 0.5) +
+        mod(index, subtransformSize * 0.5) +
+        0.5;
 
-	if (horizontal)
-	{
-		evenPos = float2(evenIndex, idf.y);
-		oddPos = float2(evenIndex, idf.y);
-	}
-	else
-	{
-		evenPos = float2(idf.x, evenIndex);
-		oddPos = float2(idf.x, evenIndex);
-	}
+    if (horizontal)
+    {
+        evenPos = float2(evenIndex, idf.y);
+        oddPos = float2(evenIndex, idf.y);
+    }
+    else
+    {
+        evenPos = float2(idf.x, evenIndex);
+        oddPos = float2(idf.x, evenIndex);
+    }
 
-	//TODO We might be able to avoid divide and re-multiply by resolution
-	evenPos *= resolution;
-	oddPos *= resolution;
+    //TODO We might be able to avoid divide and re-multiply by resolution
+    evenPos *= resolution;
+    oddPos *= resolution;
 
-	if (horizontal)
-		oddPos.x += 0.5;
-	else
-		oddPos.y += 0.5;
+    if (horizontal)
+        oddPos.x += 0.5;
+    else
+        oddPos.y += 0.5;
 
-	//Not sure if this helps
-	evenPos = float2(saturate(evenPos.x), saturate(evenPos.y));
-	oddPos = float2(saturate(oddPos.x), saturate(oddPos.y));
+    //Not sure if this helps
+    evenPos = float2(saturate(evenPos.x), saturate(evenPos.y));
+    oddPos = float2(saturate(oddPos.x), saturate(oddPos.y));
 
-	even = src[evenPos / resolution];
-	odd = src[oddPos / resolution];
+    even = src[evenPos / resolution];
+    odd = src[oddPos / resolution];
 
-	twiddleArgument = (forward ? TWOPI : -TWOPI) * (index / subtransformSize);
-	twiddle = float2(cos(twiddleArgument), sin(twiddleArgument));
+    twiddleArgument = (forward ? TWOPI : -TWOPI) * (index / subtransformSize);
+    twiddle = float2(cos(twiddleArgument), sin(twiddleArgument));
 
-	output[id.xy] = (even.rgba + float4(
-		twiddle.x * odd.xz - twiddle.y * odd.yw,
-		twiddle.y * odd.xz + twiddle.x * odd.yw
-	).xzyw) * normalization;
+    output[id.xy] = (even.rgba + float4(
+        twiddle.x * odd.xz - twiddle.y * odd.yw,
+        twiddle.y * odd.xz + twiddle.x * odd.yw
+    ).xzyw) * normalization;
 }
