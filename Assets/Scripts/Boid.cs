@@ -4,20 +4,35 @@ using Random = UnityEngine.Random;
 
 public class Boid : MonoBehaviour
 {
+    private SkinnedMeshRenderer mesh;
+
     public Vector3 velocity;
     public Vector3 centroid;
+    public float animationTime;
+    public float animationLength = 3;
 
     private BirdSimulation Simulation => BirdSimulation.instance;
 
     // Start is called before the first frame update
     void Start()
     {
+        mesh = GetComponentInChildren<SkinnedMeshRenderer>();
         velocity = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1), Random.Range(-1, 1)).normalized * Random.Range(1, Simulation.MaxSpeed);
     }
 
     // Update is called once per frame
     void Update()
     {
+        // Increment AnimationTime based on time and speed.
+        //float animationTime = Time.time * speed;
+        animationTime += Time.deltaTime;
+        if (animationTime > animationLength)
+        {
+            animationTime -= animationLength; // loop animation
+        }
+        foreach(var mat in mesh.materials)
+            mat.SetFloat("_AnimationTime", animationTime);
+        mesh.material.SetFloat("_AnimationTime", animationTime);
         ApplyRulesBoids();
     }
 
@@ -124,12 +139,14 @@ public class Boid : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        if(Simulation == null) return; // because this runs in the editor, where the simulation isnt started yet
         Gizmos.color = new Color(1, 0, 1, 0.1f);
         Gizmos.DrawWireSphere(this.centroid, Simulation.DetectRadius);
     }
 
     private void OnDrawGizmosSelected()
     {
+        if (Simulation == null) return; // because this runs in the editor, where the simulation isnt started yet
         Gizmos.color = new Color(0, 1, 1);
         Gizmos.DrawWireSphere(this.transform.position, Simulation.DetectRadius);
         Gizmos.DrawWireSphere(this.transform.position, Simulation.AvoidanceRadius);
