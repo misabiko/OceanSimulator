@@ -17,6 +17,9 @@ public class DebugBirdControlUI : MonoBehaviour
 
     private void Update()
     {
+        if (PlayerStateManager.GetState() != PlayerState.Bird)
+            return;
+        
         var t_bird = birdController.transform;
         var eulerAngles = t_bird.eulerAngles;
         var altitude = t_bird.position.y;

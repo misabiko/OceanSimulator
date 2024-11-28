@@ -539,6 +539,139 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 1
+--- !u!1001 &505766668
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: ocean
+      value: 
+      objectReference: {fileID: 799800866}
+    - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: voxelSize
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: _boatDensity
+      value: 0.045
+      objectReference: {fileID: 0}
+    - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: fluidDensity
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: buoyancyAdjustment
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 546443728347341381, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_Drag
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 546443728347341381, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_Mass
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 546443728347341381, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_UseGravity
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 546443728347341381, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_Constraints
+      value: 80
+      objectReference: {fileID: 0}
+    - target: {fileID: 1807191335915035936, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 28.56
+      objectReference: {fileID: 0}
+    - target: {fileID: 1807191335915035936, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.2361262
+      objectReference: {fileID: 0}
+    - target: {fileID: 1807191335915035936, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 33.52
+      objectReference: {fileID: 0}
+    - target: {fileID: 1807191335915035936, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1807191335915035936, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1807191335915035936, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1807191335915035936, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1807191335915035936, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1807191335915035936, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1807191335915035936, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3929750398130339362, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_Name
+      value: BOAT - Camera + Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 4435603033492877305, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5810443770826624813, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 5.06
+      objectReference: {fileID: 0}
+    - target: {fileID: 5949475484452746978, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7507723429645048162, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: f65c27762f3ede9489e9179eef1e5fab, type: 3}
 --- !u!1 &591678946
 GameObject:
   m_ObjectHideFlags: 0
@@ -557,7 +690,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!64 &591678947
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -685,6 +818,18 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 1901032903}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &799800866 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
+    type: 3}
+  m_PrefabInstance: {fileID: 1901032903}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 799800865}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e697431fd4e4412ba27061b65c2e8385, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -1735,7 +1880,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1850245274
 Transform:
   m_ObjectHideFlags: 0
@@ -1838,13 +1983,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 081d9c70c2ae7854885fe69314f669e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  voxelPrefab: {fileID: 3467094168026759594, guid: a06790367dc25e34aa210fe082b1d0d4,
-    type: 3}
   voxelSize: 0.5
-  voxelsBorder: {fileID: 234701503}
   fluidDensity: 0.8
   ocean: {fileID: 799800865}
-  buoyancyAdjustment: 1
+  _boatDensity: 2
 --- !u!54 &1850245279
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1938,7 +2080,7 @@ PrefabInstance:
     - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
         type: 3}
       propertyPath: tileRadius
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1966,3 +2108,4 @@ SceneRoots:
   - {fileID: 1483005599}
   - {fileID: 591678950}
   - {fileID: 1901032903}
+  - {fileID: 505766668}
