@@ -184,6 +184,50 @@ Transform:
   - {fileID: 952419185}
   m_Father: {fileID: 5356096421529993915}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!1 &532070176
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 532070178}
+  - component: {fileID: 532070177}
+  m_Layer: 0
+  m_Name: DSXManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &532070177
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 532070176}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 862e247f0194dfa4fb566b88d596e97b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &532070178
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 532070176}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &952419184
 GameObject:
   m_ObjectHideFlags: 0
@@ -937,20 +981,7 @@ MonoBehaviour:
   moveInput: {x: 0, y: 0}
   rightpaddle: {fileID: 1292234145}
   leftpaddle: {fileID: 952419185}
-  waveLtoR:
-    Guid:
-      Data1: -835361464
-      Data2: 1341196562
-      Data3: 436791728
-      Data4: -319091189
-    Path: event:/WaveCrashLtoR
-  waveRtoL:
-    Guid:
-      Data1: -1072972410
-      Data2: 1338978095
-      Data3: -1842168671
-      Data4: 1092247851
-    Path: event:/WaveCrashRtoL
+  intensity: 0
 --- !u!114 &5356096421529993917
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1008,3 +1039,4 @@ SceneRoots:
   - {fileID: 1708632448}
   - {fileID: 5356096421529993915}
   - {fileID: 978933935}
+  - {fileID: 532070178}
