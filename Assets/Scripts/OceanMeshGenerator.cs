@@ -77,6 +77,21 @@ public class OceanMeshGenerator : MonoBehaviour {
 		computeShader = Instantiate(computeShaderSource);
 		spectrumComputeShader = Instantiate(spectrumComputeShaderSource);
 		rreusserFFT = Instantiate(rreusserFFTSource);
+		waveNumberTexture = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		noiseTexture = CreateTexture(sideVertexCount, sideVertexCount);
+		//TODO Create every textures in a block
+		HX = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		HY = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		HZ = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		HX2 = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		HY2 = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		HZ2 = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		NY = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		NY2 = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		approximateNormals = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		pingBuffer = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		pongBuffer = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		displacement = CreateRenderTexture(sideVertexCount, sideVertexCount);
 	}
 
 	void Start() {
@@ -88,7 +103,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 		};
 		GetComponent<MeshFilter>().mesh = mesh;
 		material = GetComponent<Renderer>().material;
-
+		
 		CreateShape();
 		UpdateMesh();
 
@@ -107,24 +122,11 @@ public class OceanMeshGenerator : MonoBehaviour {
 		spectrumComputeShader.SetFloat("Resolution", sideVertexCount);
 		spectrumComputeShader.SetFloat("PI", Mathf.PI);
 		spectrumComputeShader.SetFloat("g", -Physics.gravity.y);
-		//TODO Create every textures in a block
-		HX = CreateRenderTexture(sideVertexCount, sideVertexCount);
-		HY = CreateRenderTexture(sideVertexCount, sideVertexCount);
-		HZ = CreateRenderTexture(sideVertexCount, sideVertexCount);
-		HX2 = CreateRenderTexture(sideVertexCount, sideVertexCount);
-		HY2 = CreateRenderTexture(sideVertexCount, sideVertexCount);
-		HZ2 = CreateRenderTexture(sideVertexCount, sideVertexCount);
-		NY = CreateRenderTexture(sideVertexCount, sideVertexCount);
-		NY2 = CreateRenderTexture(sideVertexCount, sideVertexCount);
-		approximateNormals = CreateRenderTexture(sideVertexCount, sideVertexCount);
-		pingBuffer = CreateRenderTexture(sideVertexCount, sideVertexCount);
-		pongBuffer = CreateRenderTexture(sideVertexCount, sideVertexCount);
 		spectrumComputeShader.SetTexture(0, "HX", HX);
 		spectrumComputeShader.SetTexture(0, "HY", HY);
 		spectrumComputeShader.SetTexture(0, "HZ", HZ);
 		spectrumComputeShader.SetTexture(0, "NY", NY);
-
-		displacement = CreateRenderTexture(sideVertexCount, sideVertexCount);
+		
 		computeShader.SetTexture(0, "Displacement", displacement);
 		computeShader.SetTexture(0, "HX", HX);
 		computeShader.SetTexture(0, "HY", HY);

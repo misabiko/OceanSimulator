@@ -10,9 +10,8 @@ using UnityEngine.Rendering;
 public class Buoyancy : MonoBehaviour
 {
     /*Voxel Spawner*/
-    [SerializeField] private GameObject voxelPrefab;
     [SerializeField] private float voxelSize = 0.1f;
-    [SerializeField] private GameObject voxelsBorder;
+    //[SerializeField] private GameObject voxelsBorder;
     private float _voxelBorderDepth;
     private float _voxelBorderHeight;
     private float _voxelBorderWidth;
@@ -22,7 +21,7 @@ public class Buoyancy : MonoBehaviour
 
     /*Buoyancy data*/
     [SerializeField] private float fluidDensity = 1.0f;
-    [SerializeField] private GameObject ocean;
+    [SerializeField] private Ocean ocean;
     private int _gridSizeX;
     private int _gridSizeY;
     private int _gridSizeZ;
@@ -36,7 +35,7 @@ public class Buoyancy : MonoBehaviour
     private bool _isRequestSent = false;
     private Color[] _oceanCachedData;
     private OceanMeshGenerator _oceanMeshGenerator;
-    public float buoyancyAdjustment = 10f;
+    [SerializeField] float _boatDensity = 2f;
 
     [SerializeField]
     private class GizmosData
@@ -58,9 +57,9 @@ public class Buoyancy : MonoBehaviour
     // Start is called before the first frame update
     private void Start()
     {
-        _voxelCollider = voxelsBorder.GetComponent<BoxCollider>();
-        _oceanMeshGenerator = ocean.GetComponentInChildren<OceanMeshGenerator>(); 
-        _displacementTexture = _oceanMeshGenerator.displacement;
+        _voxelCollider = GetComponent<BoxCollider>();
+       // _oceanMeshGenerator = ocean.GetComponentInChildren<OceanMeshGenerator>(); 
+       // _displacementTexture = _oceanMeshGenerator.displacement;
         _voxelBorderWidth = _voxelCollider.bounds.size.x;
         _voxelBorderHeight = _voxelCollider.bounds.size.y;
         _voxelBorderDepth = _voxelCollider.bounds.size.z;
@@ -72,8 +71,14 @@ public class Buoyancy : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
+        GetComponent<Rigidbody>().mass = _boatDensity * _gridSizeX * voxelSize * _gridSizeY * voxelSize * _gridSizeZ * voxelSize;
         float buoyancy = CalculateBuoyancy();
-       GetComponent<Rigidbody>().AddForce(Vector3.up * buoyancy, ForceMode.Impulse);
+        GetComponentInChildren<Rigidbody>().AddForce(Vector3.up * buoyancy, ForceMode.Force);
+    }
+
+    private void getCurrentOceanMesh()
+    {
+        _oceanMeshGenerator = ocean.getOceanMeshGenerator(transform.position);
     }
 
     private void CalculateNbrVoxels()
@@ -106,7 +111,7 @@ public class Buoyancy : MonoBehaviour
     private float CalculateSubmergedVolume()
     {
         float totalVolume = 0;
-        if (!_isRequestSent)
+        if (!_isRequestSent && _oceanMeshGenerator != null)
         {
             StartGPURequest();
         }
@@ -138,7 +143,6 @@ public class Buoyancy : MonoBehaviour
                         float submergedHeight = 0;
                         if (y_dataPosition > y_voxelPositon + voxelSize)
                         {
-                            Debug.Log("sphere is underwater");
                             submergedHeight = voxelSize;
                         }
                         else if (y_dataPosition <= y_voxelPositon + voxelSize &&
@@ -167,8 +171,9 @@ public class Buoyancy : MonoBehaviour
 
     private float CalculateBuoyancy()
     {
+        getCurrentOceanMesh();
         float submergedVolume = CalculateSubmergedVolume();
-        return -(fluidDensity * submergedVolume * Physics.gravity.y * 1 / voxelCount * buoyancyAdjustment);
+        return -(fluidDensity * submergedVolume * Physics.gravity.y * 1 / voxelCount);
     }
 
     private async void StartGPURequest()
@@ -176,7 +181,7 @@ public class Buoyancy : MonoBehaviour
         _isRequestSent = true;
         try
         {
-            AsyncGPUReadbackRequest request = await AsyncGPUReadback.RequestAsync(_displacementTexture, 0);
+            AsyncGPUReadbackRequest request = await AsyncGPUReadback.RequestAsync(_oceanMeshGenerator.displacement, 0);
             if (request.hasError)
             {
                 Debug.LogError("GPU readback error");
@@ -197,7 +202,7 @@ public class Buoyancy : MonoBehaviour
         }
     }
 
-    private void OnDrawGizmos()
+  /*  private void OnDrawGizmos()
     {
         if (_oceanMeshGenerator != null)
         {
@@ -219,5 +224,5 @@ public class Buoyancy : MonoBehaviour
                 i++;
             }
         }
-    }
+    }*/
 }
