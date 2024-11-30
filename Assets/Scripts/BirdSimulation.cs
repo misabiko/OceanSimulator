@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.InputSystem.HID.HID;
 
 public class BirdSimulation : MonoBehaviour
 {
@@ -91,7 +90,7 @@ public class BirdSimulation : MonoBehaviour
         var a = bone.localToWorldMatrix;
         //var b = bone.worldToLocalMatrix;
         // row
-        for(int i = 0; i <�4; i++)
+        for(int i = 0; i < 4; i++)
         {
             // column
             for(int j = 0; j < 4; j++)
@@ -111,7 +110,7 @@ public class BirdSimulation : MonoBehaviour
         allBoids = new GameObject[boidCount];
         for (var i = 0; i < boidCount; i++)
         {
-            Vector3 pos = this.transform.position + Random.insideUnitSphere * SpaceBoundRadius;
+            Vector3 pos = this.transform.position + UnityEngine.Random.insideUnitSphere * SpaceBoundRadius;
             allBoids[i] = Instantiate(boidPrefab, pos, Quaternion.identity);
         }
 
@@ -122,9 +121,9 @@ public class BirdSimulation : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        if (Random.Range(0, 100) < 1)
+        if (UnityEngine.Random.Range(0, 100) < 1)
         {
-            goalPos = Vector3.Lerp(goalPos, this.transform.position + Random.insideUnitSphere * SpaceBoundRadius, 0.2f);
+            goalPos = Vector3.Lerp(goalPos, this.transform.position + UnityEngine.Random.insideUnitSphere * SpaceBoundRadius, 0.2f);
         }
     }
 
