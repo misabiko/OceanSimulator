@@ -679,7 +679,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   boidPrefab: {fileID: 2176301407503456708, guid: 4b17a840543d03746aabb122d40d0857,
     type: 3}
-  boidCount: 100
+  boidCount: 300
   allBoids: []
   goalPos: {x: 0, y: 0, z: 0}
   MaxCountInProximity: 10
@@ -688,11 +688,11 @@ MonoBehaviour:
   Cohesion: 0.2
   Alignment: 0.2
   Separation: 3
-  GoalWeight: 0
+  GoalWeight: 0.1
   WanderWeight: 0
   BoundAvoidanceWeight: 0.1
   ObstacleAvoidanceWeight: 0.2
-  OvercrowdWeight: 0.3
+  OvercrowdWeight: 0.15
   VelocityLerp: 0.2
   MaxSpeed: 5
   SpaceBoundRadius: 40

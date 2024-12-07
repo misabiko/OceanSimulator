@@ -465,17 +465,17 @@ MonoBehaviour:
   goalPos: {x: 0, y: 50, z: 0}
   MaxCountInProximity: 0
   DetectRadius: 0
-  BoundAvoidanceWeight: 0
-  ObstacleAvoidanceWeight: 0
-  OvercrowdWeight: 0
-  MaxSpeed: 5
-  SpaceBoundRadius: 10
   AvoidanceRadius: 0
   Cohesion: 0
   Alignment: 0
   Separation: 0
   GoalWeight: 0
   WanderWeight: 0
+  ObstacleAvoidanceWeight: 0
+  OvercrowdWeight: 0
+  MaxSpeed: 5
+  SpaceBoundRadius: 10
+  BoundAvoidanceWeight: 0
   VelocityLerp: 0
 --- !u!1 &320680285
 GameObject:
@@ -3274,6 +3274,11 @@ PrefabInstance:
       propertyPath: ocean
       value: 
       objectReference: {fileID: 1590730109}
+    - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1807191335915035936, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
       propertyPath: m_LocalPosition.x

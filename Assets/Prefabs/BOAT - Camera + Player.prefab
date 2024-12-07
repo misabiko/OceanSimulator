@@ -452,7 +452,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inputManager: {fileID: 5118312989139307759}
   forwardSpeed: 30
-  rotationSpeed: 0.5
+  rotationSpeed: 5
   boatRaycaster: {fileID: 4631748205465303249}
   birdController: {fileID: 0}
 --- !u!54 &546443728347341381
