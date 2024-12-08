@@ -960,14 +960,14 @@
     "m_ObjectId": "109b3b00e9e844fc8198781187c9dd60",
     "m_Datas": [],
     "m_ActiveSubTarget": {
-        "m_Id": "90fe3f58dea946e4a11a0e3a9d65617c"
+        "m_Id": "c66046e4f64b4125a390d246fc199e14"
     },
     "m_AllowMaterialOverride": false,
     "m_SurfaceType": 1,
     "m_ZTestMode": 4,
     "m_ZWriteControl": 0,
     "m_AlphaMode": 0,
-    "m_RenderFace": 0,
+    "m_RenderFace": 2,
     "m_AlphaClip": false,
     "m_CastShadows": true,
     "m_ReceiveShadows": true,
@@ -1157,10 +1157,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -276.66668701171877,
-            "y": 1209.333251953125,
-            "width": 109.33338928222656,
-            "height": 35.9998779296875
+            "x": -254.66664123535157,
+            "y": 1320.6666259765625,
+            "width": 109.33334350585938,
+            "height": 36.0
         }
     },
     "m_Slots": [
@@ -3385,12 +3385,6 @@
 }
 
 {
-    "m_SGVersion": 2,
-    "m_Type": "UnityEditor.Rendering.Universal.ShaderGraph.UniversalUnlitSubTarget",
-    "m_ObjectId": "90fe3f58dea946e4a11a0e3a9d65617c"
-}
-
-{
     "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
     "m_ObjectId": "931e6ca00b8d4f7ba586f6f0059137db",
@@ -4339,6 +4333,12 @@
         "x": 0.0,
         "y": 1.0
     }
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.Rendering.Universal.ShaderGraph.UniversalSpriteUnlitSubTarget",
+    "m_ObjectId": "c66046e4f64b4125a390d246fc199e14"
 }
 
 {
