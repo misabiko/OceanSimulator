@@ -108,7 +108,7 @@ Shader "Unlit/SomeUnlit"
                 float4 lib_data=sample_lib_data(lib_index);
 				
 				int lib_count = int(lib_data.r);
-				int anim_count = _BoneTransformPixels[0][0]; // int(lib_data.g);
+				int anim_count = int(lib_data.g);
 				int bone_count = int(lib_data.b);
 				float lib_end_index = lib_data.a;
                 
@@ -152,9 +152,9 @@ Shader "Unlit/SomeUnlit"
 				// float4 vertex2 = mul(mat0, UnityObjectToClipPos(v.vertex)); 
 
                 // o.vertex = body_pos;
-                o.vertex = UnityObjectToClipPos(body_pos);
+                // o.vertex = UnityObjectToClipPos(body_pos);
+                o.vertex = UnityObjectToClipPos(body_pos * float4(0.1, 0.1, 0.1, 1.0));
                 // o.vertex = UnityObjectToClipPos(mul(mat0, v.vertex));
-                // o.vertex = UnityObjectToClipPos(body_pos * float4(0.1, 0.1, 0.1, 1.0));
                 // o.vertex = vertex2;
 				// o.vertex = mul(mat0,  v.vertex);
 
