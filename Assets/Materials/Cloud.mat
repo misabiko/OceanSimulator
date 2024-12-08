@@ -102,7 +102,7 @@ Material:
     - _DetailNormalMapScale: 1
     - _DisplacementIntensity: 0.05
     - _DisplacementScale: 0.3
-    - _DisplacementSpeed: 10
+    - _DisplacementSpeed: 5
     - _DstBlend: 10
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
@@ -126,13 +126,13 @@ Material:
     - _ZTest: 4
     - _ZWrite: 0
     - _ZWriteControl: 0
-    - _fade_Depth: 1.63
+    - _fade_Depth: 0.8
     - _power: 1
     m_Colors:
     - _BaseColor: {r: 0.6754716, g: 0.6754716, b: 0.6754716, a: 1}
     - _Color: {r: 0.6754716, g: 0.6754716, b: 0.6754716, a: 1}
-    - _Color1: {r: 0.8113207, g: 0.8113207, b: 0.8113207, a: 1}
-    - _Color2: {r: 1, g: 1, b: 1, a: 1}
+    - _Color1: {r: 1, g: 1, b: 1, a: 0}
+    - _Color2: {r: 0.07998133, g: 1, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
