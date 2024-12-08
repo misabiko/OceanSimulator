@@ -71,6 +71,15 @@ public class GPUAnimationBaker : MonoBehaviour
                 colors[i] = new Color(pixels[p], pixels[p + 1], pixels[p + 2], pixels[p + 3]);
             }
         }
+
+        // Float count = 7 688
+        // 7 688 / 4 = 1922 pixels
+        // 1922 - 2 = 1920 (metadata on animations/libraries)
+        // 1920 / 32 bones = 60
+        // 60 / 15 frames = 4 pixels per bone per frame = 4 columns of a bone matrix
+        
+
+        Debug.Log($"Bones {mesh.bones.Length}, Length {length}, Framecount {frameCount}, AdjustedTimePerFrame {adjustedTimePerFrame}, Float count {pixels.Count}, PixelCount {pixel_count}, TexHeight {tex_height}");
         Texture2D texture = new Texture2D(tex_width, tex_height, TextureFormat.RGBAFloat, false);
         texture.filterMode = FilterMode.Point;
         texture.SetPixels(colors);
@@ -93,15 +102,14 @@ public class GPUAnimationBaker : MonoBehaviour
 
         var a = bone.localToWorldMatrix;
         //var b = bone.worldToLocalMatrix;
-        // row
-        for (int i = 0; i < 3; i++)
+
+        // column
+        for (int j = 0; j < 4; j++)
         {
-            // column
-            for (int j = 0; j < 4; j++)
+            // row
+            for (int i = 0; i < 4; i++)
             {
-                pixels.Add(a[i, j]);
-                pixels.Add(a[i, j]);
-                pixels.Add(a[i, j]);
+                // write by column
                 pixels.Add(a[i, j]);
             }
         }
