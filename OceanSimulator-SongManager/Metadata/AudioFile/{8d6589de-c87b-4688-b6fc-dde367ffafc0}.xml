@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="AudioFile" id="{8d6589de-c87b-4688-b6fc-dde367ffafc0}">
+		<property name="assetPath">
+			<value>rainy-day-in-town-with-birds-singing-194011.mp3</value>
+		</property>
+		<property name="isStreaming">
+			<value>true</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>581.22448979591832</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{cc3b2d17-c942-4cdd-9ed7-24bad2737fea}</destination>
+		</relationship>
+	</object>
+</objects>

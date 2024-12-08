@@ -28,7 +28,7 @@ public class BoatController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        currentSpeed = forwardSpeed;
+        currentSpeed = 0;
         myRigidbody = GetComponent<Rigidbody>();
     }
 
