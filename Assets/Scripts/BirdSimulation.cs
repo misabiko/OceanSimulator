@@ -13,8 +13,6 @@ public class BirdSimulation : MonoBehaviour
     public Vector3 goalPos = new Vector3(0, 0, 0);
 
     [Header("Boid settings")]
-    [Range(0f, 100)]
-    public int MaxCountInProximity;
     [Range(0f, 100.0f)]
     public float DetectRadius;
     [Range(0f, 100.0f)]
@@ -26,19 +24,22 @@ public class BirdSimulation : MonoBehaviour
     [Range(0f, 100.0f)]
     public float Separation;
     [Range(0f, 100.0f)]
+    public float MaxSpeed = 5f;
+
+    [Range(0f, 100.0f)]
     public float GoalWeight;
     [Range(0f, 100.0f)]
     public float WanderWeight;
     [Range(0f, 100.0f)]
     public float ObstacleAvoidanceWeight;
-    [Range(0f, 100.0f)]
-    public float OvercrowdWeight;
-    [Range(0f, 100.0f)]
-    public float MaxSpeed = 5f;
     [Range(10f, 100.0f)]
     public float SpaceBoundRadius;
     [Range(0f, 100.0f)]
     public float BoundAvoidanceWeight;
+    [Range(0f, 100.0f)]
+    public float OvercrowdWeight;
+    [Range(0f, 100)]
+    public int MaxCountInProximity;
     [Range(0f, 100.0f)] 
     public float VelocityLerp;
 

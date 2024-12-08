@@ -5,10 +5,11 @@ using Random = UnityEngine.Random;
 public class Boid : MonoBehaviour
 {
     private SkinnedMeshRenderer mesh;
+    private SphereCollider collider;
 
     public Vector3 velocity;
     public Vector3 centroid;
-    public float animationTime;
+    public float animationTime = 1;
     public float animationLength = 3;
 
     private BirdSimulation Simulation => BirdSimulation.instance;
@@ -17,6 +18,7 @@ public class Boid : MonoBehaviour
     void Start()
     {
         mesh = GetComponentInChildren<SkinnedMeshRenderer>();
+        collider = GetComponentInChildren<SphereCollider>();
         velocity = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1), Random.Range(-1, 1)).normalized * Random.Range(1, Simulation.MaxSpeed);
     }
 
@@ -116,12 +118,38 @@ public class Boid : MonoBehaviour
         }
 
         // Avoid Obstacles
-        Collider[] hitColliders = Physics.OverlapSphere(pos0, Simulation.DetectRadius);
+        LayerMask collisionLayer = LayerMask.GetMask("Obstacles");
+        var speed1 = Math.Clamp(vel0.magnitude, 1, Simulation.MaxSpeed);
+
+        Collider[] hitColliders = Physics.OverlapSphere(pos0, Simulation.DetectRadius, collisionLayer);
         foreach (var hitCollider in hitColliders)
         {
             var p = hitCollider.ClosestPoint(pos0);
             var dpos = p - pos0;
-            vel0 += -dpos * Simulation.ObstacleAvoidanceWeight * (Simulation.DetectRadius - dpos.magnitude);
+            //vel0 += -dpos * Simulation.ObstacleAvoidanceWeight * (Simulation.DetectRadius - dpos.magnitude);
+            //Debug.DrawLine(pos0, p, new Color(1, 0, 1, 1f), 1);
+
+
+            Ray ray = new Ray(pos0, dpos.normalized);
+            float rayLength = Simulation.DetectRadius;
+            RaycastHit hit;
+            if(Physics.Raycast(ray, out hit, rayLength, collisionLayer))
+            {
+
+                // Get the normal of the surface at the hit point
+                Vector3 hitNormal = hit.normal;
+
+                //var dpos = hit.point - pos0;
+                var obstacleAvoidanceVector = hitNormal * Simulation.ObstacleAvoidanceWeight * (rayLength - dpos.magnitude);
+                vel0 += obstacleAvoidanceVector;
+
+                // Draw the ray in green if it hits
+                Debug.DrawLine(ray.origin, hit.point, new Color(1, 0, 1, 1f));
+                //Debug.DrawLine(ray.origin, obstacleAvoidanceVector, Color.blue, 0.5f);
+                // Draw the face normal
+                Debug.DrawRay(hit.point, hitNormal, Color.green);
+            }
+
         }
 
         // Clamp speed
@@ -140,8 +168,8 @@ public class Boid : MonoBehaviour
     private void OnDrawGizmos()
     {
         if(Simulation == null) return; // because this runs in the editor, where the simulation isnt started yet
-        Gizmos.color = new Color(1, 0, 1, 0.1f);
-        Gizmos.DrawWireSphere(this.centroid, Simulation.DetectRadius);
+        //Gizmos.color = new Color(1, 0, 1, 0.1f);
+        //Gizmos.DrawWireSphere(this.centroid, Simulation.DetectRadius);
     }
 
     private void OnDrawGizmosSelected()
