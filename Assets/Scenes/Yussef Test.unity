@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.41960785, g: 0.45961675, b: 0.627451, a: 1}
-  m_SkyboxMaterial: {fileID: 2100000, guid: 552fefa882f231c42aeabdcad4c36fe5, type: 2}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 1cf6f4c6e6e0518419839d3f5448dd99, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -1581,7 +1581,10 @@ MonoBehaviour:
   maxMoonIntensity: 1
   dayAmbientLight: {r: 1, g: 0.985543, b: 0.82075465, a: 0}
   nightAmbientLight: {r: 0.75157225, g: 0.8736479, b: 1, a: 0}
+  fogDayColour: {r: 0.75157225, g: 0.98958755, b: 1, a: 0}
+  fogNightColour: {r: 0.114987485, g: 0.12860468, b: 0.23899364, a: 0}
   volume: {fileID: 770761233}
+  skyboxMaterial: {fileID: 2100000, guid: 1cf6f4c6e6e0518419839d3f5448dd99, type: 2}
 --- !u!1 &1007701508
 GameObject:
   m_ObjectHideFlags: 0
@@ -3375,7 +3378,7 @@ PrefabInstance:
     - target: {fileID: 3318211179686270734, guid: 5c762e853944b83428dc3f2a217deb2c,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4385706056568520601, guid: 5c762e853944b83428dc3f2a217deb2c,
         type: 3}

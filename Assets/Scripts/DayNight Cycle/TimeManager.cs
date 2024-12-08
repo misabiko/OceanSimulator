@@ -14,8 +14,11 @@ public class TimeManager : MonoBehaviour
     [SerializeField] private float maxMoonIntensity = 0.5f;
     [SerializeField] private Color dayAmbientLight;
     [SerializeField] private Color nightAmbientLight;
+    [SerializeField] private Color fogDayColour;
+    [SerializeField] private Color fogNightColour;
     [SerializeField] private Volume volume;
-
+    [SerializeField] private Material skyboxMaterial;
+    
     private ColorAdjustments colorAdjustments;
     
     private TimeService timeService;
@@ -23,6 +26,7 @@ public class TimeManager : MonoBehaviour
     private void Start()
     {
         timeService = new TimeService(timeSettings);
+        volume.profile.TryGet(out colorAdjustments);
     }
 
     private void Update()
@@ -30,6 +34,7 @@ public class TimeManager : MonoBehaviour
         UpdateTimeOfDay();
         RotateSun();
         UpdateLightSettings();
+        UpdateSkyBlend();
         
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -39,6 +44,13 @@ public class TimeManager : MonoBehaviour
         {
             timeSettings.timeMultiplier /= 2;
         }
+    }
+
+    private void UpdateSkyBlend()
+    {
+        float dotProduct = Vector3.Dot(sun.transform.forward, Vector3.up);
+        float blend = Mathf.Lerp(0, 1, lightIntensityCurve.Evaluate(dotProduct));
+        skyboxMaterial.SetFloat("_CubemapTransition", blend);
     }
 
     private void UpdateLightSettings()
@@ -51,6 +63,8 @@ public class TimeManager : MonoBehaviour
             return;
 
         colorAdjustments.colorFilter.value = Color.Lerp(nightAmbientLight, dayAmbientLight, lightIntensityCurve.Evaluate(dotProduct));
+        RenderSettings.fogColor =
+            Color.Lerp(fogNightColour, fogDayColour, lightIntensityCurve.Evaluate(dotProduct));
     }
 
     private void RotateSun()
