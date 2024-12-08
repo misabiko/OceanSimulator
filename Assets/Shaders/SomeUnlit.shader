@@ -21,6 +21,8 @@ Shader "Unlit/SomeUnlit"
 
             #include "UnityCG.cginc"
 
+            uniform float4 _BoneTransformPixels[2048]; // Adjust size as needed
+
             struct appdata
             {
                 // float4 vertex : POSITION;
@@ -28,7 +30,7 @@ Shader "Unlit/SomeUnlit"
                 float4 vertex:POSITION;
                 float4 normal:NORMAL;
                 float4 tangent:TANGENT;
-                float4 boneIndices:BLENDINDICES;// Bone indices.
+                int4 boneIndices:BLENDINDICES;// Bone indices.
                 float4 boneWeights:BLENDWEIGHTS;// Bone weights.
                 float2 uv:TEXCOORD0;
             };
@@ -49,12 +51,15 @@ Shader "Unlit/SomeUnlit"
 			
             // get a pixel color from an index
             float4 sample_lib_data(int index){
+				/*
                 float f=float(index);
                 float h=floor(f/2048.0); // remaining = col
                 index=int(fmod(f,2048.0)); // mod = row
                 // return texelFetch(animation_data, ivec2(index, int(h)), 0);
                 // return tex2D(_BoneTransformTex,float2(index,h));
 				return tex2Dlod(_BoneTransformTex, float4(index, h, 0, 0) );
+				*/
+				return _BoneTransformPixels[index];
             }
 
             float4x4 get_bone_transform(int lib_index,float4 anim_data,int bone_count,int bone_id,int frame){
@@ -79,7 +84,7 @@ Shader "Unlit/SomeUnlit"
                 return float4x4(col0, col1, col2, col3);
             }
 
-            float4x4 get_matrix(int lib_index,float4 anim_data,int bone_count,int frame,float4 bone_indices,float4 bone_weights){
+            float4x4 get_matrix(int lib_index,float4 anim_data,int bone_count,int frame,int4 bone_indices,float4 bone_weights){
                 float4x4 bone_transform_0=get_bone_transform(lib_index,anim_data,bone_count,bone_indices.x,frame);
                 float4x4 bone_transform_1=get_bone_transform(lib_index,anim_data,bone_count,bone_indices.y,frame);
                 float4x4 bone_transform_2=get_bone_transform(lib_index,anim_data,bone_count,bone_indices.z,frame);
@@ -103,7 +108,7 @@ Shader "Unlit/SomeUnlit"
                 float4 lib_data=sample_lib_data(lib_index);
 				
 				int lib_count = int(lib_data.r);
-				int anim_count = int(lib_data.g);
+				int anim_count = _BoneTransformPixels[0][0]; // int(lib_data.g);
 				int bone_count = int(lib_data.b);
 				float lib_end_index = lib_data.a;
                 
@@ -121,6 +126,10 @@ Shader "Unlit/SomeUnlit"
                     frame1=0.;
                 }
                 
+
+				float4 world_v = UnityObjectToClipPos(v.vertex);
+
+
                 float4x4 mat0 = get_matrix(lib_index, anim_data, bone_count, int(frame0), v.boneIndices, v.boneWeights);
                 float4x4 mat1 = get_matrix(lib_index, anim_data, bone_count, int(frame1), v.boneIndices, v.boneWeights);
                 float4 vertex0 =mul(mat0, v.vertex); //  v.vertex * mat0; //
@@ -132,11 +141,19 @@ Shader "Unlit/SomeUnlit"
                 //o.uv = TRANSFORM_TEX(v.uv, _MainTex); // v.uv; // TRANSFORM_TEX(v.uv, _MainTex);
 
 				// float4 scaledVertex = v.vertex * float4(_AnimationTime, _AnimationTime, _AnimationTime, 1.0);
+				// float4 scaledVertex = v.vertex * float4(anim_length, anim_length, anim_length, 1.0);
+				// float4 scaledVertex = v.vertex * float4(frame0, frame0, frame0, 1.0);
+				// float4 scaledVertex = v.vertex * float4(anim_count, anim_count, anim_count, 1.0);
+				float4 scale = float4(0.1, 0.1, 0.1, 1.0);
                 // o.vertex = UnityObjectToClipPos(scaledVertex);
 
+				// float4 vertex2 = mul(mat0, UnityObjectToClipPos(v.vertex)); 
+
                 // o.vertex = body_pos;
-                // o.vertex = UnityObjectToClipPos(body_pos);
-                o.vertex = UnityObjectToClipPos(v.vertex);
+                o.vertex = UnityObjectToClipPos(body_pos * scale);
+				// o.vertex = UnityObjectToClipPos(mul(mat0, v.vertex));
+                // o.vertex = vertex2;
+				// o.vertex = mul(mat0,  v.vertex);
 
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 return o;

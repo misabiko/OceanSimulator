@@ -1,4 +1,6 @@
+using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -9,9 +11,12 @@ public class Boid : MonoBehaviour
 
     public Vector3 velocity;
     public Vector3 centroid;
-    public float animationTime = 1;
-    public float animationLength = 3;
+    public float animationTime = 0;
 
+
+    public static float animationLength = 3;
+    private static List<Color> animationPixels;
+    private static Texture2D animationTexture;
     private BirdSimulation Simulation => BirdSimulation.instance;
 
     // Start is called before the first frame update
@@ -20,6 +25,26 @@ public class Boid : MonoBehaviour
         mesh = GetComponentInChildren<SkinnedMeshRenderer>();
         collider = GetComponentInChildren<SphereCollider>();
         velocity = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1), Random.Range(-1, 1)).normalized * Random.Range(1, Simulation.MaxSpeed);
+
+        if (animationPixels == null)
+        {
+            var baker = GetComponentInChildren<GPUAnimationBaker>();
+            animationPixels = baker.ReadMatricesFromFile();
+            //baker.Bake();
+            //animationTexture = baker.bakedTexture;
+            //animationPixels = baker.bakedPixels;
+            //Debug.Log($"Boid has lib: {animationTexture.GetPixel(0, 0)}");
+            //Debug.Log($"Boid has anim: {animationTexture.GetPixel(1, 0)}");
+            //Debug.Log($"Boid has bone: {animationTexture.GetPixel(2, 0)}")
+            Debug.Log($"Boid has arr lib:  {animationPixels[0]}");
+            Debug.Log($"Boid has arr anim: {animationPixels[1]}");
+            Debug.Log($"Boid has arr bone: {animationPixels[2]}");
+
+            var animData = animationPixels[1];
+            animationLength = animData[0]; // length
+        }
+        //mesh.material.SetTexture("_BoneTransformTex", animationTexture);
+        mesh.material.SetColorArray("_BoneTransformPixels", animationPixels);
     }
 
     // Update is called once per frame
@@ -32,7 +57,7 @@ public class Boid : MonoBehaviour
         {
             animationTime -= animationLength; // loop animation
         }
-        foreach(var mat in mesh.materials)
+        foreach (var mat in mesh.materials)
             mat.SetFloat("_AnimationTime", animationTime);
         mesh.material.SetFloat("_AnimationTime", animationTime);
         ApplyRulesBoids();
@@ -41,6 +66,7 @@ public class Boid : MonoBehaviour
 
     void ApplyRulesBoids()
     {
+        if (Simulation == null) return; // because this runs in the editor, where the simulation isnt started yet
         Vector3 avgPos = Vector3.zero;
         Vector3 avgVel = Vector3.zero;
         Vector3 avoidance = Vector3.zero;
@@ -133,7 +159,7 @@ public class Boid : MonoBehaviour
             Ray ray = new Ray(pos0, dpos.normalized);
             float rayLength = Simulation.DetectRadius;
             RaycastHit hit;
-            if(Physics.Raycast(ray, out hit, rayLength, collisionLayer))
+            if (Physics.Raycast(ray, out hit, rayLength, collisionLayer))
             {
 
                 // Get the normal of the surface at the hit point
@@ -151,6 +177,12 @@ public class Boid : MonoBehaviour
             }
 
         }
+        
+        // Going up should be slower than going down
+        //var dotup = Vector3.Dot(vel0, Vector3.down); // [1, -1] = [down, up]
+        //dotup /= 4; // [0.25, -0.25]
+        //dotup += 1f; // [1.25, 0.75] 
+        //vel0 *= dotup;
 
         // Clamp speed
         var speed = Math.Clamp(vel0.magnitude, 1, Simulation.MaxSpeed);
@@ -160,14 +192,14 @@ public class Boid : MonoBehaviour
 
         // Transform
         Debug.DrawLine(pos0, pos0 + velocity, Color.red);
-        this.transform.LookAt(pos0 + velocity);
+        this.transform.LookAt(pos0 + velocity, Vector3.up);
         this.transform.Translate(velocity * Time.deltaTime, Space.World);
     }
 
 
     private void OnDrawGizmos()
     {
-        if(Simulation == null) return; // because this runs in the editor, where the simulation isnt started yet
+        if (Simulation == null) return; // because this runs in the editor, where the simulation isnt started yet
         //Gizmos.color = new Color(1, 0, 1, 0.1f);
         //Gizmos.DrawWireSphere(this.centroid, Simulation.DetectRadius);
     }
