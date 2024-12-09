@@ -13,20 +13,21 @@ public class CloudObjectPool : MonoBehaviour
     }
 
     public List<Pool> Pools;
-    public Dictionary<string, Queue<GameObject>> PoolDictionary;
+    private Dictionary<string, Queue<GameObject>> PoolDictionary;
 
     private CloudSpawner cloudSpawner;
 
     private void Awake()
     {
         cloudSpawner = GetComponent<CloudSpawner>();
+        PoolDictionary = new Dictionary<string, Queue<GameObject>>();
     }
 
     private void Start()
     {
+
         cloudSpawner.InitializeSpawner();
 
-        PoolDictionary = new Dictionary<string, Queue<GameObject>>();
 
         foreach (Pool pool in Pools)
         {
@@ -35,6 +36,7 @@ public class CloudObjectPool : MonoBehaviour
             for (int i = 0; i < pool.size; i++)
             {
                 GameObject cloud = Instantiate(pool.prefab, cloudSpawner.GetRandomSpawnPosition(), transform.rotation);
+                cloud.GetComponent<CloudAgentSetter>().Initialize();
                 cloud.transform.eulerAngles = new Vector3(90f, 0f, 0f);
                 cloud.SetActive(true);
                 objectPool.Enqueue(cloud);
@@ -46,25 +48,29 @@ public class CloudObjectPool : MonoBehaviour
 
     private void Update()
     {
+        
         Queue<GameObject> pool = PoolDictionary["Clouds"];
         
         foreach (GameObject cloud in pool)
         {
-            if(Vector3.Distance(transform.position,cloud.transform.position) > cloudSpawner.outerRadius)
-                UpdateCloud("Clouds", cloud, cloudSpawner.GetRandomSpawnPosition());
+            if (Vector3.Distance(transform.position, cloud.transform.position) > cloudSpawner.outerRadius)
+            {
+                UpdatePoolObject("Clouds", cloud, cloudSpawner.GetRandomSpawnPosition());
+            }
+
         }
     }
 
-    private GameObject UpdateCloud(string tag, GameObject cloud, Vector3 position)
+    private GameObject UpdatePoolObject(string tag, GameObject poolObject, Vector3 position)
     {
         if (!PoolDictionary.ContainsKey(tag))
             return null;
 
-        cloud.SetActive(true);
-        cloud.transform.position = position;
-        cloud.transform.eulerAngles = new Vector3(90f, 0f, 0f);;
+        poolObject.SetActive(true);
+        poolObject.transform.position = position;
+        poolObject.transform.eulerAngles = new Vector3(90f, 0f, 0f);;
 
-        return cloud;
+        return poolObject;
     }
 
     private GameObject SpawnFromPool(string tag, Vector3 position)
