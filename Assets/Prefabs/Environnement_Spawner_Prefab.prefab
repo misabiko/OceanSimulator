@@ -14,8 +14,9 @@ GameObject:
   - component: {fileID: 237706035045043877}
   - component: {fileID: 384753283854494651}
   - component: {fileID: 8481918126875551258}
+  - component: {fileID: 6252195428100752918}
   m_Layer: 0
-  m_Name: Cloud_Spawner_Prefab
+  m_Name: Environnement_Spawner_Prefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -139,6 +140,29 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Pools:
   - tag: Clouds
-    prefab: {fileID: 5417259978360155573, guid: 5de6c8045a3bbec489e04c9519a2ad0b,
-      type: 3}
+    prefabs:
+    - {fileID: 5417259978360155573, guid: 5de6c8045a3bbec489e04c9519a2ad0b, type: 3}
     size: 10
+  - tag: Rocks
+    prefabs:
+    - {fileID: 6453693835992710713, guid: 13e9779be2151e149a81aaa2310dd7ac, type: 3}
+    - {fileID: 8040115573142009329, guid: d5b66c39d77771c43859ff126f0955e6, type: 3}
+    - {fileID: 7143390217468433171, guid: be5839e2df48f0844ab5bf7d7018d41c, type: 3}
+    size: 30
+--- !u!114 &6252195428100752918
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1266240891798851658}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbf54c281cbb17d40a4ae3ff6f8e8448, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  innerRadius: 100
+  outerRadius: 1000
+  minHeight: 10
+  maxHeight: 100
+  angle: 360
