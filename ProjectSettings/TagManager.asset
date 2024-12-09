@@ -7,11 +7,13 @@ TagManager:
   - PlayerInput
   - BirdBoid
   - BirdController
+  - Rocks
+  - CloudAgent
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - clouds
   - Water
   - UI
   - 
