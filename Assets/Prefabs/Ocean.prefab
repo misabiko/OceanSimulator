@@ -46,4 +46,51 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   oceanTilePrefab: {fileID: 8205180036587047388, guid: 24d9ba6944bdd3940a1aacabca0be70f,
     type: 3}
-  tileRadius: 1
+  tileRadius: 4
+  tileSideVertexCount: 256
+  tileSize: 64
+  displacementComputeShaderSource: {fileID: 7200000, guid: 40e34aac946926740866b917839f1a53,
+    type: 3}
+  spectrumComputeShaderSource: {fileID: 7200000, guid: bab3b7ecb79e4d5b9515d87e3efd086e,
+    type: 3}
+  rreusserFFTSource: {fileID: 7200000, guid: 402468975e3d45a0bd984b415e9e8878, type: 3}
+  displacement: {fileID: 0}
+  HX: {fileID: 0}
+  HY: {fileID: 0}
+  HZ: {fileID: 0}
+  HX2: {fileID: 0}
+  HY2: {fileID: 0}
+  HZ2: {fileID: 0}
+  NY: {fileID: 0}
+  NY2: {fileID: 0}
+  approximateNormals: {fileID: 0}
+  pingBuffer: {fileID: 0}
+  pongBuffer: {fileID: 0}
+  waveNumberTexture: {fileID: 0}
+  noiseTexture: {fileID: 0}
+  noiseResolution: 10
+  F: 1400000
+  U10: 20
+  gamma: 3.3
+  phillipsA: 1
+  phillipsSmallLength: 0.1
+  phillipsWindDir: {x: 1, y: 0}
+  timeScale: 1
+  timeOffset: 1000
+  heightTest: 0
+  test2d: {x: 128, y: 128}
+  test2d2: {x: 0, y: 0}
+  test2d3: {x: 0, y: 0.5}
+  test2d4: {x: 0, y: 1}
+  test2d5: {x: 0, y: 0}
+  dtest1: 0.05
+  dtest2: 0.2
+  dtest3: 0.05
+  normalTestX: {x: 1, y: 1, z: 1}
+  normalTestZ: {x: 1, y: 1, z: 1}
+  normalTest2: 0
+  normalTest3: {x: 0, y: 0, z: 0}
+  waveVector: {x: 1, y: 1}
+  amplitude: 1
+  angularFrequency: 0
+  height: 0.02

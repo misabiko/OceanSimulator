@@ -1,11 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
-//using MathNet.Numerics.LinearAlgebra.Single;
 
 public class Buoyancy : MonoBehaviour
 {
@@ -34,7 +30,7 @@ public class Buoyancy : MonoBehaviour
     
     private bool _isRequestSent = false;
     private Color[] _oceanCachedData;
-    private OceanMeshGenerator _oceanMeshGenerator;
+    private Ocean _ocean;
     [SerializeField] float _boatDensity = 2f;
 
     private Rigidbody rb;
@@ -60,8 +56,8 @@ public class Buoyancy : MonoBehaviour
     private void Start()
     {
         _voxelCollider = GetComponent<BoxCollider>();
-       // _oceanMeshGenerator = ocean.GetComponentInChildren<OceanMeshGenerator>(); 
-       // _displacementTexture = _oceanMeshGenerator.displacement;
+       // _ocean = ocean.GetComponentInChildren<OceanMeshGenerator>(); 
+       // _displacementTexture = _ocean.displacement;
         _voxelBorderWidth = _voxelCollider.bounds.size.x;
         _voxelBorderHeight = _voxelCollider.bounds.size.y;
         _voxelBorderDepth = _voxelCollider.bounds.size.z;
@@ -79,10 +75,10 @@ public class Buoyancy : MonoBehaviour
         rb.AddForce(Vector3.up * buoyancy, ForceMode.Force);
     }
 
-    private void getCurrentOceanMesh()
-    {
-        _oceanMeshGenerator = ocean.GetOceanMeshGenerator(transform.position);
-    }
+    // private void getCurrentOceanMesh()
+    // {
+    //     _ocean = ocean.GetOceanMeshGenerator(transform.position);
+    // }
 
     private void CalculateNbrVoxels()
     {
@@ -114,7 +110,7 @@ public class Buoyancy : MonoBehaviour
     private float CalculateSubmergedVolume()
     {
         float totalVolume = 0;
-        if (!_isRequestSent && _oceanMeshGenerator != null)
+        if (!_isRequestSent && _ocean != null)
         {
             StartGPURequest();
         }
@@ -125,11 +121,11 @@ public class Buoyancy : MonoBehaviour
             float y_OceanPosition = _oceanPosition.y;
             float z_OceanPosition = _oceanPosition.z;
             int i = 0;
-            float step = _oceanMeshGenerator.size / _oceanMeshGenerator.sideVertexCount;
+            float step = _ocean.tileSize / _ocean.tileSideVertexCount;
             foreach (var data in _oceanCachedData)
             {
-                float x_basePosition = i % _oceanMeshGenerator.sideVertexCount * step;
-                float z_basePosition = Mathf.Floor(i / _oceanMeshGenerator.sideVertexCount) * step;
+                float x_basePosition = i % _ocean.tileSideVertexCount * step;
+                float z_basePosition = Mathf.Floor(i / _ocean.tileSideVertexCount) * step;
                 
                 float x_dataPosition = data.r + x_basePosition + x_OceanPosition;
                 float y_dataPosition = data.g + y_OceanPosition;
@@ -174,7 +170,7 @@ public class Buoyancy : MonoBehaviour
 
     private float CalculateBuoyancy()
     {
-        getCurrentOceanMesh();
+        // getCurrentOceanMesh();
         float submergedVolume = CalculateSubmergedVolume();
         return -(fluidDensity * submergedVolume * Physics.gravity.y * 1 / voxelCount);
     }
@@ -184,7 +180,7 @@ public class Buoyancy : MonoBehaviour
         _isRequestSent = true;
         try
         {
-            AsyncGPUReadbackRequest request = await AsyncGPUReadback.RequestAsync(_oceanMeshGenerator.displacement, 0);
+            AsyncGPUReadbackRequest request = await AsyncGPUReadback.RequestAsync(_ocean.displacement, 0);
             if (request.hasError)
             {
                 Debug.LogError("GPU readback error");
@@ -207,17 +203,17 @@ public class Buoyancy : MonoBehaviour
 
   /*  private void OnDrawGizmos()
     {
-        if (_oceanMeshGenerator != null)
+        if (_ocean != null)
         {
             float x_OceanPosition = _oceanPosition.x;
             float y_OceanPosition = _oceanPosition.y;
             float z_OceanPosition = _oceanPosition.z;
-            float step = _oceanMeshGenerator.size / _oceanMeshGenerator.sideVertexCount;
+            float step = _ocean.size / _ocean.tileSideVertexCount;
             int i = 0;
             foreach (var data in _oceanCachedData)
             {
-                float x_basePosition = i % _oceanMeshGenerator.sideVertexCount * step;
-                float z_basePosition = Mathf.Floor(i / _oceanMeshGenerator.sideVertexCount) * step;
+                float x_basePosition = i % _ocean.tileSideVertexCount * step;
+                float z_basePosition = Mathf.Floor(i / _ocean.tileSideVertexCount) * step;
 
                 float x_dataPosition = data.r + x_basePosition + x_OceanPosition;
                 float y_dataPosition = data.g + y_OceanPosition;
