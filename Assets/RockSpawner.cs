@@ -41,8 +41,10 @@ public class RockSpawner : MonoBehaviour
         
         Vector3 rotationVector = new Vector3(Mathf.Cos(radians), 0, Mathf.Sin(radians));
 
-        Vector3 startVector = transform.position + (rotationVector * innerRadius) + new Vector3(0, heightRange, 0);
-        Vector3 endVector = transform.position + (rotationVector * outerRadius)+ new Vector3(0, heightRange, 0); 
+        Vector3 startVector = transform.position + (rotationVector * innerRadius);
+        Vector3 endVector = transform.position + (rotationVector * outerRadius);
+        startVector.y = heightRange;
+        endVector.y = heightRange;
         
         return GetRandomPositionBetweenTwoPoints(startVector, endVector);
     }

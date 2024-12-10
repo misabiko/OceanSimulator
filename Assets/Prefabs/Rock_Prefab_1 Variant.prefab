@@ -177,6 +177,11 @@ PrefabInstance:
       propertyPath: m_TagString
       value: Rocks
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: d9bcb3ef9aa5d5e4daf2b21203908910,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -184,7 +189,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d9bcb3ef9aa5d5e4daf2b21203908910,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3586154450728208975}
+      addedObject: {fileID: 6690296092979895411}
   m_SourcePrefab: {fileID: 100100000, guid: d9bcb3ef9aa5d5e4daf2b21203908910, type: 3}
 --- !u!4 &6327561246048261433 stripped
 Transform:
@@ -198,8 +203,8 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 5790144852368913106}
   m_PrefabAsset: {fileID: 0}
---- !u!64 &3586154450728208975
-MeshCollider:
+--- !u!65 &6690296092979895411
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -216,7 +221,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 5541652339837797272, guid: d9bcb3ef9aa5d5e4daf2b21203908910, type: 3}
+  serializedVersion: 3
+  m_Size: {x: 2.9348035, y: 2.1160073, z: 2.530518}
+  m_Center: {x: -0.17514676, y: -0.000000059604645, z: -0.0623846}
