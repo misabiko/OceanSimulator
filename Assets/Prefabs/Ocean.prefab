@@ -46,7 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   oceanTilePrefab: {fileID: 8205180036587047388, guid: 24d9ba6944bdd3940a1aacabca0be70f,
     type: 3}
-  tileRadius: 4
+  tileRadius: 8
   tileSideVertexCount: 256
   tileSize: 64
   displacementComputeShaderSource: {fileID: 7200000, guid: 40e34aac946926740866b917839f1a53,
@@ -93,4 +93,3 @@ MonoBehaviour:
   waveVector: {x: 1, y: 1}
   amplitude: 1
   angularFrequency: 0
-  height: 0.02

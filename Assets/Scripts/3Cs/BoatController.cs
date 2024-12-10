@@ -39,7 +39,7 @@ public class BoatController : MonoBehaviour
             PlayerStateManager.SwitchTo(PlayerState.Bird);
         
         Vector2 moveInput = inputManager.moveDirection;
-        currentSpeed = Mathf.Clamp(currentSpeed + moveInput.y, 0, forwardSpeed);
+        currentSpeed = Mathf.Clamp(currentSpeed + moveInput.y, -forwardSpeed, forwardSpeed);
         
         transform.Rotate(0,   moveInput.x * rotationSpeed, 0, Space.Self);
         forwardMovement = transform.forward * currentSpeed;
@@ -55,5 +55,11 @@ public class BoatController : MonoBehaviour
         birdController.transform.position = boatRaycaster.currentSelectedBoid.transform.position;
         boatRaycaster.currentSelectedBoid = null;
         PlayerStateManager.SwitchTo(PlayerState.Bird);
+    }
+
+    private void OnCollisionStay(Collision other)
+    {
+        if(other.collider.CompareTag("Rocks"))
+            currentSpeed = Mathf.Clamp(currentSpeed, -forwardSpeed, 0);
     }
 }

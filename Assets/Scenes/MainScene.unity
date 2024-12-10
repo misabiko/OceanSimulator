@@ -622,11 +622,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
         type: 3}
-      propertyPath: tileRadius
-      value: 8
-      objectReference: {fileID: 0}
-    - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
-        type: 3}
       propertyPath: tileSideVertexCount
       value: 32
       objectReference: {fileID: 0}
