@@ -569,6 +569,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
+      propertyPath: _physicsShader
+      value: 
+      objectReference: {fileID: 7200000, guid: bee02eccc5cc53943b505126a96be2e3, type: 3}
+    - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
       propertyPath: buoyancyAdjustment
       value: 1
       objectReference: {fileID: 0}
@@ -590,12 +595,17 @@ PrefabInstance:
     - target: {fileID: 546443728347341381, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
       propertyPath: m_Constraints
-      value: 80
+      value: 84
+      objectReference: {fileID: 0}
+    - target: {fileID: 1807191335915035936, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.77771
       objectReference: {fileID: 0}
     - target: {fileID: 1807191335915035936, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 28.56
+      value: -14.4
       objectReference: {fileID: 0}
     - target: {fileID: 1807191335915035936, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
@@ -605,7 +615,7 @@ PrefabInstance:
     - target: {fileID: 1807191335915035936, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 33.52
+      value: -5.5
       objectReference: {fileID: 0}
     - target: {fileID: 1807191335915035936, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
@@ -1987,6 +1997,7 @@ MonoBehaviour:
   fluidDensity: 0.8
   ocean: {fileID: 799800865}
   _boatDensity: 2
+  _physicsShader: {fileID: 0}
 --- !u!54 &1850245279
 Rigidbody:
   m_ObjectHideFlags: 0

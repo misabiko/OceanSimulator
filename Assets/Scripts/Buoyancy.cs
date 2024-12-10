@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
 //using MathNet.Numerics.LinearAlgebra.Single;
@@ -11,7 +12,9 @@ public class Buoyancy : MonoBehaviour
 {
     /*Voxel Spawner*/
     [SerializeField] private float voxelSize = 0.1f;
-    //[SerializeField] private GameObject voxelsBorder;
+    [SerializeField] private bool showVoxels = false;
+    [SerializeField] private bool showWaterGizmos = false;
+    [SerializeField, Range(0,1)] private float GizmoSize = 1f;
     private float _voxelBorderDepth;
     private float _voxelBorderHeight;
     private float _voxelBorderWidth;
@@ -36,6 +39,7 @@ public class Buoyancy : MonoBehaviour
     private Color[] _oceanCachedData;
     private OceanMeshGenerator _oceanMeshGenerator;
     [SerializeField] float _boatDensity = 2f;
+    [SerializeField] ComputeShader _physicsShader;
 
     private Rigidbody rb;
     
@@ -44,16 +48,18 @@ public class Buoyancy : MonoBehaviour
     {
         public GizmosData(Vector3 position, Color color, Vector3 size)
         {
-            position = Position;
-            color = Color;
-            size = Size;
+            Position = position;
+            Color = color;
+            Size = size;
         }
 
-        public Vector3 Position { get; }
+        public Vector3 Position { get; set; }
 
-        public Color Color { get; }
+        public Color Color { get; set; }
 
-        public Vector3 Size { get; }
+        public Vector3 Size { get; set; }
+        
+        public float SubmergedVolume { get; set; }
     }
     
     // Start is called before the first frame update
@@ -74,9 +80,9 @@ public class Buoyancy : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        rb.mass = _boatDensity * _gridSizeX * voxelSize * _gridSizeY * voxelSize * _gridSizeZ * voxelSize;
-        float buoyancy = CalculateBuoyancy();
-        rb.AddForce(Vector3.up * buoyancy, ForceMode.Force);
+      rb.mass = _boatDensity * _gridSizeX * voxelSize * _gridSizeY * voxelSize * _gridSizeZ * voxelSize;
+      float buoyancy = CalculateBuoyancy();
+      rb.AddForce(Vector3.up * buoyancy, ForceMode.Force);
     }
 
     private void getCurrentOceanMesh()
@@ -96,18 +102,21 @@ public class Buoyancy : MonoBehaviour
     {
         var startPosition = new Vector3(voxelSize / 2 - _voxelBorderWidth / 2
                                 , voxelSize / 2 - _voxelBorderHeight / 2,
-                                voxelSize / 2 - _voxelBorderDepth / 2)
-                            + _voxelCollider.transform.position;
+                                voxelSize / 2 - _voxelBorderDepth / 2);
         for (var x = 0; x < _gridSizeX; x++)
-        for (var y = 0; y < _gridSizeY; y++)
-        for (var z = 0; z < _gridSizeZ; z++)
         {
             
-            var position = startPosition + new Vector3(x * voxelSize,
-                y * voxelSize,
-                z * voxelSize);
-            _voxels.Add(new GizmosData(position, Color.red, Vector3.one * voxelSize));
-            voxelCount++;
+            for (var y = 0; y < _gridSizeY; y++)
+            {
+                for (var z = 0; z < _gridSizeZ; z++)
+                {
+                    var position = startPosition + _voxelCollider.center + new Vector3(x * voxelSize,
+                        y * voxelSize,
+                        z * voxelSize);
+                    _voxels.Add(new GizmosData(position, Color.red, Vector3.one * voxelSize));
+                    voxelCount++;
+                }
+            }
         }
     }
 
@@ -155,6 +164,7 @@ public class Buoyancy : MonoBehaviour
                             
                         }
                         float voxel_submergedVolume = Mathf.Abs(voxelSize * voxelSize * (submergedHeight));
+                        voxel.SubmergedVolume = voxel_submergedVolume;
                         totalVolume += voxel_submergedVolume ;
                     }
                 }
@@ -167,16 +177,21 @@ public class Buoyancy : MonoBehaviour
         }
         return totalVolume;
     }
-    
-    private void CalculatePlane()
-    {
-    }
 
     private float CalculateBuoyancy()
     {
         getCurrentOceanMesh();
         float submergedVolume = CalculateSubmergedVolume();
         return -(fluidDensity * submergedVolume * Physics.gravity.y * 1 / voxelCount);
+        // Vector4[] voxelsArray = new Vector4[_voxels.Count];
+        // for (int i = 0; i < _voxels.Count; i++)
+        // {
+        //     var voxel = _voxels[i];
+        //     voxelsArray[i] = new Vector4(voxel.Position.x + transform.position.x, voxel.Position.y + transform.position.y, voxel.Position.z + transform.position.z, 1);
+        // }
+        // _physicsShader.SetVectorArray("boatVoxels", voxelsArray);
+        //
+        // return 0.0f;
     }
 
     private async void StartGPURequest()
@@ -205,27 +220,36 @@ public class Buoyancy : MonoBehaviour
         }
     }
 
-  /*  private void OnDrawGizmos()
-    {
-        if (_oceanMeshGenerator != null)
-        {
-            float x_OceanPosition = _oceanPosition.x;
-            float y_OceanPosition = _oceanPosition.y;
-            float z_OceanPosition = _oceanPosition.z;
-            float step = _oceanMeshGenerator.size / _oceanMeshGenerator.sideVertexCount;
-            int i = 0;
-            foreach (var data in _oceanCachedData)
-            {
-                float x_basePosition = i % _oceanMeshGenerator.sideVertexCount * step;
-                float z_basePosition = Mathf.Floor(i / _oceanMeshGenerator.sideVertexCount) * step;
-
-                float x_dataPosition = data.r + x_basePosition + x_OceanPosition;
-                float y_dataPosition = data.g + y_OceanPosition;
-                float z_dataPosition = data.b + z_basePosition + z_OceanPosition;
-                Gizmos.color = Color.yellow;
-                Gizmos.DrawSphere(new Vector3(x_dataPosition, y_dataPosition, z_dataPosition), 0.1f);
-                i++;
-            }
-        }
-    }*/
+      private void OnDrawGizmos()
+      {
+          float totalVolume = 0;
+          if ( showWaterGizmos && _oceanMeshGenerator != null)
+          {
+              float x_OceanPosition = _oceanPosition.x;
+              float y_OceanPosition = _oceanPosition.y;
+              float z_OceanPosition = _oceanPosition.z;
+              float step = _oceanMeshGenerator.size / _oceanMeshGenerator.sideVertexCount;
+              int i = 0;
+              foreach (var data in _oceanCachedData)
+              {
+                  float x_basePosition = i % _oceanMeshGenerator.sideVertexCount * step;
+                  float z_basePosition = Mathf.Floor(i / _oceanMeshGenerator.sideVertexCount) * step;
+          
+                  float x_dataPosition = data.r + x_basePosition + x_OceanPosition;
+                  float y_dataPosition = data.g + y_OceanPosition;
+                  float z_dataPosition = data.b + z_basePosition + z_OceanPosition;
+                  Gizmos.color = Color.yellow;
+                  Gizmos.DrawSphere(new Vector3(x_dataPosition, y_dataPosition, z_dataPosition), 0.1f);
+                  i++;
+              }
+          }
+          
+          
+          if (showVoxels)
+              foreach (var voxel in _voxels)
+              {
+                  Gizmos.color = Color.Lerp(Color.red, Color.yellow, voxel.SubmergedVolume);
+                  Gizmos.DrawSphere( transform.position + voxel.Position, GizmoSize * voxelSize);
+              } 
+      }
 }
