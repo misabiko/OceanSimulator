@@ -81,7 +81,7 @@ public class Buoyancy : MonoBehaviour
 
     private void getCurrentOceanMesh()
     {
-        _oceanMeshGenerator = ocean.getOceanMeshGenerator(transform.position);
+        _oceanMeshGenerator = ocean.GetOceanMeshGenerator(transform.position);
     }
 
     private void CalculateNbrVoxels()

@@ -1,41 +1,33 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class Ocean : MonoBehaviour
-{
+public class Ocean : MonoBehaviour {
 	//TODO Replace prefab with creating and populating component here
 	public GameObject oceanTilePrefab;
 	[Min(0)] public int tileRadius;
-	private Dictionary<Vector2Int, OceanMeshGenerator> tiles = new Dictionary<Vector2Int, OceanMeshGenerator>();
-	private float _tileSize = 0;
-	void Awake()
-	{
-		var firstTileGO = Instantiate(oceanTilePrefab, Vector3.zero, Quaternion.identity, transform);
-		//TODO Move properties to Ocean
-		var firstOcean = firstTileGO.GetComponent<OceanMeshGenerator>();
-		_tileSize = firstOcean.size;
-		tiles.Add(new Vector2Int(0,0), firstOcean);
+	[Min(0)] public int tileVertexCount = 256;
+	[Min(0)] public float tileSize = 64;
+
+	readonly Dictionary<Vector2Int, OceanMeshGenerator> tiles = new();
+
+	void Awake() {
+		var prefabComponent = oceanTilePrefab.GetComponent<OceanMeshGenerator>();
+		prefabComponent.sideVertexCount = tileVertexCount;
+		prefabComponent.size = tileSize;
 
 		for (int x = -tileRadius; x <= tileRadius; ++x)
-		for (int z = -tileRadius; z <= tileRadius; ++z)
-		{
-			if (x == 0 && z == 0)
-				continue;
-			GameObject oceanTile = Instantiate(oceanTilePrefab, new Vector3(x * firstOcean.size, 0f, z * firstOcean.size), Quaternion.identity,
-				transform);
-			tiles.Add(new Vector2Int(x, z), oceanTile.GetComponent<OceanMeshGenerator>());
+		for (int z = -tileRadius; z <= tileRadius; ++z) {
+			var oceanTile = Instantiate(oceanTilePrefab, new Vector3(x, 0, z) * tileSize, Quaternion.identity, transform)
+				.GetComponent<OceanMeshGenerator>();
+			// ConfigureTile(oceanTile);
+			tiles.Add(new Vector2Int(x, z), oceanTile);
 		}
 	}
 
-	public OceanMeshGenerator getOceanMeshGenerator(Vector3 shipPosition)
-	{
-		return tiles[convertVector(shipPosition)];
-	}
+	public OceanMeshGenerator GetOceanMeshGenerator(Vector3 shipPosition) => tiles[ConvertVector(shipPosition)];
 
-	private Vector2Int convertVector(Vector3 vector)
-	{
-		int x = Mathf.FloorToInt(vector.x / _tileSize);
-		int z = Mathf.FloorToInt(vector.z / _tileSize);
-		return new Vector2Int(x, z);
-	}
+	Vector2Int ConvertVector(Vector3 vector) => new(
+		Mathf.FloorToInt(vector.x / tileSize),
+		Mathf.FloorToInt(vector.z / tileSize)
+	);
 }
