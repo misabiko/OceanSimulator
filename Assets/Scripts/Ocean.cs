@@ -19,7 +19,6 @@ public class Ocean : MonoBehaviour {
 		for (int z = -tileRadius; z <= tileRadius; ++z) {
 			var oceanTile = Instantiate(oceanTilePrefab, new Vector3(x, 0, z) * tileSize, Quaternion.identity, transform)
 				.GetComponent<OceanMeshGenerator>();
-			// ConfigureTile(oceanTile);
 			tiles.Add(new Vector2Int(x, z), oceanTile);
 		}
 	}

@@ -1,0 +1,54 @@
+{
+    "name": "BoatInputAction",
+    "maps": [
+        {
+            "name": "Boat Controller",
+            "id": "3ec8b694-9750-4854-9349-b1ba2332f8ac",
+            "actions": [
+                {
+                    "name": "Move forward",
+                    "type": "Value",
+                    "id": "3ff98b4f-6596-4179-b7be-aff6759b70e8",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "Move paddle",
+                    "type": "Value",
+                    "id": "db97217b-1aa8-496e-8b59-78bb3d1ce645",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "c4fce6a2-1710-4055-b548-3e5b1452d101",
+                    "path": "<Gamepad>/rightTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move forward",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "90828526-ba79-4a2f-b1c5-0dc441e93035",
+                    "path": "<Gamepad>/leftStick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move paddle",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
