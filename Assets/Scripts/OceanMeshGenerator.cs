@@ -8,8 +8,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 	Vector3[] vertices;
 	int[] triangles;
 
-	[Header("Bleh")]
-	[Min(0)] public int sideVertexCount = 256;
+	[Header("Bleh")] [Min(0)] public int sideVertexCount = 256;
 
 	[Min(0)] public float size = 100f;
 	[Min(0)] public float noiseResolution = 10f;
@@ -57,7 +56,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 	[HideInInspector] public RenderTexture pingBuffer;
 	[HideInInspector] public RenderTexture pongBuffer;
 	[HideInInspector] public RenderTexture waveNumberTexture;
-	Texture2D noiseTexture;
+	[HideInInspector] public Texture2D noiseTexture;
 
 	[SerializeField] Vector2 waveVector = Vector2.one;
 	[SerializeField] float amplitude = 1;
@@ -103,20 +102,37 @@ public class OceanMeshGenerator : MonoBehaviour {
 		};
 		GetComponent<MeshFilter>().mesh = mesh;
 		material = GetComponent<Renderer>().material;
-		
+
 		CreateShape();
 		UpdateMesh();
 
 		waveNumberTexture = CreateRenderTexture(sideVertexCount, sideVertexCount);
 		spectrumComputeShader.SetTexture(0, "WaveNumber", waveNumberTexture);
 		noiseTexture = CreateTexture(sideVertexCount, sideVertexCount);
-		//TODO Actual gaussian noise
+
 		//https://stackoverflow.com/a/218600/2692695
-		int greenNoise = Random.Range(0, 10000);
+		// int greenNoise = Random.Range(0, 10000);
+		const float mean = 0;
+		const float stdDev = 1;
 		for (int x = 0; x < sideVertexCount; ++x)
-		for (int y = 0; y < sideVertexCount; ++y)
-			noiseTexture.SetPixel(x, y, new Color(Mathf.PerlinNoise(x / noiseResolution, y / noiseResolution), Mathf.PerlinNoise(x / noiseResolution + greenNoise, y / noiseResolution + greenNoise), 0, 0));
-		// noiseTexture.SetPixel(x, y, new Color(.5f, .5f, 0, 0));
+		for (int y = 0; y < sideVertexCount; ++y) {
+			// noiseTexture.SetPixel(x, y, new Color(
+			// 	Mathf.PerlinNoise(x / noiseResolution, y / noiseResolution),
+			// 	Mathf.PerlinNoise(x / noiseResolution + greenNoise, y / noiseResolution + greenNoise),
+			// 	0,
+			// 	1
+			// ));
+			// noiseTexture.SetPixel(x, y, new Color(.5f, .5f, 0, 0));
+
+			var u1 = Vector2.one - new Vector2(Random.value, Random.value);
+			var u2 = Vector2.one - new Vector2(Random.value, Random.value);
+			var randStdNormal = new Vector2(
+				Mathf.Sqrt(-2f * Mathf.Log(u1.x)) * Mathf.Sin(2f * Mathf.PI * u2.x),
+				Mathf.Sqrt(-2f * Mathf.Log(u1.y)) * Mathf.Sin(2f * Mathf.PI * u2.y)
+			);
+			var randNormal = mean * Vector2.one + stdDev * randStdNormal;
+			noiseTexture.SetPixel(x, y, new Color(randNormal.x, randNormal.y, 0, 1));
+		}
 		noiseTexture.Apply();
 		spectrumComputeShader.SetTexture(0, "Noise", noiseTexture);
 		spectrumComputeShader.SetFloat("Resolution", sideVertexCount);
@@ -126,7 +142,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 		spectrumComputeShader.SetTexture(0, "HY", HY);
 		spectrumComputeShader.SetTexture(0, "HZ", HZ);
 		spectrumComputeShader.SetTexture(0, "NY", NY);
-		
+
 		computeShader.SetTexture(0, "Displacement", displacement);
 		computeShader.SetTexture(0, "HX", HX);
 		computeShader.SetTexture(0, "HY", HY);
@@ -149,15 +165,18 @@ public class OceanMeshGenerator : MonoBehaviour {
 		material.SetTexture("_NormalMap", NY2);
 		material.SetTexture("_ApproximateNormalMap", approximateNormals);
 
-		GameObject.Find("RenderTextureDisplay").GetComponent<Renderer>().material.mainTexture = displacement;
-		GameObject.Find("RenderTextureNoise").GetComponent<Renderer>().material.mainTexture = noiseTexture;
-		GameObject.Find("RenderTextureWaveNumber").GetComponent<Renderer>().material.mainTexture = waveNumberTexture;
-		GameObject.Find("RenderTextureHY").GetComponent<Renderer>().material.mainTexture = HY;
-		GameObject.Find("RenderTextureHX").GetComponent<Renderer>().material.mainTexture = HX;
-		GameObject.Find("RenderTextureHZ").GetComponent<Renderer>().material.mainTexture = HZ;
-		GameObject.Find("RenderTextureHY2").GetComponent<Renderer>().material.mainTexture = HY2;
-		GameObject.Find("RenderTextureHX2").GetComponent<Renderer>().material.mainTexture = HX2;
-		GameObject.Find("RenderTextureHZ2").GetComponent<Renderer>().material.mainTexture = HZ2;
+		var renderTextureDisplay = GameObject.Find("RenderTextureDisplay");
+		if (renderTextureDisplay) {
+			renderTextureDisplay.GetComponent<Renderer>().material.mainTexture = displacement;
+			GameObject.Find("RenderTextureNoise").GetComponent<Renderer>().material.mainTexture = noiseTexture;
+			GameObject.Find("RenderTextureWaveNumber").GetComponent<Renderer>().material.mainTexture = waveNumberTexture;
+			GameObject.Find("RenderTextureHY").GetComponent<Renderer>().material.mainTexture = HY;
+			GameObject.Find("RenderTextureHX").GetComponent<Renderer>().material.mainTexture = HX;
+			GameObject.Find("RenderTextureHZ").GetComponent<Renderer>().material.mainTexture = HZ;
+			GameObject.Find("RenderTextureHY2").GetComponent<Renderer>().material.mainTexture = HY2;
+			GameObject.Find("RenderTextureHX2").GetComponent<Renderer>().material.mainTexture = HX2;
+			GameObject.Find("RenderTextureHZ2").GetComponent<Renderer>().material.mainTexture = HZ2;
+		}
 
 		var uiDocument = GetComponent<UIDocument>();
 		if (uiDocument.enabled) {
@@ -472,6 +491,7 @@ public class OceanMeshGenerator : MonoBehaviour {
 	// }
 
 	float? lastSize;
+
 	void Update() {
 		if (vertices.Length != (sideVertexCount + 1) * (sideVertexCount + 1) || lastSize != size) {
 			CreateShape();

@@ -34,12 +34,13 @@ public class OceanMeshGeneratorInspector : Editor {
 		AddTexture(textureFoldout, "Approximate Normals", ocean.approximateNormals);
 		AddTexture(textureFoldout, "PingBuffer", ocean.pingBuffer);
 		AddTexture(textureFoldout, "PongBuffer", ocean.pongBuffer);
+		AddTexture(textureFoldout, "Noise", ocean.noiseTexture);
 		inspector.Add(textureFoldout);
 
 		return inspector;
 	}
 
-	static void AddTexture(VisualElement parent, string name, RenderTexture texture) {
+	static void AddTexture(VisualElement parent, string name, Texture texture) {
 		var foldout = new Foldout { text = name };
 		foldout.Add(new Image { image = texture });
 		parent.Add(foldout);
