@@ -3,8 +3,8 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-[CustomEditor(typeof(OceanMeshGenerator))]
-public class OceanMeshGeneratorInspector : Editor {
+[CustomEditor(typeof(Ocean))]
+public class OceanInspector : Editor {
 	public VisualTreeAsset inspectorXML;
 	public override VisualElement CreateInspectorGUI() {
 		var inspector = new VisualElement();
@@ -21,7 +21,7 @@ public class OceanMeshGeneratorInspector : Editor {
 						if (e2 is Image image)
 							image.MarkDirtyRepaint();
 		}).Every(16);
-		var ocean = (OceanMeshGenerator)target;
+		var ocean = (Ocean)target;
 		AddTexture(textureFoldout, "Displacement", ocean.displacement);
 		AddTexture(textureFoldout, "HX", ocean.HX);
 		AddTexture(textureFoldout, "HY", ocean.HY);
@@ -34,12 +34,13 @@ public class OceanMeshGeneratorInspector : Editor {
 		AddTexture(textureFoldout, "Approximate Normals", ocean.approximateNormals);
 		AddTexture(textureFoldout, "PingBuffer", ocean.pingBuffer);
 		AddTexture(textureFoldout, "PongBuffer", ocean.pongBuffer);
+		AddTexture(textureFoldout, "Noise", ocean.noiseTexture);
 		inspector.Add(textureFoldout);
 
 		return inspector;
 	}
 
-	static void AddTexture(VisualElement parent, string name, RenderTexture texture) {
+	static void AddTexture(VisualElement parent, string name, Texture texture) {
 		var foldout = new Foldout { text = name };
 		foldout.Add(new Image { image = texture });
 		parent.Add(foldout);

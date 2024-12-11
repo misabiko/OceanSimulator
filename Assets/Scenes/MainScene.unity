@@ -192,7 +192,7 @@ Camera:
     height: 1
   near clip plane: 0.1
   far clip plane: 5000
-  field of view: 40
+  field of view: 60
   orthographic: 0
   orthographic size: 10
   m_Depth: -1
@@ -622,8 +622,8 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
         type: 3}
-      propertyPath: tileRadius
-      value: 1
+      propertyPath: tileSideVertexCount
+      value: 32
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
