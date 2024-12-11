@@ -113,7 +113,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 	float2 h0ymk = conjugate(h0(Noise[id.xy].xy, -k, omega));
 	float2 hy = hFreq(omega, h0y, h0ymk);
 	if (id.x == Resolution / 2 && id.y == Resolution / 2)
-		HY[id.xy] = float4(0, 0, 0, 0); // DC component set to zero
+		HY[id.xy] = float4(test2, test3); // DC component set to zero
 	else
 		HY[id.xy] = float4(hy, 0, 0);
 
@@ -122,7 +122,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 		float2(k.x / length(k) * h0ymk.y, -k.x / length(k) * h0ymk.x)
 	);
 	if (id.x == Resolution / 2 && id.y == Resolution / 2)
-		HX[id.xy] = float4(0, 0, 0, 0); // DC component set to zero
+		HX[id.xy] = float4(test2, test3); // DC component set to zero
 	else
 		HX[id.xy] = float4(hx, 0, 0);
 
@@ -131,7 +131,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 		float2(k.y / length(k) * h0ymk.y, -k.y / length(k) * h0ymk.x)
 	);
 	if (id.x == Resolution / 2 && id.y == Resolution / 2)
-		HZ[id.xy] = float4(0, 0, 0, 0); // DC component set to zero
+		HZ[id.xy] = float4(test2, test3); // DC component set to zero
 	else
 		HZ[id.xy] = float4(hz, 0, 0);
 
@@ -140,7 +140,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 	float2 nyx = complexMul(ikx, hy);
 	float2 nyz = complexMul(ikz, hy);
 	if (id.x == Resolution / 2 && id.y == Resolution / 2)
-		NY[id.xy] = float4(0, 0, 0, 0); // DC component set to zero
+		NY[id.xy] = float4(test2, test3); // DC component set to zero
 	else
 		NY[id.xy] = float4(nyx, nyz);
 

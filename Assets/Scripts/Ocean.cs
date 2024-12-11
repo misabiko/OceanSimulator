@@ -34,7 +34,8 @@ public class Ocean : MonoBehaviour {
 	// [Min(0)] public float noiseResolution = 10f;
 
 	[Min(0)] public float F = 1400000;
-	[Min(0)] public Vector2 U10 = new(20, 0);
+	public Vector2 U10 = new(20, 0);
+	public Transform windArrow;
 	[Min(0)] public float gamma = 3.3f;
 
 	[Header("Phillips Spectrum")] [Min(0)] public float phillipsA = 1;
@@ -143,7 +144,7 @@ public class Ocean : MonoBehaviour {
 		spectrumComputeShader.SetFloat("time", Time.time * timeScale + timeOffset);
 		spectrumComputeShader.SetFloat("L", tileSize);
 		spectrumComputeShader.SetFloat("F", F);
-		spectrumComputeShader.SetVector("U10", U10);
+		spectrumComputeShader.SetVector("U10", windArrow != null ? new Vector2(U10.x * windArrow.localPosition.x, U10.y * windArrow.localPosition.z) : U10);
 		spectrumComputeShader.SetFloat("gamma", gamma);
 		spectrumComputeShader.SetFloat("heightTest", heightTest);
 		spectrumComputeShader.SetFloat("phillipsA", phillipsA);
@@ -518,10 +519,10 @@ public class Ocean : MonoBehaviour {
 	// }
 
 	RenderTexture CreateRenderTexture() {
-		var rt = new RenderTexture(tileSideVertexCount, tileSideVertexCount, 24) {
+		var rt = new RenderTexture(tileSideVertexCount, tileSideVertexCount, 96) {
 			enableRandomWrite = true,
 			filterMode = FilterMode.Point,
-			graphicsFormat = UnityEngine.Experimental.Rendering.GraphicsFormat.R32G32B32A32_SFloat,
+			graphicsFormat = UnityEngine.Experimental.Rendering.GraphicsFormat.R16G16B16A16_SFloat,
 		};
 		rt.Create();
 		return rt;
@@ -530,4 +531,11 @@ public class Ocean : MonoBehaviour {
 	Texture2D CreateTexture() => new(tileSideVertexCount, tileSideVertexCount) {
 		filterMode = FilterMode.Point,
 	};
+
+	void OnDrawGizmos() {
+		if (windArrow != null) {
+			Gizmos.color = Color.yellow;
+			Gizmos.DrawLine(windArrow.parent.position, windArrow.position);
+		}
+	}
 }

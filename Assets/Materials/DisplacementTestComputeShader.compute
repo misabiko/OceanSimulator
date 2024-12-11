@@ -32,7 +32,8 @@ float3 normalTest3;
 
 float value(float2 complex)
 {
-	return length(complex * normalTestX.xy);
+	// return length(complex * normalTestX.xy);
+	return complex.x * normalTestX.x + complex.y * normalTestX.y;
 }
 
 [numthreads(8,8,1)]
@@ -43,6 +44,12 @@ void CSMain(uint3 id : SV_DispatchThreadID) {
 		value(HY2[id.xy].xy) * dtest2,
 		value(HZ2[id.xy].xy) * dtest3
 	);
+	if (id.x % 2 == 0)
+		displacement *= normalTestZ.x;
+	if (id.y % 2 == 0)
+		displacement *= normalTestZ.y;
+	if (id.x == floor(normalTest2))
+		displacement *= normalTest3.x;
 	// Displacement[id.xy] = float4(normalize(displacement) * min(length(displacement), 1.0), 0);
 	Displacement[id.xy] = float4(displacement, 0);
 	float3 x1 = float3(
