@@ -291,7 +291,7 @@ Light:
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 0
+    m_Type: 2
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
@@ -592,7 +592,7 @@ Light:
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 0
+    m_Type: 2
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
@@ -818,8 +818,38 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
         type: 3}
+      propertyPath: dtest1
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
+        type: 3}
+      propertyPath: dtest2
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
+        type: 3}
+      propertyPath: dtest3
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
+        type: 3}
+      propertyPath: test2d.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
+        type: 3}
+      propertyPath: test2d.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
+        type: 3}
+      propertyPath: tileSize
+      value: 64
+      objectReference: {fileID: 0}
+    - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
+        type: 3}
       propertyPath: tileRadius
-      value: 8
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
         type: 3}
@@ -831,6 +861,11 @@ PrefabInstance:
       propertyPath: computeShaderSource
       value: 
       objectReference: {fileID: 7200000, guid: 40e34aac946926740866b917839f1a53, type: 3}
+    - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
+        type: 3}
+      propertyPath: tileSideVertexCount
+      value: 256
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

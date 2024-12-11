@@ -17,7 +17,7 @@ float Resolution;
 //Patch world size
 float L;
 float F;
-float U10;
+float2 U10;
 float gamma;
 
 float phillipsA;
@@ -41,23 +41,30 @@ float2 test5;
 float energySpectrum(float w)
 {
 	// float F = 1400000;
-	// float U10 = 20;
-	float wp = 22 * pow((g * g) / (U10 * F), 1.0 / 3.0);
+	float U10Length = length(U10);
+	float wp = 22 * pow((g * g) / (U10Length * F), 1.0 / 3.0);
 	float s = wp <= w ? 0.07f : 0.09f;
 	float r = exp(-pow(w - wp, 2) / (2 * s * s * wp * wp));
-	float alpha = 0.076f * pow((U10 * U10) / (F * g), 0.22f);
+	float alpha = 0.076f * pow((U10Length * U10Length) / (F * g), 0.22f);
 	// float gamma = 3.3f;
 	return (alpha * g * g) / pow(w, 5) * exp(-5.0 / 4.0 * pow(wp / w, 4)) * pow(gamma, r);
 }
 
-float dispersionRelation(float w)
+float directionalSpread(float2 k)
 {
-	return 1.0;
+	float2 nK = normalize(k);
+	float thetaK = atan2(nK.y, nK.x);
+	float2 nU10 = normalize(U10);
+	float thetaU = atan2(nU10.y, nU10.x);
+	float deltaTheta = thetaK - thetaU;
+	deltaTheta = deltaTheta > PI ? deltaTheta - 2 * PI : deltaTheta;
+	return (2.0 / PI) * pow(max(0.0, cos(deltaTheta * 0.5)), 2);
 }
+
 
 float phillipsSpectrum(float2 k)
 {
-	float V = U10;
+	float V = length(U10);
 	float kLen = length(k);
 	return phillipsA * (exp(-1 / pow((kLen * (V * V / g)), 2)) / pow(kLen, 4)) * pow(abs(dot(normalize(k), normalize(phillipsWindDir))), 2) * exp(-pow(kLen * phillipsSmallLength, 2));
 }
@@ -66,8 +73,7 @@ float2 h0(float2 noise, float2 k, float omega)
 {
 	float domega = g / (2 * omega);
 	float deltaK = 2 * PI / L;
-	return 1.0 / sqrt(2) * noise * sqrt(2 * energySpectrum(omega) /** dispersionRelation(w) * domega * 1.0 / length(k) * deltaK * deltaK*/);
-	// return 1.0 / sqrt(2.0) * noise * sqrt(phillipsSpectrum(k));
+	return 1.0 / sqrt(2) * noise * sqrt(2 * energySpectrum(omega) * directionalSpread(k) * domega * 1.0 / length(k) * deltaK * deltaK);
 }
 
 float2 complexMul(float2 a, float2 b)
@@ -75,46 +81,68 @@ float2 complexMul(float2 a, float2 b)
 	return float2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
 }
 
-//TODO Better name than hf?
-//hf(k, t) = h0(k) * e^(iwt) + h0(-k) * e^(-iwt) (tess#43)
-float2 hf(float omega, float2 h0, float h0Conjugate)
+float2 conjugate(float2 a)
 {
-	return complexMul(h0, float2(cos(omega * time), sin(omega * time))) + complexMul(h0Conjugate, float2(cos(-omega * time), sin(-omega * time)));
+	return float2(a.x, -a.y);
+}
+
+float2 complexExponential(float theta)
+{
+	return float2(cos(theta), sin(theta));
+}
+
+//hFreq(k, t) = h0(k) * e^(iwt) + h0(-k) * e^(-iwt) (tess#43)
+float2 hFreq(float omega, float2 h0, float h0Conjugate)
+{
+	return complexMul(h0, complexExponential(omega * time)) + complexMul(h0Conjugate,  complexExponential(-omega * time));
 }
 
 [numthreads(8,8,1)]
 void CSMain(uint3 id : SV_DispatchThreadID)
 {
 	float epsilon = 0.0000001;
-
 	//Adding epsilon to avoid k being null
-	float2 k = 2.0 * PI * float2(id.x - Resolution / 2, id.y - Resolution / 2) / L + float2(epsilon, epsilon);
+	float2 k = 2.0 * PI * float2(id.x - Resolution / 2, id.y - Resolution / 2) / L;
+	if (id.x == Resolution / 2 && id.y == Resolution / 2)
+		k = float2(epsilon, epsilon) * test.x;
 
 	float omega = sqrt(g * length(k));
-	WaveNumber[id.xy] = float4(omega / sqrt(g * 2.0 * PI * Resolution / 2.0 / L), 0, 0, 0);
+	// WaveNumber[id.xy] = float4(omega / sqrt(g * 2.0 * PI * Resolution / 2.0 / L), 0, 0, 0);
 
 	float2 h0y = h0(Noise[id.xy].xy, k, omega);
-	float2 h0ymk = h0(Noise[id.xy].xy, -k, omega);
-	float2 hy = hf(omega, h0y, h0ymk);
-	HY[id.xy] = float4(hy, 0, 0);
+	float2 h0ymk = conjugate(h0(Noise[id.xy].xy, -k, omega));
+	float2 hy = hFreq(omega, h0y, h0ymk);
+	if (id.x == Resolution / 2 && id.y == Resolution / 2)
+		HY[id.xy] = float4(0, 0, 0, 0); // DC component set to zero
+	else
+		HY[id.xy] = float4(hy, 0, 0);
 
-	float2 hx = hf(omega,
+	float2 hx = hFreq(omega,
 		float2(-k.x / length(k) * h0y.y, k.x / length(k) * h0y.x),
 		float2(k.x / length(k) * h0ymk.y, -k.x / length(k) * h0ymk.x)
 	);
-	HX[id.xy] = float4(hx, 0, 0);
+	if (id.x == Resolution / 2 && id.y == Resolution / 2)
+		HX[id.xy] = float4(0, 0, 0, 0); // DC component set to zero
+	else
+		HX[id.xy] = float4(hx, 0, 0);
 
-	float2 hz = hf(omega,
+	float2 hz = hFreq(omega,
 		float2(-k.y / length(k) * h0y.y, k.y / length(k) * h0y.x),
 		float2(k.y / length(k) * h0ymk.y, -k.y / length(k) * h0ymk.x)
 	);
-	HZ[id.xy] = float4(hz, 0, 0);
+	if (id.x == Resolution / 2 && id.y == Resolution / 2)
+		HZ[id.xy] = float4(0, 0, 0, 0); // DC component set to zero
+	else
+		HZ[id.xy] = float4(hz, 0, 0);
 
 	float2 ikx = float2(0, k.x);
 	float2 ikz = float2(0, k.y);
 	float2 nyx = complexMul(ikx, hy);
 	float2 nyz = complexMul(ikz, hy);
-	NY[id.xy] = float4(nyx, nyz);
+	if (id.x == Resolution / 2 && id.y == Resolution / 2)
+		NY[id.xy] = float4(0, 0, 0, 0); // DC component set to zero
+	else
+		NY[id.xy] = float4(nyx, nyz);
 
 	//TODO Draw textures in ui with alpha 0
 	//Setting alpha to 1 so it shows up on UI Toolkit, will probably cause issues

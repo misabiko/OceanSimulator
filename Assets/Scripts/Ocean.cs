@@ -31,10 +31,10 @@ public class Ocean : MonoBehaviour {
 	[HideInInspector] public RenderTexture waveNumberTexture;
 	[HideInInspector] public Texture2D noiseTexture;
 
-	[Min(0)] public float noiseResolution = 10f;
+	// [Min(0)] public float noiseResolution = 10f;
 
 	[Min(0)] public float F = 1400000;
-	[Min(0)] public float U10 = 20;
+	[Min(0)] public Vector2 U10 = new(20, 0);
 	[Min(0)] public float gamma = 3.3f;
 
 	[Header("Phillips Spectrum")] [Min(0)] public float phillipsA = 1;
@@ -100,18 +100,18 @@ public class Ocean : MonoBehaviour {
 		displacementComputeShader.SetFloat("g", -Physics.gravity.y);
 		SetupComputeShader();
 
-		// var renderTextureDisplay = GameObject.Find("RenderTextureDisplay");
-		// if (renderTextureDisplay) {
-		// 	renderTextureDisplay.GetComponent<Renderer>().material.mainTexture = displacement;
-		// 	GameObject.Find("RenderTextureNoise").GetComponent<Renderer>().material.mainTexture = noiseTexture;
-		// 	GameObject.Find("RenderTextureWaveNumber").GetComponent<Renderer>().material.mainTexture = waveNumberTexture;
-		// 	GameObject.Find("RenderTextureHY").GetComponent<Renderer>().material.mainTexture = HY;
-		// 	GameObject.Find("RenderTextureHX").GetComponent<Renderer>().material.mainTexture = HX;
-		// 	GameObject.Find("RenderTextureHZ").GetComponent<Renderer>().material.mainTexture = HZ;
-		// 	GameObject.Find("RenderTextureHY2").GetComponent<Renderer>().material.mainTexture = HY2;
-		// 	GameObject.Find("RenderTextureHX2").GetComponent<Renderer>().material.mainTexture = HX2;
-		// 	GameObject.Find("RenderTextureHZ2").GetComponent<Renderer>().material.mainTexture = HZ2;
-		// }
+		var renderTextureDisplay = GameObject.Find("RenderTextureDisplay");
+		if (renderTextureDisplay) {
+			renderTextureDisplay.GetComponent<Renderer>().material.mainTexture = displacement;
+			GameObject.Find("RenderTextureNoise").GetComponent<Renderer>().material.mainTexture = noiseTexture;
+			GameObject.Find("RenderTextureWaveNumber").GetComponent<Renderer>().material.mainTexture = waveNumberTexture;
+			GameObject.Find("RenderTextureHY").GetComponent<Renderer>().material.mainTexture = HY;
+			GameObject.Find("RenderTextureHX").GetComponent<Renderer>().material.mainTexture = HX;
+			GameObject.Find("RenderTextureHZ").GetComponent<Renderer>().material.mainTexture = HZ;
+			GameObject.Find("RenderTextureHY2").GetComponent<Renderer>().material.mainTexture = HY2;
+			GameObject.Find("RenderTextureHX2").GetComponent<Renderer>().material.mainTexture = HX2;
+			GameObject.Find("RenderTextureHZ2").GetComponent<Renderer>().material.mainTexture = HZ2;
+		}
 
 		// var uiDocument = GetComponent<UIDocument>();
 		// if (uiDocument.enabled) {
@@ -143,7 +143,7 @@ public class Ocean : MonoBehaviour {
 		spectrumComputeShader.SetFloat("time", Time.time * timeScale + timeOffset);
 		spectrumComputeShader.SetFloat("L", tileSize);
 		spectrumComputeShader.SetFloat("F", F);
-		spectrumComputeShader.SetFloat("U10", U10);
+		spectrumComputeShader.SetVector("U10", U10);
 		spectrumComputeShader.SetFloat("gamma", gamma);
 		spectrumComputeShader.SetFloat("heightTest", heightTest);
 		spectrumComputeShader.SetFloat("phillipsA", phillipsA);
@@ -444,6 +444,7 @@ public class Ocean : MonoBehaviour {
 			material.SetTexture("_Displacement", displacement);
 			material.SetTexture("_NormalMap", NY2);
 			material.SetTexture("_ApproximateNormalMap", approximateNormals);
+			material.SetVector("_Resolution", new Vector2(tileSize, tileSize));
 			tiles.Add(new Vector2Int(x, z), oceanTile);
 		}
 	}
