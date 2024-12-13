@@ -79,6 +79,8 @@ public class Ocean : MonoBehaviour {
 		frequencyDomainFieldComputeShader.SetTexture(0, DispFreqZid, DispFreqZ);
 		frequencyDomainFieldComputeShader.SetTexture(0, NormFreqYid, NormFreqY);
 
+		fftComputeShader.SetBool(FFTForward, false);
+
 		displacementComputeShader.SetTexture(0, DisplacementID, displacement);
 		displacementComputeShader.SetTexture(0, ApproximateNormalsID, ApproximateNormals);
 		displacementComputeShader.SetTexture(0, DispFreqXid, DispFreqX);
@@ -114,11 +116,11 @@ public class Ocean : MonoBehaviour {
 		frequencyDomainFieldComputeShader.SetVector("phillipsWindDir", phillipsWindDir.normalized);
 		frequencyDomainFieldComputeShader.Dispatch(0, tileSideVertexCount / 8, tileSideVertexCount / 8, 1);
 
-		RunFFT(DispFreqY, PingBuffer, PongBuffer, DispSpatialY);
+		RunIFFT(DispFreqY, PingBuffer, PongBuffer, DispSpatialY);
 		//TODO Merge dispFreqX and dispFreqZ in the same texture
-		RunFFT(DispFreqX, PingBuffer, PongBuffer, DispSpatialX);
-		RunFFT(DispFreqZ, PingBuffer, PongBuffer, DispSpatialZ);
-		RunFFT(NormFreqY, PingBuffer, PongBuffer, NormSpatialY);
+		RunIFFT(DispFreqX, PingBuffer, PongBuffer, DispSpatialX);
+		RunIFFT(DispFreqZ, PingBuffer, PongBuffer, DispSpatialZ);
+		RunIFFT(NormFreqY, PingBuffer, PongBuffer, NormSpatialY);
 
 		// SetupSimpleSinusoid();
 
@@ -250,122 +252,66 @@ public class Ocean : MonoBehaviour {
 		}
 	}
 
-	class Uniforms {
-		public RenderTexture input;
-		public string inputName;
-		public RenderTexture output;
-		public string outputName;
-		public bool horizontal;
-		public bool forward;
-		public Vector2 resolution;
-		public float normalization;
-		public float subtransformSize;
-
-		public void SetUniforms(ComputeShader shader) {
-			shader.SetTexture(0, FFTSrc, input);
-			if (output != null)
-				shader.SetTexture(0, FFTOutput, output);
-			shader.SetBool(FFTHorizontal, horizontal);
-			shader.SetBool(FFTForward, forward);
-			shader.SetFloats(FFTOneOverResolution, resolution.x, resolution.y);
-			shader.SetFloat(FFTNormalization, normalization);
-			shader.SetFloat(FFTSubtransformSize, subtransformSize);
-		}
-
-		public Uniforms Copy() {
-			return new Uniforms {
-				input = input,
-				inputName = inputName,
-				output = output,
-				outputName = outputName,
-				horizontal = horizontal,
-				forward = forward,
-				resolution = resolution,
-				normalization = normalization,
-				subtransformSize = subtransformSize,
-			};
-		}
-
-		public override string ToString() {
-			return $"input: {inputName}, output: {outputName}, horizontal: {horizontal}, forward: {forward}, resolution: {resolution}, normalization: {normalization}, subtransformSize: {subtransformSize}";
-		}
-	}
-
-	void RunFFT(
-		RenderTexture optsInput,
-		RenderTexture optsPing,
-		RenderTexture optsPong,
-		RenderTexture optsOutput
+	void RunIFFT(
+		RenderTexture initInput,
+		RenderTexture initPing,
+		RenderTexture initPong,
+		RenderTexture initOutput
 	) {
 		int i;
 		RenderTexture ping;
 		RenderTexture pong;
-		Uniforms uniforms = new();
-		RenderTexture tmp;
-		int width = tileSideVertexCount;
-		int height = tileSideVertexCount;
 
-		const bool forward = false;
 		const bool splitNormalization = true;
 
-		void Swap() {
-			tmp = ping;
-			ping = pong;
-			pong = tmp;
-		}
-
 		// Swap to avoid collisions with the input:
-		ping = optsPing;
-		if (optsInput == optsPong) {
-			ping = optsPong;
+		ping = initPing;
+		if (initInput == initPong) {
+			ping = initPong;
 		}
 
-		pong = ping == optsPing ? optsPong : optsPing;
+		pong = ping == initPing ? initPong : initPing;
 
-		int xIterations = Mathf.RoundToInt(Mathf.Log(width) / Mathf.Log(2));
-		int yIterations = Mathf.RoundToInt(Mathf.Log(height) / Mathf.Log(2));
-		int iterations = xIterations + yIterations;
+		int xIterations = Mathf.RoundToInt(Mathf.Log(tileSideVertexCount) / Mathf.Log(2));
+		int iterations = 2 * xIterations;
 
 		// Swap to avoid collisions with output:
-		if (optsOutput == ((iterations % 2 == 0) ? pong : ping))
-			Swap();
+		if (initOutput == ((iterations % 2 == 0) ? pong : ping))
+			(ping, pong) = (pong, ping);
 
 		// If we've avoiding collision with output creates an input collision,
 		// then you'll just have to rework your framebuffers and try again.
-		if (optsInput == pong)
+		if (initInput == pong)
 			throw new System.Exception("not enough framebuffers to compute without copying data. You may perform the computation with only two framebuffers, but the output must equal the input when an even number of iterations are required.");
 
 		for (i = 0; i < iterations; ++i) {
-			uniforms.input = ping;
-			uniforms.output = pong;
-			uniforms.horizontal = i < xIterations;
-			uniforms.forward = forward;
-			uniforms.resolution = new Vector2(1f / width, 1f / height);
+			var input = ping;
+			var output = pong;
 
+			float normalization;
 			if (i == 0) {
-				uniforms.input = optsInput;
-			}
-			else if (i == iterations - 1) {
-				uniforms.output = optsOutput;
-			}
-
-			if (i == 0) {
-				if (splitNormalization)
-					uniforms.normalization = 1f / Mathf.Sqrt(width * height);
-				else if (!forward)
-					uniforms.normalization = 1f / width / height;
+				input = initInput;
+				normalization = 1f / tileSideVertexCount;
+			}else {
+				if (i == iterations - 1) {
+					output = initOutput;
+					normalization = tileSideVertexCount;
+				}
 				else
-					uniforms.normalization = 1f;
+					normalization = 1f;
 			}
-			else
-				uniforms.normalization = 1f;
 
-			uniforms.subtransformSize = Mathf.Pow(2, (uniforms.horizontal ? i : (i - xIterations)) + 1);
+			bool horizontal = i < xIterations;
 
-			uniforms.SetUniforms(fftComputeShader);
-			fftComputeShader.Dispatch(0, width / 8, height / 8, 1);
+			fftComputeShader.SetTexture(0, FFTSrc, input);
+			fftComputeShader.SetTexture(0, FFTOutput, output);
+			fftComputeShader.SetBool(FFTHorizontal, horizontal);
+			fftComputeShader.SetFloats(FFTOneOverResolution, 1f / tileSideVertexCount, 1f / tileSideVertexCount);
+			fftComputeShader.SetFloat(FFTNormalization, normalization);
+			fftComputeShader.SetFloat(FFTSubtransformSize, Mathf.Pow(2, (horizontal ? i : (i - xIterations)) + 1));
+			fftComputeShader.Dispatch(0, tileSideVertexCount / 8, tileSideVertexCount / 8, 1);
 
-			Swap();
+			(ping, pong) = (pong, ping);
 		}
 	}
 
