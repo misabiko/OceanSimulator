@@ -151,9 +151,9 @@ public class Ocean : MonoBehaviour {
 
 		RunFFT(HY, pingBuffer, pongBuffer, HY2);
 		//TODO Merge HX and HZ in the same texture
-		RunFFT(HX, HX2, pingBuffer,  HX2);
-		RunFFT(HZ, HZ2, pingBuffer,  HZ2);
-		RunFFT(NY, NY2, pingBuffer,  NY2);
+		RunFFT(HX, pingBuffer, pongBuffer, HX2);
+		RunFFT(HZ, pingBuffer, pongBuffer, HZ2);
+		RunFFT(NY, pingBuffer, pongBuffer, NY2);
 
 		// SetupSimpleSinusoid();
 

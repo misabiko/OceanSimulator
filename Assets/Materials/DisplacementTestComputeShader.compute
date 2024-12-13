@@ -2,12 +2,12 @@
 
 RWTexture2D<float4> Displacement;
 
-RWTexture2D<float4> HX;
-RWTexture2D<float4> HY;
-RWTexture2D<float4> HZ;
-RWTexture2D<float4> HX2;
-RWTexture2D<float4> HY2;
-RWTexture2D<float4> HZ2;
+Texture2D HX;
+Texture2D HY;
+Texture2D HZ;
+Texture2D HX2;
+Texture2D HY2;
+Texture2D HZ2;
 RWTexture2D<float4> approximateNormals;
 
 float Resolution;
@@ -30,60 +30,107 @@ float3 normalTestZ;
 float normalTest2;
 float3 normalTest3;
 
-float value(float2 complex)
-{
-	// return length(complex * normalTestX.xy);
-	return complex.x * normalTestX.x + complex.y * normalTestX.y;
+//I can't find where the normalization is reverted in rreeusser's implementation
+//And I really don't understand negation issue, something about baked origin shift or DC component in the FFT implementation?
+float factor(uint x, uint y) {
+	return Resolution * (((x % 2 == 0) ^ (y % 2 == 0)) ? -1 : 1);
 }
 
 [numthreads(8,8,1)]
 void CSMain(uint3 id : SV_DispatchThreadID) {
-	//I can't find where the normalization is reverted in rreeusser's implementation
-	//And I really don't understand negation issue, something about baked origin shift or DC component in the FFT implementation?
-	float factor = Resolution * (((id.x % 2 == 0) ^ (id.y % 2 == 0)) ? -1 : 1);
-	HX2[id.xy] *= factor;
-	HY2[id.xy] *= factor;
-	HZ2[id.xy] *= factor;
+	uint edge = Resolution - 1;
+	float3 displacement;
+	if ((id.x == 0 && id.y == 0) || (id.x == edge && id.y == edge))
+	{
+		float3 lbEdge = float3(
+			HX2[uint2(0, 0)].x * factor(0, 0),
+			HY2[uint2(0, 0)].x * factor(0, 0),
+			HZ2[uint2(0, 0)].x * factor(0, 0)
+		);
+		float3 rtEdge = float3(
+			HX2[uint2(edge, edge)].x * factor(edge, edge),
+			HY2[uint2(edge, edge)].x * factor(edge, edge),
+			HZ2[uint2(edge, edge)].x * factor(edge, edge)
+		);
+		displacement = float3(
+			(lbEdge.x + rtEdge.x) / 2.0,
+			(lbEdge.y + rtEdge.y) / 2.0,
+			(lbEdge.z + rtEdge.z) / 2.0
+		);
+	}else if (id.x == 0 || id.x == edge)
+	{
+		float3 lbEdge = float3(
+			HX2[uint2(0, id.y)].x * factor(0, id.y),
+			HY2[uint2(0, id.y)].x * factor(0, id.y),
+			HZ2[uint2(0, id.y)].x * factor(0, id.y)
+		);
+		float3 rtEdge = float3(
+			HX2[uint2(edge, id.y)].x * factor(edge, id.y),
+			HY2[uint2(edge, id.y)].x * factor(edge, id.y),
+			HZ2[uint2(edge, id.y)].x * factor(edge, id.y)
+		);
+		displacement = float3(
+			(lbEdge.x + rtEdge.x) / 2.0,
+			(lbEdge.y + rtEdge.y) / 2.0,
+			(lbEdge.z + rtEdge.z) / 2.0
+		);
+	}else if (id.y == 0 || id.y == edge)
+	{
+		float3 lbEdge = float3(
+			HX2[uint2(id.x, 0)].x * factor(id.x, 0),
+			HY2[uint2(id.x, 0)].x * factor(id.x, 0), 
+			HZ2[uint2(id.x, 0)].x * factor(id.x, 0)
+		);
+		float3 rtEdge = float3(
+			HX2[uint2(id.x, edge)].x * factor(id.x, edge),
+			HY2[uint2(id.x, edge)].x * factor(id.x, edge),
+			HZ2[uint2(id.x, edge)].x * factor(id.x, edge)
+		);
+		displacement = float3(
+			(lbEdge.x + rtEdge.x) / 2.0,
+			(lbEdge.y + rtEdge.y) / 2.0,
+			(lbEdge.z + rtEdge.z) / 2.0
+		);
+	}else
+		displacement = float3(
+			HX2[id.xy].x * factor(id.x, id.y),
+			HY2[id.xy].x * factor(id.x, id.y),
+			HZ2[id.xy].x * factor(id.x, id.y)
+		);
 
-	//TODO Get rid of coefficients
-	float3 displacement = float3(
-		value(HX2[id.xy].xy) * dtest1,
-		value(HY2[id.xy].xy) * dtest2,
-		value(HZ2[id.xy].xy) * dtest3
-	);
-
-	// Displacement[id.xy] = float4(normalize(displacement) * min(length(displacement), 1.0), 0);
+	//TODO Have Displacement in RGB
 	Displacement[id.xy] = float4(displacement, 0);
-	float3 x1 = float3(
-		dtest1 * value(HX2[id.xy + int2(-1, 0)].xy) - Resolution / 2.0 / L,
-		dtest2 * value(HY2[id.xy + int2(-1, 0)].xy),
-		dtest3 * value(HZ2[id.xy + int2(-1, 0)].xy)
-	);
-	float3 x2 = float3(
-		dtest1 * value(HX2[id.xy + int2(1, 0)].xy) + Resolution / 2.0 / L,
-		dtest2 * value(HY2[id.xy + int2(1, 0)].xy),
-		dtest3 * value(HZ2[id.xy + int2(1, 0)].xy)
-	);
-	float3 z1 = float3(
-		dtest1 * value(HX2[id.xy + int2(0, -1)].xy),
-		dtest2 * value(HY2[id.xy + int2(0, -1)].xy),
-		dtest3 * value(HZ2[id.xy + int2(0, -1)].xy) - Resolution / 2.0 / L
-	);
-	float3 z2 = float3(
-		dtest1 * value(HX2[id.xy + int2(0, 1)].xy),
-		dtest2 * value(HY2[id.xy + int2(0, 1)].xy),
-		dtest3 * value(HZ2[id.xy + int2(0, 1)].xy) + Resolution / 2.0 / L
-	);
-	float3 x = x2 - x1;
-	float3 z = z2 - z1;
-	approximateNormals[id.xy] = float4(normalize(cross(z, x)), 0);
+	// float3 x1 = float3(
+	// 	dtest1 * HX2[id.xy + int2(-1, 0)].xy) - Resolution / 2.0 / L,
+	// 	dtest2 * HY2[id.xy + int2(-1, 0)].xy),
+	// 	dtest3 * HZ2[id.xy + int2(-1, 0)].xy)
+	// );
+	// float3 x2 = float3(
+	// 	dtest1 * HX2[id.xy + int2(1, 0)].xy) + Resolution / 2.0 / L,
+	// 	dtest2 * HY2[id.xy + int2(1, 0)].xy),
+	// 	dtest3 * HZ2[id.xy + int2(1, 0)].xy)
+	// );
+	// float3 z1 = float3(
+	// 	dtest1 * HX2[id.xy + int2(0, -1)].xy),
+	// 	dtest2 * HY2[id.xy + int2(0, -1)].xy),
+	// 	dtest3 * HZ2[id.xy + int2(0, -1)].xy) - Resolution / 2.0 / L
+	// );
+	// float3 z2 = float3(
+	// 	dtest1 * HX2[id.xy + int2(0, 1)].xy),
+	// 	dtest2 * HY2[id.xy + int2(0, 1)].xy),
+	// 	dtest3 * HZ2[id.xy + int2(0, 1)].xy) + Resolution / 2.0 / L
+	// );
+	// float3 x = x2 - x1;
+	// float3 z = z2 - z1;
+	// approximateNormals[id.xy] = float4(normalize(cross(z, x)), 0);
+	approximateNormals[id.xy] = float4(0, 1, 0, 0);
 	//TODO Draw textures in ui with alpha 0
 	//Setting alpha to 1 so it shows up on UI Toolkit, will probably cause issues
-	{
-		Displacement[id.xy] = float4(Displacement[id.xy].xyz, 1);
-		approximateNormals[id.xy] = float4(approximateNormals[id.xy].xyz, 1);
-		HY[id.xy] = float4(HY[id.xy].xyz, 1);
-		HX[id.xy] = float4(HX[id.xy].xyz, 1);
-		HZ[id.xy] = float4(HZ[id.xy].xyz, 1);
-	}
+	// {
+	// 	Displacement[id.xy] = float4(Displacement[id.xy].xyz, 1);
+	// 	approximateNormals[id.xy] = float4(approximateNormals[id.xy].xyz, 1);
+	// 	HY[id.xy] = float4(HY[id.xy].xyz, 1);
+	// 	HX[id.xy] = float4(HX[id.xy].xyz, 1);
+	// 	HZ[id.xy] = float4(HZ[id.xy].xyz, 1);
+	// }
 }

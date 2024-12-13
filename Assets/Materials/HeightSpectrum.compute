@@ -90,7 +90,7 @@ float2 complexExponential(float theta)
 }
 
 //hFreq(k, t) = h0(k) * e^(iwt) + h0(-k) * e^(-iwt) (tess#43)
-float2 hFreq(float omega, float2 h0, float h0Conjugate)
+float2 hFreq(float omega, float2 h0, float2 h0Conjugate)
 {
 	return complexMul(h0, complexExponential(omega * time)) + complexMul(h0Conjugate, complexExponential(-omega * time));
 }
