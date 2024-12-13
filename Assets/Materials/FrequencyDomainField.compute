@@ -1,12 +1,12 @@
 #pragma kernel CSMain
 
 //Height frequencies
-RWTexture2D<float4> HX;
-RWTexture2D<float4> HY;
-RWTexture2D<float4> HZ;
+RWTexture2D<float4> DispFreqX;
+RWTexture2D<float4> DispFreqY;
+RWTexture2D<float4> DispFreqZ;
 //Slope frequencies
 // RWTexture2D<float4> NX;
-RWTexture2D<float4> NY;
+RWTexture2D<float4> NormFreqY;
 // RWTexture2D<float4> NZ;
 
 Texture2D Noise;
@@ -109,33 +109,33 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 	float2 h0y = h0(Noise[id.xy].xy, k, omega);
 	float2 h0ymk = conjugate(h0(Noise[id.xy].xy, -k, omega));
 	float2 hy = hFreq(omega, h0y, h0ymk);
-	HY[id.xy] = float4(hy, hy);
+	DispFreqY[id.xy] = float4(hy, hy);
 
 	float2 hx = hFreq(
 		omega,
 		float2(-k.x / length(k) * h0y.y, k.x / length(k) * h0y.x),
 		float2(k.x / length(k) * h0ymk.y, -k.x / length(k) * h0ymk.x)
 	);
-	HX[id.xy] = float4(hx, 0, 0);
+	DispFreqX[id.xy] = float4(hx, 0, 0);
 
 	float2 hz = hFreq(
 		omega,
 		float2(-k.y / length(k) * h0y.y, k.y / length(k) * h0y.x),
 		float2(k.y / length(k) * h0ymk.y, -k.y / length(k) * h0ymk.x)
 	);
-	HZ[id.xy] = float4(hz, 0, 0);
+	DispFreqZ[id.xy] = float4(hz, 0, 0);
 
 	float2 ikx = float2(0, k.x);
 	float2 ikz = float2(0, k.y);
 	float2 nyx = complexMul(ikx, hy);
 	float2 nyz = complexMul(ikz, hy);
-	NY[id.xy] = float4(nyx, nyz);
+	NormFreqY[id.xy] = float4(nyx, nyz);
 
 	//TODO Draw textures in ui with alpha 0
 	//Setting alpha to 1 so it shows up on UI Toolkit, will probably cause issues
 	{
-		HY[id.xy] = float4(HY[id.xy].xyz, 1);
-		HX[id.xy] = float4(HX[id.xy].xyz, 1);
-		HZ[id.xy] = float4(HZ[id.xy].xyz, 1);
+		DispFreqY[id.xy] = float4(DispFreqY[id.xy].xyz, 1);
+		DispFreqX[id.xy] = float4(DispFreqX[id.xy].xyz, 1);
+		DispFreqZ[id.xy] = float4(DispFreqZ[id.xy].xyz, 1);
 	}
 }

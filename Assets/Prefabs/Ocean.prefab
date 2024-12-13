@@ -50,22 +50,10 @@ MonoBehaviour:
   tileMaterial: {fileID: 2100000, guid: 5c2891b1541b5b042a952833aa73b0b7, type: 2}
   displacementComputeShader: {fileID: 7200000, guid: 40e34aac946926740866b917839f1a53,
     type: 3}
-  spectrumComputeShader: {fileID: 7200000, guid: bab3b7ecb79e4d5b9515d87e3efd086e,
+  frequencyDomainFieldComputeShader: {fileID: 7200000, guid: bab3b7ecb79e4d5b9515d87e3efd086e,
     type: 3}
-  rreusserFFT: {fileID: 7200000, guid: 402468975e3d45a0bd984b415e9e8878, type: 3}
+  fftComputeShader: {fileID: 7200000, guid: 402468975e3d45a0bd984b415e9e8878, type: 3}
   displacement: {fileID: 0}
-  HX: {fileID: 0}
-  HY: {fileID: 0}
-  HZ: {fileID: 0}
-  HX2: {fileID: 0}
-  HY2: {fileID: 0}
-  HZ2: {fileID: 0}
-  NY: {fileID: 0}
-  NY2: {fileID: 0}
-  approximateNormals: {fileID: 0}
-  pingBuffer: {fileID: 0}
-  pongBuffer: {fileID: 0}
-  noiseTexture: {fileID: 0}
   F: 1400
   U10: {x: 100, y: 100}
   windArrow: {fileID: 0}
@@ -91,3 +79,7 @@ MonoBehaviour:
   waveVector: {x: 1, y: 1}
   amplitude: 1
   angularFrequency: 0
+  textureDebugParent: {fileID: 0}
+  textureDebugPrefab: {fileID: 7896628136871844511, guid: 04ea4b41ee42ca645a2ce0a734d4cb84,
+    type: 3}
+  textureDebugOffset: {x: 1.1, y: 1.1}
