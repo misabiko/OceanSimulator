@@ -10,11 +10,13 @@ public class BoatController : MonoBehaviour
     [SerializeField] private float rotationSpeed;
     [SerializeField] private BoatRaycaster boatRaycaster;
     [SerializeField] private BirdController birdController;
-    
+    [SerializeField] private float rotLerpSpeed = 0.1f;
+
     private float currentSpeed;
     private Rigidbody myRigidbody;
     private Vector3 forwardMovement;
-
+    private Quaternion targetRotation;
+    
     private void Awake()
     {
         inputManager.fire += Switch;
@@ -39,12 +41,18 @@ public class BoatController : MonoBehaviour
             PlayerStateManager.SwitchTo(PlayerState.Bird);
         
         Vector2 moveInput = inputManager.moveDirection;
-        currentSpeed = Mathf.Clamp(currentSpeed + moveInput.y, -forwardSpeed, forwardSpeed);
+        targetRotation = Quaternion.Euler(0, moveInput.x * rotationSpeed, 0) * transform.rotation;
+
+        // Smoothly interpolate towards target rotation
+        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotLerpSpeed * Time.deltaTime);        forwardMovement = transform.forward * forwardSpeed;
         
-        transform.Rotate(0,   moveInput.x * rotationSpeed, 0, Space.Self);
-        forwardMovement = transform.forward * currentSpeed;
-      
-        myRigidbody.MovePosition(transform.position + forwardMovement * Time.deltaTime);
+        if(Input.GetKeyDown(KeyCode.P))
+            Paddle();
+    }
+
+    public void Paddle()
+    {
+        myRigidbody.AddForce(new Vector3(forwardMovement.x,0,forwardMovement.z), ForceMode.Impulse);
     }
 
     public void Switch()
