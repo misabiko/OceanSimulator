@@ -76,6 +76,6 @@ Material:
     m_Colors:
     - _Color: {r: 0.2688679, g: 0.51960784, b: 1, a: 0}
     - _Resolution: {r: 0, g: 0, b: 0, a: 0}
-    - _TestNormal: {r: 1, g: 1, b: 1, a: 1}
+    - _TestNormal: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

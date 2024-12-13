@@ -17,19 +17,16 @@ public class EnvironnementObjectPool : MonoBehaviour
 
     private CloudSpawner cloudSpawner;
     private RockSpawner rockSpawner;
-    
+
     private void Awake()
     {
+        PoolDictionary = new Dictionary<string, Queue<GameObject>>();
         cloudSpawner = GetComponent<CloudSpawner>();
         rockSpawner = GetComponent<RockSpawner>();
-        PoolDictionary = new Dictionary<string, Queue<GameObject>>();
-    }
 
-    private void Start()
-    {
         cloudSpawner.InitializeSpawner();
         rockSpawner.InitializeSpawner();
-        
+
         foreach (Pool pool in Pools)
         {
             Queue<GameObject> objectPool = new Queue<GameObject>();
@@ -39,13 +36,13 @@ public class EnvironnementObjectPool : MonoBehaviour
                 Random rand = new Random();
                 int index = rand.Next(0, pool.prefabs.Count);
                 GameObject instance = null;
-                
-                if(pool.tag == "Clouds") 
+
+                if (pool.tag == "Clouds")
                     instance = InstantiateCloud(pool, index);
-                else if (pool.tag == "Rocks")
-                    instance = InstantiateRocks(pool, index);
-                
-                if(instance != null)
+               // else if (pool.tag == "Rocks")
+                   // instance = InstantiateRocks(pool, index);
+
+                if (instance != null)
                     objectPool.Enqueue(instance);
             }
 
@@ -74,7 +71,7 @@ public class EnvironnementObjectPool : MonoBehaviour
     private void Update()
     {
         UpdateClouds( PoolDictionary["Clouds"]);
-        UpdateRocks( PoolDictionary["Rocks"]);
+        //UpdateRocks( PoolDictionary["Rocks"]);
     }
 
     private void UpdateClouds(Queue<GameObject> pool)
