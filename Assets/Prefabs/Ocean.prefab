@@ -66,11 +66,10 @@ MonoBehaviour:
   approximateNormals: {fileID: 0}
   pingBuffer: {fileID: 0}
   pongBuffer: {fileID: 0}
-  waveNumberTexture: {fileID: 0}
   noiseTexture: {fileID: 0}
-  noiseResolution: 10
   F: 1400000
-  U10: 20
+  U10: {x: 20, y: 0}
+  windArrow: {fileID: 0}
   gamma: 3.3
   phillipsA: 1
   phillipsSmallLength: 0.1
@@ -83,9 +82,9 @@ MonoBehaviour:
   test2d3: {x: 0, y: 0.5}
   test2d4: {x: 0, y: 1}
   test2d5: {x: 0, y: 0}
-  dtest1: 0.05
-  dtest2: 0.2
-  dtest3: 0.05
+  dtest1: 1
+  dtest2: 1
+  dtest3: 1
   normalTestX: {x: 1, y: 1, z: 1}
   normalTestZ: {x: 1, y: 1, z: 1}
   normalTest2: 0

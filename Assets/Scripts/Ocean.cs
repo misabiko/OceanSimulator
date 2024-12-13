@@ -28,10 +28,7 @@ public class Ocean : MonoBehaviour {
 	[HideInInspector] public RenderTexture approximateNormals;
 	[HideInInspector] public RenderTexture pingBuffer;
 	[HideInInspector] public RenderTexture pongBuffer;
-	[HideInInspector] public RenderTexture waveNumberTexture;
 	[HideInInspector] public Texture2D noiseTexture;
-
-	// [Min(0)] public float noiseResolution = 10f;
 
 	[Min(0)] public float F = 1400000;
 	public Vector2 U10 = new(20, 0);
@@ -61,7 +58,6 @@ public class Ocean : MonoBehaviour {
 	[SerializeField] Vector2 waveVector = Vector2.one;
 	[SerializeField] float amplitude = 1;
 	[SerializeField] float angularFrequency;
-	// [SerializeField] float height = .02f;
 
 	// [Header("SimpleSinusoid")]
 	// [SerializeField] ComputeShader simpleSinusoid;
@@ -105,7 +101,6 @@ public class Ocean : MonoBehaviour {
 		if (renderTextureDisplay) {
 			renderTextureDisplay.GetComponent<Renderer>().material.mainTexture = displacement;
 			GameObject.Find("RenderTextureNoise").GetComponent<Renderer>().material.mainTexture = noiseTexture;
-			GameObject.Find("RenderTextureWaveNumber").GetComponent<Renderer>().material.mainTexture = waveNumberTexture;
 			GameObject.Find("RenderTextureHY").GetComponent<Renderer>().material.mainTexture = HY;
 			GameObject.Find("RenderTextureHX").GetComponent<Renderer>().material.mainTexture = HX;
 			GameObject.Find("RenderTextureHZ").GetComponent<Renderer>().material.mainTexture = HZ;
@@ -217,7 +212,6 @@ public class Ocean : MonoBehaviour {
 	);
 
 	void InitTextures() {
-		waveNumberTexture = CreateRenderTexture();
 		noiseTexture = CreateTexture();
 		InitializingNoise();
 		//TODO Create every textures in a block
@@ -233,9 +227,6 @@ public class Ocean : MonoBehaviour {
 		pingBuffer = CreateRenderTexture();
 		pongBuffer = CreateRenderTexture();
 		displacement = CreateRenderTexture();
-
-		waveNumberTexture = CreateRenderTexture();
-		spectrumComputeShader.SetTexture(0, "WaveNumber", waveNumberTexture);
 	}
 
 	void InitializingNoise() {
@@ -349,17 +340,12 @@ public class Ocean : MonoBehaviour {
 	) {
 		int i;
 		RenderTexture ping;
-		string pingName;
 		RenderTexture pong;
-		string pongName;
 		Uniforms uniforms = new();
 		RenderTexture tmp;
-		string tmpName;
 		int width = tileSideVertexCount;
 		int height = tileSideVertexCount;
 
-		//opts = opts || {};
-		//opts.forward = opts.forward === undefined ? true : opts.forward;
 		const bool forward = false;
 		const bool splitNormalization = true;
 
@@ -369,18 +355,6 @@ public class Ocean : MonoBehaviour {
 			pong = tmp;
 		}
 
-		/*if (opts.size !== undefined) {
-			width = height = opts.size;
-			checkPOT('size', width);
-		} else if (opts.width !== undefined && opts.height !== undefined) {
-			width = opts.width;
-			height = opts.height;
-			checkPOT('width', width);
-			checkPOT('height', width);
-		} else {
-			throw new Error('either size or both width and height must provided.');
-		}*/
-
 		// Swap to avoid collisions with the input:
 		ping = optsPing;
 		if (optsInput == optsPong) {
@@ -388,7 +362,6 @@ public class Ocean : MonoBehaviour {
 		}
 		pong = ping == optsPing ? optsPong : optsPing;
 
-		List<Uniforms> passes = new();
 		int xIterations = Mathf.RoundToInt(Mathf.Log(width) / Mathf.Log(2));
 		int yIterations = Mathf.RoundToInt(Mathf.Log(height) / Mathf.Log(2));
 		int iterations = xIterations + yIterations;
@@ -428,73 +401,11 @@ public class Ocean : MonoBehaviour {
 
 			uniforms.subtransformSize = Mathf.Pow(2, (uniforms.horizontal ? i : (i - xIterations)) + 1);
 
-			passes.Add(uniforms.Copy());
 			uniforms.SetUniforms(rreusserFFT);
 			rreusserFFT.Dispatch(0, width / 8, height / 8, 1);
 
 			Swap();
 		}
-
-		// Debug.Log(string.Join("\n", passes.Select(p => p.ToString()).ToArray()));
-
-		// int subtransformSize = 2;
-		// bool pingpong = true;
-		// while (subtransformSize <= tileSideVertexCount) {
-		// 	if (i == 0) {
-		// 		rreusserFFT.SetTexture(0, FFTSrc, input);
-		// 		rreusserFFT.SetTexture(0, FFTOutput, pongBuffer);
-		// 	}
-		// 	else {
-		// 		rreusserFFT.SetTexture(0, FFTSrc, pingpong ? pingBuffer : pongBuffer);
-		// 		rreusserFFT.SetTexture(0, FFTOutput, pingpong ? pongBuffer : pingBuffer);
-		// 	}
-		//
-		// 	rreusserFFT.SetFloats(FFTOneOverResolution, 1f / tileSideVertexCount, 1f / tileSideVertexCount);
-		// 	rreusserFFT.SetFloat(FFTSubtransformSize, subtransformSize);
-		// 	rreusserFFT.SetBool(FFTHorizontal, true);
-		// 	rreusserFFT.SetBool(FFTForward, false);
-		// 	rreusserFFT.SetFloat(FFTNormalization, 1f);
-		// 	rreusserFFT.SetFloats("test", test2d.x, test2d.y);
-		// 	rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
-		// 	rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
-		// 	rreusserFFT.SetFloats("test4", test2d4.x, test2d4.y);
-		// 	rreusserFFT.SetFloats("test5", test2d5.x, test2d5.y);
-		// 	rreusserFFT.Dispatch(0, tileSideVertexCount / 8, tileSideVertexCount / 8, 1);
-		// 	subtransformSize *= 2;
-		// 	pingpong = !pingpong;
-		// 	++i;
-		// }
-		//
-		// subtransformSize = 2;
-		// i = 0;
-		// while (subtransformSize <= tileSideVertexCount) {
-		// 	if (subtransformSize == tileSideVertexCount) {
-		// 		rreusserFFT.SetTexture(0, FFTSrc, pongBuffer);
-		// 		rreusserFFT.SetTexture(0, FFTOutput, output);
-		// 	}
-		// 	else {
-		// 		rreusserFFT.SetTexture(0, FFTSrc, pingpong ? pingBuffer : pongBuffer);
-		// 		rreusserFFT.SetTexture(0, FFTOutput, pingpong ? pongBuffer : pingBuffer);
-		// 	}
-		//
-		// 	rreusserFFT.SetFloats(FFTOneOverResolution, 1f / tileSideVertexCount, 1f / tileSideVertexCount);
-		// 	rreusserFFT.SetFloat(FFTSubtransformSize, subtransformSize);
-		// 	rreusserFFT.SetBool(FFTHorizontal, false);
-		// 	rreusserFFT.SetBool(FFTForward, false);
-		// 	if (i == Mathf.FloorToInt(Mathf.Log(tileSideVertexCount, 2)))
-		// 		rreusserFFT.SetFloat(FFTNormalization, 1f / tileSideVertexCount / tileSideVertexCount);
-		// 	else
-		// 		rreusserFFT.SetFloat(FFTNormalization, 1f);
-		// 	rreusserFFT.SetFloats("test", test2d.x, test2d.y);
-		// 	rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
-		// 	rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
-		// 	rreusserFFT.SetFloats("test4", test2d4.x, test2d4.y);
-		// 	rreusserFFT.SetFloats("test5", test2d5.x, test2d5.y);
-		// 	rreusserFFT.Dispatch(0, tileSideVertexCount / 8, tileSideVertexCount / 8, 1);
-		// 	subtransformSize *= 2;
-		// 	pingpong = !pingpong;
-		// 	++i;
-		// }
 	}
 
 	static readonly int FFTOneOverResolution = Shader.PropertyToID("oneOverResolution");
