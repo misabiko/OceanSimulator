@@ -42,64 +42,24 @@ void CSMain(uint3 id : SV_DispatchThreadID) {
 	float3 displacement;
 	if ((id.x == 0 && id.y == 0) || (id.x == edge && id.y == edge) || (id.x == 0 && id.y == edge) || (id.x == edge && id.y == 0))
 	{
-		float3 lbEdge = float3(
+		displacement = float3(
 			HX2[uint2(0, 0)].x * factor(0, 0),
 			HY2[uint2(0, 0)].x * factor(0, 0),
 			HZ2[uint2(0, 0)].x * factor(0, 0)
 		);
-		float3 rtEdge = float3(
-			HX2[uint2(edge, edge)].x * factor(edge, edge),
-			HY2[uint2(edge, edge)].x * factor(edge, edge),
-			HZ2[uint2(edge, edge)].x * factor(edge, edge)
-		);
-		float3 lbEdge2 = float3(
-			HX2[uint2(0, edge)].x * factor(0, edge),
-			HY2[uint2(0, edge)].x * factor(0, edge),
-			HZ2[uint2(0, edge)].x * factor(0, edge)
-		);
-		float3 rtEdge2 = float3(
-			HX2[uint2(edge, 0)].x * factor(edge, 0),
-			HY2[uint2(edge, 0)].x * factor(edge, 0),
-			HZ2[uint2(edge, 0)].x * factor(edge, 0)
-		);
-		displacement = float3(
-			(lbEdge.x + rtEdge.x + lbEdge2.x + rtEdge2.x) / 4.0,
-			(lbEdge.y + rtEdge.y + lbEdge2.y + rtEdge2.y) / 4.0,
-			(lbEdge.z + rtEdge.z + lbEdge2.z + rtEdge2.z) / 4.0
-		);
 	}else if (id.x == 0 || id.x == edge)
 	{
-		float3 lbEdge = float3(
+		displacement = float3(
 			HX2[uint2(0, id.y)].x * factor(0, id.y),
 			HY2[uint2(0, id.y)].x * factor(0, id.y),
 			HZ2[uint2(0, id.y)].x * factor(0, id.y)
 		);
-		float3 rtEdge = float3(
-			HX2[uint2(edge, id.y)].x * factor(edge, id.y),
-			HY2[uint2(edge, id.y)].x * factor(edge, id.y),
-			HZ2[uint2(edge, id.y)].x * factor(edge, id.y)
-		);
-		displacement = float3(
-			(lbEdge.x + rtEdge.x) / 2.0,
-			(lbEdge.y + rtEdge.y) / 2.0,
-			(lbEdge.z + rtEdge.z) / 2.0
-		);
 	}else if (id.y == 0 || id.y == edge)
 	{
-		float3 lbEdge = float3(
+		displacement = float3(
 			HX2[uint2(id.x, 0)].x * factor(id.x, 0),
 			HY2[uint2(id.x, 0)].x * factor(id.x, 0), 
 			HZ2[uint2(id.x, 0)].x * factor(id.x, 0)
-		);
-		float3 rtEdge = float3(
-			HX2[uint2(id.x, edge)].x * factor(id.x, edge),
-			HY2[uint2(id.x, edge)].x * factor(id.x, edge),
-			HZ2[uint2(id.x, edge)].x * factor(id.x, edge)
-		);
-		displacement = float3(
-			(lbEdge.x + rtEdge.x) / 2.0,
-			(lbEdge.y + rtEdge.y) / 2.0,
-			(lbEdge.z + rtEdge.z) / 2.0
 		);
 	}else
 		displacement = float3(
