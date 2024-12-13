@@ -27,7 +27,6 @@ public class Ocean : MonoBehaviour {
 
 	[Min(0)] public float F = 1400000;
 	public Vector2 U10 = new(20, 0);
-	public Transform windArrow;
 	[Min(0)] public float gamma = 3.3f;
 
 	[Header("Phillips Spectrum")] [Min(0)] public float phillipsA = 1;
@@ -108,7 +107,7 @@ public class Ocean : MonoBehaviour {
 		frequencyDomainFieldComputeShader.SetFloat("time", Time.time * timeScale + timeOffset);
 		frequencyDomainFieldComputeShader.SetFloat("L", tileSize);
 		frequencyDomainFieldComputeShader.SetFloat("F", F);
-		frequencyDomainFieldComputeShader.SetVector("U10", windArrow != null ? new Vector2(U10.x * windArrow.localPosition.x, U10.y * windArrow.localPosition.z) : U10);
+		frequencyDomainFieldComputeShader.SetVector("U10", U10);
 		frequencyDomainFieldComputeShader.SetFloat("gamma", gamma);
 		frequencyDomainFieldComputeShader.SetFloat("heightTest", heightTest);
 		frequencyDomainFieldComputeShader.SetFloat("phillipsA", phillipsA);
@@ -234,13 +233,6 @@ public class Ocean : MonoBehaviour {
 	Texture2D CreateTexture() => new(tileSideVertexCount, tileSideVertexCount) {
 		filterMode = FilterMode.Point,
 	};
-
-	void OnDrawGizmos() {
-		if (windArrow != null) {
-			Gizmos.color = Color.yellow;
-			Gizmos.DrawLine(windArrow.parent.position, windArrow.position);
-		}
-	}
 
 	void RunIFFT(
 		RenderTexture initInput,
