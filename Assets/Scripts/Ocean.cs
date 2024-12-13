@@ -1,21 +1,16 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Ocean : MonoBehaviour {
-	//TODO Replace prefab with creating and populating component here
-	public GameObject oceanTilePrefab;
 	[Min(0)] public int tileRadius;
 	[Min(0)] public int tileSideVertexCount = 256;
 	[Min(0)] public float tileSize = 64;
+	[SerializeField] Material tileMaterial;
 
-	readonly Dictionary<Vector2Int, OceanMeshGenerator> tiles = new();
+	// readonly Dictionary<Vector2Int, GameObject> tiles = new();
 
-	[SerializeField] ComputeShader displacementComputeShaderSource;
-	[SerializeField] ComputeShader spectrumComputeShaderSource;
-	[SerializeField] ComputeShader rreusserFFTSource;
-	ComputeShader displacementComputeShader;
-	ComputeShader spectrumComputeShader;
-	ComputeShader rreusserFFT;
+	[SerializeField] ComputeShader displacementComputeShader;
+	[SerializeField] ComputeShader spectrumComputeShader;
+	[SerializeField] ComputeShader rreusserFFT;
 	[HideInInspector] public RenderTexture displacement;
 	[HideInInspector] public RenderTexture HX;
 	[HideInInspector] public RenderTexture HY;
@@ -67,12 +62,6 @@ public class Ocean : MonoBehaviour {
 	// public Vector2 simpleSinusoidPhase = Vector2.zero;
 
 	void Awake() {
-		//For now, limiting to 512
-		Debug.Assert(tileSideVertexCount <= 512);
-
-		displacementComputeShader = Instantiate(displacementComputeShaderSource);
-		spectrumComputeShader = Instantiate(spectrumComputeShaderSource);
-		rreusserFFT = Instantiate(rreusserFFTSource);
 		InitTextures();
 
 		spectrumComputeShader.SetTexture(0, "Noise", noiseTexture);
@@ -176,35 +165,29 @@ public class Ocean : MonoBehaviour {
 		// simpleSinusoid.SetTexture(0, "HZ2", HZ2);
 	}
 
-	void Update() {
-		// foreach (var tile in tiles.Values) {
-		// 	var material = tile.GetComponent<Renderer>().material;
-		// 	material.SetFloat("_Height", height);
-		// 	material.SetVector("_Resolution", new Vector2(size, size));
-		// }
-
-		SetupComputeShader();
-	}
+	void Update() => SetupComputeShader();
 
 	void SpawnTiles() {
-		var prefabComponent = oceanTilePrefab.GetComponent<OceanMeshGenerator>();
-		prefabComponent.sideVertexCount = tileSideVertexCount;
-		prefabComponent.size = tileSize;
+		var mesh = CreateMesh();
+
+		var materialInstance = new Material(tileMaterial);
+		materialInstance.SetTexture(TileMaterialDisplacement, displacement);
+		materialInstance.SetTexture(TileMaterialNormalMap, NY2);
+		materialInstance.SetTexture(TileMaterialApproximateNormalMap, approximateNormals);
+		materialInstance.SetVector(TileMaterialResolution, new Vector2(tileSize, tileSize));
 
 		for (int x = -tileRadius; x <= tileRadius; ++x)
 		for (int z = -tileRadius; z <= tileRadius; ++z) {
-			var oceanTile = Instantiate(oceanTilePrefab, new Vector3(x, 0, z) * tileSize, Quaternion.identity, transform)
-				.GetComponent<OceanMeshGenerator>();
-			var material = oceanTile.GetComponent<Renderer>().material;
-			material.SetTexture("_Displacement", displacement);
-			material.SetTexture("_NormalMap", NY2);
-			material.SetTexture("_ApproximateNormalMap", approximateNormals);
-			material.SetVector("_Resolution", new Vector2(tileSize, tileSize));
-			tiles.Add(new Vector2Int(x, z), oceanTile);
+			//I tried creating the GameObject and set its component before the loop and instantiating it as a prefab, but the prefab is still added to the scene on construction, so it's simpler like this
+			var oceanTile = new GameObject($"OceanTile {x} {z}");
+			oceanTile.AddComponent<MeshFilter>().mesh = mesh;
+			oceanTile.AddComponent<MeshRenderer>().material = materialInstance;
+
+			oceanTile.transform.SetParent(transform);
+			oceanTile.transform.position = new Vector3(x, 0, z) * tileSize;
+			// tiles.Add(new Vector2Int(x, z), oceanTile);
 		}
 	}
-
-	public OceanMeshGenerator GetOceanMeshGenerator(Vector3 shipPosition) => tiles[ConvertVector(shipPosition)];
 
 	Vector2Int ConvertVector(Vector3 vector) => new(
 		Mathf.FloorToInt(vector.x / tileSize),
@@ -407,6 +390,44 @@ public class Ocean : MonoBehaviour {
 			Swap();
 		}
 	}
+	Mesh CreateMesh() {
+		var vertices = new Vector3[tileSideVertexCount * tileSideVertexCount];
+		int[] triangles = new int[tileSideVertexCount * tileSideVertexCount * 6];
+
+		for (int i = 0, z = 0; z < tileSideVertexCount; ++z)
+		for (int x = 0; x < tileSideVertexCount; ++x) {
+			vertices[i] = new Vector3(x, 0f, z) * tileSize / (tileSideVertexCount - 1);
+			++i;
+		}
+
+		int vert = 0;
+		int tris = 0;
+		for (int z = 0; z < tileSideVertexCount - 1; ++z) {
+			for (int x = 0; x < tileSideVertexCount - 1; ++x) {
+				triangles[tris + 0] = vert + 0;
+				triangles[tris + 1] = vert + tileSideVertexCount;
+				triangles[tris + 2] = vert + 1;
+				triangles[tris + 3] = vert + 1;
+				triangles[tris + 4] = vert + tileSideVertexCount;
+				triangles[tris + 5] = vert + tileSideVertexCount + 1;
+
+				++vert;
+				tris += 6;
+			}
+
+			++vert;
+		}
+
+		var mesh = new Mesh {
+			indexFormat = UnityEngine.Rendering.IndexFormat.UInt32,
+			//Not sure why this doesn't work
+			// vertices = vertices,
+			// triangles = triangles,
+		};
+		mesh.vertices = vertices;
+		mesh.triangles = triangles;
+		return mesh;
+	}
 
 	static readonly int FFTOneOverResolution = Shader.PropertyToID("oneOverResolution");
 	static readonly int FFTSrc = Shader.PropertyToID("src");
@@ -415,4 +436,8 @@ public class Ocean : MonoBehaviour {
 	static readonly int FFTHorizontal = Shader.PropertyToID("horizontal");
 	static readonly int FFTForward = Shader.PropertyToID("forward");
 	static readonly int FFTNormalization = Shader.PropertyToID("normalization");
+	static readonly int TileMaterialDisplacement = Shader.PropertyToID("_Displacement");
+	static readonly int TileMaterialNormalMap = Shader.PropertyToID("_NormalMap");
+	static readonly int TileMaterialApproximateNormalMap = Shader.PropertyToID("_ApproximateNormalMap");
+	static readonly int TileMaterialResolution = Shader.PropertyToID("_Resolution");
 }
