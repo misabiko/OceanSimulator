@@ -175,7 +175,6 @@ public class Ocean : MonoBehaviour {
 	void InitTextures() {
 		NoiseTexture = CreateTexture();
 		InitializingNoise();
-		//TODO Create every textures in a block
 		DispFreqX = CreateRenderTexture();
 		DispFreqY = CreateRenderTexture();
 		DispFreqZ = CreateRenderTexture();
@@ -194,19 +193,10 @@ public class Ocean : MonoBehaviour {
 		NoiseTexture = CreateTexture();
 
 		//https://stackoverflow.com/a/218600/2692695
-		// int greenNoise = Random.Range(0, 10000);
 		const float mean = 0;
 		const float stdDev = 1;
 		for (int x = 0; x < tileSideVertexCount; ++x)
 		for (int y = 0; y < tileSideVertexCount; ++y) {
-			// noiseTexture.SetPixel(x, y, new Color(
-			// 	Mathf.PerlinNoise(x / noiseResolution, y / noiseResolution),
-			// 	Mathf.PerlinNoise(x / noiseResolution + greenNoise, y / noiseResolution + greenNoise),
-			// 	0,
-			// 	1
-			// ));
-			// noiseTexture.SetPixel(x, y, new Color(.5f, .5f, 0, 0));
-
 			var u1 = Vector2.one - new Vector2(Random.value, Random.value);
 			var u2 = Vector2.one - new Vector2(Random.value, Random.value);
 			var randStdNormal = new Vector2(
@@ -258,19 +248,9 @@ public class Ocean : MonoBehaviour {
 		RenderTexture initPong,
 		RenderTexture initOutput
 	) {
-		int i;
-		RenderTexture ping;
-		RenderTexture pong;
-
-		const bool splitNormalization = true;
-
 		// Swap to avoid collisions with the input:
-		ping = initPing;
-		if (initInput == initPong) {
-			ping = initPong;
-		}
-
-		pong = ping == initPing ? initPong : initPing;
+		var ping = initInput == initPong ? initPong : initPing;
+		var pong = ping == initPing ? initPong : initPing;
 
 		int xIterations = Mathf.RoundToInt(Mathf.Log(tileSideVertexCount) / Mathf.Log(2));
 		int iterations = 2 * xIterations;
@@ -284,7 +264,7 @@ public class Ocean : MonoBehaviour {
 		if (initInput == pong)
 			throw new System.Exception("not enough framebuffers to compute without copying data. You may perform the computation with only two framebuffers, but the output must equal the input when an even number of iterations are required.");
 
-		for (i = 0; i < iterations; ++i) {
+		for (int i = 0; i < iterations; ++i) {
 			var input = ping;
 			var output = pong;
 
