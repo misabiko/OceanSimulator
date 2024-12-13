@@ -30,35 +30,49 @@ float3 normalTestZ;
 float normalTest2;
 float3 normalTest3;
 
+float value(float2 complex)
+{
+	// return length(complex * normalTestX.xy);
+	return complex.x * normalTestX.x + complex.y * normalTestX.y;
+}
+
 [numthreads(8,8,1)]
 void CSMain(uint3 id : SV_DispatchThreadID) {
+	//I can't find where the normalization is reverted in rreeusser's implementation
+	//And I really don't understand negation issue, something about baked origin shift or DC component in the FFT implementation?
+	float factor = Resolution * (((id.x % 2 == 0) ^ (id.y % 2 == 0)) ? -1 : 1);
+	HX2[id.xy] *= factor;
+	HY2[id.xy] *= factor;
+	HZ2[id.xy] *= factor;
+
 	//TODO Get rid of coefficients
 	float3 displacement = float3(
-		length(HX2[id.xy].xy) * dtest1,
-		length(HY2[id.xy].xy) * dtest2,
-		length(HZ2[id.xy].xy) * dtest3
+		value(HX2[id.xy].xy) * dtest1,
+		value(HY2[id.xy].xy) * dtest2,
+		value(HZ2[id.xy].xy) * dtest3
 	);
+
 	// Displacement[id.xy] = float4(normalize(displacement) * min(length(displacement), 1.0), 0);
 	Displacement[id.xy] = float4(displacement, 0);
 	float3 x1 = float3(
-		dtest1 * length(HX2[id.xy + int2(-1, 0)].xy) - Resolution / 2.0 / L,
-		dtest2 * length(HY2[id.xy + int2(-1, 0)].xy),
-		dtest3 * length(HZ2[id.xy + int2(-1, 0)].xy)
+		dtest1 * value(HX2[id.xy + int2(-1, 0)].xy) - Resolution / 2.0 / L,
+		dtest2 * value(HY2[id.xy + int2(-1, 0)].xy),
+		dtest3 * value(HZ2[id.xy + int2(-1, 0)].xy)
 	);
 	float3 x2 = float3(
-		dtest1 * length(HX2[id.xy + int2(1, 0)].xy) + Resolution / 2.0 / L,
-		dtest2 * length(HY2[id.xy + int2(1, 0)].xy),
-		dtest3 * length(HZ2[id.xy + int2(1, 0)].xy)
+		dtest1 * value(HX2[id.xy + int2(1, 0)].xy) + Resolution / 2.0 / L,
+		dtest2 * value(HY2[id.xy + int2(1, 0)].xy),
+		dtest3 * value(HZ2[id.xy + int2(1, 0)].xy)
 	);
 	float3 z1 = float3(
-		dtest1 * length(HX2[id.xy + int2(0, -1)].xy),
-		dtest2 * length(HY2[id.xy + int2(0, -1)].xy),
-		dtest3 * length(HZ2[id.xy + int2(0, -1)].xy) - Resolution / 2.0 / L
+		dtest1 * value(HX2[id.xy + int2(0, -1)].xy),
+		dtest2 * value(HY2[id.xy + int2(0, -1)].xy),
+		dtest3 * value(HZ2[id.xy + int2(0, -1)].xy) - Resolution / 2.0 / L
 	);
 	float3 z2 = float3(
-		dtest1 * length(HX2[id.xy + int2(0, 1)].xy),
-		dtest2 * length(HY2[id.xy + int2(0, 1)].xy),
-		dtest3 * length(HZ2[id.xy + int2(0, 1)].xy) + Resolution / 2.0 / L
+		dtest1 * value(HX2[id.xy + int2(0, 1)].xy),
+		dtest2 * value(HY2[id.xy + int2(0, 1)].xy),
+		dtest3 * value(HZ2[id.xy + int2(0, 1)].xy) + Resolution / 2.0 / L
 	);
 	float3 x = x2 - x1;
 	float3 z = z2 - z1;
@@ -68,5 +82,8 @@ void CSMain(uint3 id : SV_DispatchThreadID) {
 	{
 		Displacement[id.xy] = float4(Displacement[id.xy].xyz, 1);
 		approximateNormals[id.xy] = float4(approximateNormals[id.xy].xyz, 1);
+		HY[id.xy] = float4(HY[id.xy].xyz, 1);
+		HX[id.xy] = float4(HX[id.xy].xyz, 1);
+		HZ[id.xy] = float4(HZ[id.xy].xyz, 1);
 	}
 }

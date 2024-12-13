@@ -62,7 +62,6 @@ public class OceanMeshGenerator : MonoBehaviour {
 			++vert;
 		}
 
-		material.SetVector("_Resolution", new Vector2(size, size));
 		lastSize = size;
 	}
 
