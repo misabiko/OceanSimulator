@@ -28,7 +28,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     float4 even, odd;
     float index, evenIndex, twiddleArgument;
 
-    float2 fragCoord = float2(id.x, id.y);
+    float2 fragCoord = float2(id.x + 0.5, id.y + 0.5);
 
     index = (horizontal ? fragCoord.x : fragCoord.y) - 0.5;
 

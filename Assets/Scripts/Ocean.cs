@@ -112,6 +112,8 @@ public class Ocean : MonoBehaviour {
 			GameObject.Find("RenderTextureHY2").GetComponent<Renderer>().material.mainTexture = HY2;
 			GameObject.Find("RenderTextureHX2").GetComponent<Renderer>().material.mainTexture = HX2;
 			GameObject.Find("RenderTextureHZ2").GetComponent<Renderer>().material.mainTexture = HZ2;
+			GameObject.Find("RenderTexturePing").GetComponent<Renderer>().material.mainTexture = pingBuffer;
+			GameObject.Find("RenderTexturePong").GetComponent<Renderer>().material.mainTexture = pongBuffer;
 		}
 
 		// var uiDocument = GetComponent<UIDocument>();
@@ -152,11 +154,11 @@ public class Ocean : MonoBehaviour {
 		spectrumComputeShader.SetVector("phillipsWindDir", phillipsWindDir.normalized);
 		spectrumComputeShader.Dispatch(0, tileSideVertexCount / 8, tileSideVertexCount / 8, 1);
 
-		RunFFT(HY, HY2);
+		RunFFT(HY, pingBuffer, pongBuffer, HY2);
 		//TODO Merge HX and HZ in the same texture
-		RunFFT(HX, HX2);
-		RunFFT(HZ, HZ2);
-		RunFFT(NY, NY2);
+		RunFFT(HX, HX2, pingBuffer,  HX2);
+		RunFFT(HZ, HZ2, pingBuffer,  HZ2);
+		RunFFT(NY, NY2, pingBuffer,  NY2);
 
 		// SetupSimpleSinusoid();
 
@@ -262,6 +264,7 @@ public class Ocean : MonoBehaviour {
 			var randNormal = mean * Vector2.one + stdDev * randStdNormal;
 			noiseTexture.SetPixel(x, y, new Color(randNormal.x, randNormal.y, 0, 1));
 		}
+
 		noiseTexture.Apply();
 	}
 
@@ -280,6 +283,7 @@ public class Ocean : MonoBehaviour {
 			enableRandomWrite = true,
 			filterMode = FilterMode.Point,
 			graphicsFormat = UnityEngine.Experimental.Rendering.GraphicsFormat.R32G32B32A32_SFloat,
+			autoGenerateMips = false,
 		};
 		rt.Create();
 		return rt;
@@ -296,66 +300,201 @@ public class Ocean : MonoBehaviour {
 		}
 	}
 
-	void RunFFT(RenderTexture input, RenderTexture output) {
-		int subtransformSize = 2;
-		bool pingpong = true;
-		int i = 0;
-		while (subtransformSize <= tileSideVertexCount) {
+	class Uniforms {
+		public RenderTexture input;
+		public string inputName;
+		public RenderTexture output;
+		public string outputName;
+		public bool horizontal;
+		public bool forward;
+		public Vector2 resolution;
+		public float normalization;
+		public float subtransformSize;
+
+		public void SetUniforms(ComputeShader shader) {
+			shader.SetTexture(0, FFTSrc, input);
+			if (output != null)
+				shader.SetTexture(0, FFTOutput, output);
+			shader.SetBool(FFTHorizontal, horizontal);
+			shader.SetBool(FFTForward, forward);
+			shader.SetFloats(FFTOneOverResolution, resolution.x, resolution.y);
+			shader.SetFloat(FFTNormalization, normalization);
+			shader.SetFloat(FFTSubtransformSize, subtransformSize);
+		}
+
+		public Uniforms Copy() {
+			return new Uniforms {
+				input = input,
+				inputName = inputName,
+				output = output,
+				outputName = outputName,
+				horizontal = horizontal,
+				forward = forward,
+				resolution = resolution,
+				normalization = normalization,
+				subtransformSize = subtransformSize,
+			};
+		}
+
+		public override string ToString() {
+			return $"input: {inputName}, output: {outputName}, horizontal: {horizontal}, forward: {forward}, resolution: {resolution}, normalization: {normalization}, subtransformSize: {subtransformSize}";
+		}
+	}
+
+	void RunFFT(
+		RenderTexture optsInput,
+		RenderTexture optsPing,
+		RenderTexture optsPong,
+		RenderTexture optsOutput
+	) {
+		int i;
+		RenderTexture ping;
+		string pingName;
+		RenderTexture pong;
+		string pongName;
+		Uniforms uniforms = new();
+		RenderTexture tmp;
+		string tmpName;
+		int width = tileSideVertexCount;
+		int height = tileSideVertexCount;
+
+		//opts = opts || {};
+		//opts.forward = opts.forward === undefined ? true : opts.forward;
+		const bool forward = false;
+		const bool splitNormalization = true;
+
+		void Swap() {
+			tmp = ping;
+			ping = pong;
+			pong = tmp;
+		}
+
+		/*if (opts.size !== undefined) {
+			width = height = opts.size;
+			checkPOT('size', width);
+		} else if (opts.width !== undefined && opts.height !== undefined) {
+			width = opts.width;
+			height = opts.height;
+			checkPOT('width', width);
+			checkPOT('height', width);
+		} else {
+			throw new Error('either size or both width and height must provided.');
+		}*/
+
+		// Swap to avoid collisions with the input:
+		ping = optsPing;
+		if (optsInput == optsPong) {
+			ping = optsPong;
+		}
+		pong = ping == optsPing ? optsPong : optsPing;
+
+		List<Uniforms> passes = new();
+		int xIterations = Mathf.RoundToInt(Mathf.Log(width) / Mathf.Log(2));
+		int yIterations = Mathf.RoundToInt(Mathf.Log(height) / Mathf.Log(2));
+		int iterations = xIterations + yIterations;
+
+		// Swap to avoid collisions with output:
+		if (optsOutput == ((iterations % 2 == 0) ? pong : ping))
+			Swap();
+
+		// If we've avoiding collision with output creates an input collision,
+		// then you'll just have to rework your framebuffers and try again.
+		if (optsInput == pong)
+			throw new System.Exception("not enough framebuffers to compute without copying data. You may perform the computation with only two framebuffers, but the output must equal the input when an even number of iterations are required.");
+
+		for (i = 0; i < iterations; ++i) {
+			uniforms.input = ping;
+			uniforms.output = pong;
+			uniforms.horizontal = i < xIterations;
+			uniforms.forward = forward;
+			uniforms.resolution = new Vector2(1f / width, 1f / height);
+
 			if (i == 0) {
-				rreusserFFT.SetTexture(0, FFTSrc, input);
-				rreusserFFT.SetTexture(0, FFTOutput, pongBuffer);
-			}
-			else {
-				rreusserFFT.SetTexture(0, FFTSrc, pingpong ? pingBuffer : pongBuffer);
-				rreusserFFT.SetTexture(0, FFTOutput, pingpong ? pongBuffer : pingBuffer);
+				uniforms.input = optsInput;
+			}else if (i == iterations - 1) {
+				uniforms.output = optsOutput;
 			}
 
-			rreusserFFT.SetFloats(FFTOneOverResolution, 1f / tileSideVertexCount, 1f / tileSideVertexCount);
-			rreusserFFT.SetFloat(FFTSubtransformSize, subtransformSize);
-			rreusserFFT.SetBool(FFTHorizontal, true);
-			rreusserFFT.SetBool(FFTForward, false);
-			rreusserFFT.SetFloat(FFTNormalization, 1f);
-			rreusserFFT.SetFloats("test", test2d.x, test2d.y);
-			rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
-			rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
-			rreusserFFT.SetFloats("test4", test2d4.x, test2d4.y);
-			rreusserFFT.SetFloats("test5", test2d5.x, test2d5.y);
-			rreusserFFT.Dispatch(0, tileSideVertexCount / 8, tileSideVertexCount / 8, 1);
-			subtransformSize *= 2;
-			pingpong = !pingpong;
-			++i;
-		}
-
-		subtransformSize = 2;
-		i = 0;
-		while (subtransformSize <= tileSideVertexCount) {
-			if (subtransformSize == tileSideVertexCount) {
-				rreusserFFT.SetTexture(0, FFTSrc, pongBuffer);
-				rreusserFFT.SetTexture(0, FFTOutput, output);
+			if (i == 0) {
+				if (splitNormalization)
+					uniforms.normalization = 1f / Mathf.Sqrt(width * height);
+				else if (!forward)
+					uniforms.normalization = 1f / width / height;
+				else
+					uniforms.normalization = 1f;
 			}
-			else {
-				rreusserFFT.SetTexture(0, FFTSrc, pingpong ? pingBuffer : pongBuffer);
-				rreusserFFT.SetTexture(0, FFTOutput, pingpong ? pongBuffer : pingBuffer);
-			}
-
-			rreusserFFT.SetFloats(FFTOneOverResolution, 1f / tileSideVertexCount, 1f / tileSideVertexCount);
-			rreusserFFT.SetFloat(FFTSubtransformSize, subtransformSize);
-			rreusserFFT.SetBool(FFTHorizontal, false);
-			rreusserFFT.SetBool(FFTForward, false);
-			if (i == Mathf.FloorToInt(Mathf.Log(tileSideVertexCount, 2)))
-				rreusserFFT.SetFloat(FFTNormalization, 1f / tileSideVertexCount / tileSideVertexCount);
 			else
-				rreusserFFT.SetFloat(FFTNormalization, 1f);
-			rreusserFFT.SetFloats("test", test2d.x, test2d.y);
-			rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
-			rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
-			rreusserFFT.SetFloats("test4", test2d4.x, test2d4.y);
-			rreusserFFT.SetFloats("test5", test2d5.x, test2d5.y);
-			rreusserFFT.Dispatch(0, tileSideVertexCount / 8, tileSideVertexCount / 8, 1);
-			subtransformSize *= 2;
-			pingpong = !pingpong;
-			++i;
+				uniforms.normalization = 1f;
+
+			uniforms.subtransformSize = Mathf.Pow(2, (uniforms.horizontal ? i : (i - xIterations)) + 1);
+
+			passes.Add(uniforms.Copy());
+			uniforms.SetUniforms(rreusserFFT);
+			rreusserFFT.Dispatch(0, width / 8, height / 8, 1);
+
+			Swap();
 		}
+
+		// Debug.Log(string.Join("\n", passes.Select(p => p.ToString()).ToArray()));
+
+		// int subtransformSize = 2;
+		// bool pingpong = true;
+		// while (subtransformSize <= tileSideVertexCount) {
+		// 	if (i == 0) {
+		// 		rreusserFFT.SetTexture(0, FFTSrc, input);
+		// 		rreusserFFT.SetTexture(0, FFTOutput, pongBuffer);
+		// 	}
+		// 	else {
+		// 		rreusserFFT.SetTexture(0, FFTSrc, pingpong ? pingBuffer : pongBuffer);
+		// 		rreusserFFT.SetTexture(0, FFTOutput, pingpong ? pongBuffer : pingBuffer);
+		// 	}
+		//
+		// 	rreusserFFT.SetFloats(FFTOneOverResolution, 1f / tileSideVertexCount, 1f / tileSideVertexCount);
+		// 	rreusserFFT.SetFloat(FFTSubtransformSize, subtransformSize);
+		// 	rreusserFFT.SetBool(FFTHorizontal, true);
+		// 	rreusserFFT.SetBool(FFTForward, false);
+		// 	rreusserFFT.SetFloat(FFTNormalization, 1f);
+		// 	rreusserFFT.SetFloats("test", test2d.x, test2d.y);
+		// 	rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
+		// 	rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
+		// 	rreusserFFT.SetFloats("test4", test2d4.x, test2d4.y);
+		// 	rreusserFFT.SetFloats("test5", test2d5.x, test2d5.y);
+		// 	rreusserFFT.Dispatch(0, tileSideVertexCount / 8, tileSideVertexCount / 8, 1);
+		// 	subtransformSize *= 2;
+		// 	pingpong = !pingpong;
+		// 	++i;
+		// }
+		//
+		// subtransformSize = 2;
+		// i = 0;
+		// while (subtransformSize <= tileSideVertexCount) {
+		// 	if (subtransformSize == tileSideVertexCount) {
+		// 		rreusserFFT.SetTexture(0, FFTSrc, pongBuffer);
+		// 		rreusserFFT.SetTexture(0, FFTOutput, output);
+		// 	}
+		// 	else {
+		// 		rreusserFFT.SetTexture(0, FFTSrc, pingpong ? pingBuffer : pongBuffer);
+		// 		rreusserFFT.SetTexture(0, FFTOutput, pingpong ? pongBuffer : pingBuffer);
+		// 	}
+		//
+		// 	rreusserFFT.SetFloats(FFTOneOverResolution, 1f / tileSideVertexCount, 1f / tileSideVertexCount);
+		// 	rreusserFFT.SetFloat(FFTSubtransformSize, subtransformSize);
+		// 	rreusserFFT.SetBool(FFTHorizontal, false);
+		// 	rreusserFFT.SetBool(FFTForward, false);
+		// 	if (i == Mathf.FloorToInt(Mathf.Log(tileSideVertexCount, 2)))
+		// 		rreusserFFT.SetFloat(FFTNormalization, 1f / tileSideVertexCount / tileSideVertexCount);
+		// 	else
+		// 		rreusserFFT.SetFloat(FFTNormalization, 1f);
+		// 	rreusserFFT.SetFloats("test", test2d.x, test2d.y);
+		// 	rreusserFFT.SetFloats("test2", test2d2.x, test2d2.y);
+		// 	rreusserFFT.SetFloats("test3", test2d3.x, test2d3.y);
+		// 	rreusserFFT.SetFloats("test4", test2d4.x, test2d4.y);
+		// 	rreusserFFT.SetFloats("test5", test2d5.x, test2d5.y);
+		// 	rreusserFFT.Dispatch(0, tileSideVertexCount / 8, tileSideVertexCount / 8, 1);
+		// 	subtransformSize *= 2;
+		// 	pingpong = !pingpong;
+		// 	++i;
+		// }
 	}
 
 	static readonly int FFTOneOverResolution = Shader.PropertyToID("oneOverResolution");
