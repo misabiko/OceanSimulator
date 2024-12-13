@@ -34,11 +34,11 @@ public class OceanMeshGenerator : MonoBehaviour {
 	}
 
 	void CreateShape() {
-		vertices = new Vector3[(sideVertexCount + 1) * (sideVertexCount + 1)];
+		vertices = new Vector3[sideVertexCount * sideVertexCount];
 
-		for (int i = 0, z = 0; z <= sideVertexCount; ++z)
-		for (int x = 0; x <= sideVertexCount; ++x) {
-			vertices[i] = new Vector3((float)x / sideVertexCount, 0f, (float)z / sideVertexCount) * size;
+		for (int i = 0, z = 0; z < sideVertexCount; ++z)
+		for (int x = 0; x < sideVertexCount; ++x) {
+			vertices[i] = new Vector3(x, 0f, z) * size / (sideVertexCount - 1);
 			++i;
 		}
 
@@ -46,14 +46,14 @@ public class OceanMeshGenerator : MonoBehaviour {
 
 		int vert = 0;
 		int tris = 0;
-		for (int z = 0; z < sideVertexCount; ++z) {
-			for (int x = 0; x < sideVertexCount; ++x) {
+		for (int z = 0; z < sideVertexCount - 1; ++z) {
+			for (int x = 0; x < sideVertexCount - 1; ++x) {
 				triangles[tris + 0] = vert + 0;
-				triangles[tris + 1] = vert + sideVertexCount + 1;
+				triangles[tris + 1] = vert + sideVertexCount;
 				triangles[tris + 2] = vert + 1;
 				triangles[tris + 3] = vert + 1;
-				triangles[tris + 4] = vert + sideVertexCount + 1;
-				triangles[tris + 5] = vert + sideVertexCount + 2;
+				triangles[tris + 4] = vert + sideVertexCount;
+				triangles[tris + 5] = vert + sideVertexCount + 1;
 
 				++vert;
 				tris += 6;
