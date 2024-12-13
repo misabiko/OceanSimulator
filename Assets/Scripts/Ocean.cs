@@ -9,8 +9,8 @@ public class Ocean : MonoBehaviour {
 	// readonly Dictionary<Vector2Int, GameObject> tiles = new();
 
 	[SerializeField] ComputeShader displacementComputeShader;
-	[SerializeField] ComputeShader spectrumComputeShader;
-	[SerializeField] ComputeShader rreusserFFT;
+	[SerializeField] ComputeShader frequencyDomainFieldComputeShader;
+	[SerializeField] ComputeShader fftComputeShader;
 	[HideInInspector] public RenderTexture displacement;
 	[HideInInspector] public RenderTexture HX;
 	[HideInInspector] public RenderTexture HY;
@@ -64,14 +64,14 @@ public class Ocean : MonoBehaviour {
 	void Awake() {
 		InitTextures();
 
-		spectrumComputeShader.SetTexture(0, "Noise", noiseTexture);
-		spectrumComputeShader.SetFloat("Resolution", tileSideVertexCount);
-		spectrumComputeShader.SetFloat("PI", Mathf.PI);
-		spectrumComputeShader.SetFloat("g", -Physics.gravity.y);
-		spectrumComputeShader.SetTexture(0, "HX", HX);
-		spectrumComputeShader.SetTexture(0, "HY", HY);
-		spectrumComputeShader.SetTexture(0, "HZ", HZ);
-		spectrumComputeShader.SetTexture(0, "NY", NY);
+		frequencyDomainFieldComputeShader.SetTexture(0, "Noise", noiseTexture);
+		frequencyDomainFieldComputeShader.SetFloat("Resolution", tileSideVertexCount);
+		frequencyDomainFieldComputeShader.SetFloat("PI", Mathf.PI);
+		frequencyDomainFieldComputeShader.SetFloat("g", -Physics.gravity.y);
+		frequencyDomainFieldComputeShader.SetTexture(0, "HX", HX);
+		frequencyDomainFieldComputeShader.SetTexture(0, "HY", HY);
+		frequencyDomainFieldComputeShader.SetTexture(0, "HZ", HZ);
+		frequencyDomainFieldComputeShader.SetTexture(0, "NY", NY);
 
 		displacementComputeShader.SetTexture(0, "Displacement", displacement);
 		displacementComputeShader.SetTexture(0, "HX", HX);
@@ -122,21 +122,21 @@ public class Ocean : MonoBehaviour {
 	}
 
 	void SetupComputeShader() {
-		spectrumComputeShader.SetFloats("test", test2d.x, test2d.y);
-		spectrumComputeShader.SetFloats("test2", test2d2.x, test2d2.y);
-		spectrumComputeShader.SetFloats("test3", test2d3.x, test2d3.y);
-		spectrumComputeShader.SetFloats("test4", test2d4.x, test2d4.y);
-		spectrumComputeShader.SetFloats("test5", test2d5.x, test2d5.y);
-		spectrumComputeShader.SetFloat("time", Time.time * timeScale + timeOffset);
-		spectrumComputeShader.SetFloat("L", tileSize);
-		spectrumComputeShader.SetFloat("F", F);
-		spectrumComputeShader.SetVector("U10", windArrow != null ? new Vector2(U10.x * windArrow.localPosition.x, U10.y * windArrow.localPosition.z) : U10);
-		spectrumComputeShader.SetFloat("gamma", gamma);
-		spectrumComputeShader.SetFloat("heightTest", heightTest);
-		spectrumComputeShader.SetFloat("phillipsA", phillipsA);
-		spectrumComputeShader.SetFloat("phillipsSmallLength", phillipsSmallLength);
-		spectrumComputeShader.SetVector("phillipsWindDir", phillipsWindDir.normalized);
-		spectrumComputeShader.Dispatch(0, tileSideVertexCount / 8, tileSideVertexCount / 8, 1);
+		frequencyDomainFieldComputeShader.SetFloats("test", test2d.x, test2d.y);
+		frequencyDomainFieldComputeShader.SetFloats("test2", test2d2.x, test2d2.y);
+		frequencyDomainFieldComputeShader.SetFloats("test3", test2d3.x, test2d3.y);
+		frequencyDomainFieldComputeShader.SetFloats("test4", test2d4.x, test2d4.y);
+		frequencyDomainFieldComputeShader.SetFloats("test5", test2d5.x, test2d5.y);
+		frequencyDomainFieldComputeShader.SetFloat("time", Time.time * timeScale + timeOffset);
+		frequencyDomainFieldComputeShader.SetFloat("L", tileSize);
+		frequencyDomainFieldComputeShader.SetFloat("F", F);
+		frequencyDomainFieldComputeShader.SetVector("U10", windArrow != null ? new Vector2(U10.x * windArrow.localPosition.x, U10.y * windArrow.localPosition.z) : U10);
+		frequencyDomainFieldComputeShader.SetFloat("gamma", gamma);
+		frequencyDomainFieldComputeShader.SetFloat("heightTest", heightTest);
+		frequencyDomainFieldComputeShader.SetFloat("phillipsA", phillipsA);
+		frequencyDomainFieldComputeShader.SetFloat("phillipsSmallLength", phillipsSmallLength);
+		frequencyDomainFieldComputeShader.SetVector("phillipsWindDir", phillipsWindDir.normalized);
+		frequencyDomainFieldComputeShader.Dispatch(0, tileSideVertexCount / 8, tileSideVertexCount / 8, 1);
 
 		RunFFT(HY, pingBuffer, pongBuffer, HY2);
 		//TODO Merge HX and HZ in the same texture
@@ -384,8 +384,8 @@ public class Ocean : MonoBehaviour {
 
 			uniforms.subtransformSize = Mathf.Pow(2, (uniforms.horizontal ? i : (i - xIterations)) + 1);
 
-			uniforms.SetUniforms(rreusserFFT);
-			rreusserFFT.Dispatch(0, width / 8, height / 8, 1);
+			uniforms.SetUniforms(fftComputeShader);
+			fftComputeShader.Dispatch(0, width / 8, height / 8, 1);
 
 			Swap();
 		}

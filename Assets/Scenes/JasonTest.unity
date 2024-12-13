@@ -1195,9 +1195,24 @@ PrefabInstance:
       objectReference: {fileID: 1101096844}
     - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
         type: 3}
+      propertyPath: fftComputeShader
+      value: 
+      objectReference: {fileID: 7200000, guid: 402468975e3d45a0bd984b415e9e8878, type: 3}
+    - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
+        type: 3}
       propertyPath: tileSideVertexCount
       value: 256
       objectReference: {fileID: 0}
+    - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
+        type: 3}
+      propertyPath: frequencyDomainFieldComputeShader
+      value: 
+      objectReference: {fileID: 7200000, guid: bab3b7ecb79e4d5b9515d87e3efd086e, type: 3}
+    - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
+        type: 3}
+      propertyPath: heightFrequencyFieldComputeShader
+      value: 
+      objectReference: {fileID: 7200000, guid: bab3b7ecb79e4d5b9515d87e3efd086e, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
