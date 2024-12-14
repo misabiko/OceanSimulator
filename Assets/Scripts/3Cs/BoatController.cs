@@ -63,15 +63,15 @@ public class BoatController : MonoBehaviour
 
         if (inputManager.isMoving)
         {
-            myRigidbody.AddForce(new Vector3(forwardMovement.x, 0, forwardMovement.z) * forceMultiplier, ForceMode.Impulse);
-
             rightpaddle.transform.Rotate(0, 0, -1.5f);
             leftpaddle.transform.Rotate(0, 0, -1.5f);
-
             float zRotation = rightpaddle.transform.localEulerAngles.z;
             if (zRotation <= 75f && zRotation >= -75f) 
             {
                 isUnderWater = true;
+                myRigidbody.AddForce(new Vector3(forwardMovement.x, 0, forwardMovement.z) * forceMultiplier, ForceMode.Impulse);
+               
+
             }
             else
             {

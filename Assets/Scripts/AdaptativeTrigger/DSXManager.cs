@@ -37,8 +37,6 @@ public class DSXManager : MonoBehaviour
     }
     public void changeTrigger(int mode)
     {
-
-        Debug.Log("Trigchanged");
         TriggerMode t = TriggerMode.Normal;
 
         switch(mode)
