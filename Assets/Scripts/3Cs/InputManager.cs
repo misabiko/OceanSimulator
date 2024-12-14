@@ -13,17 +13,30 @@ public class InputManager : MonoBehaviour
     private InputAction RightYawAction;
     private InputAction LeftYawAction;
     public event Action fire;
-    
+    private InputAction RowAction;
+    public Boolean isMoving;
     private void Awake()
     {
+
         myPlayerInput = GetComponent<PlayerInput>();
         RightYawAction = myPlayerInput.actions.FindAction("Right Yaw");
         LeftYawAction = myPlayerInput.actions.FindAction("Left Yaw");
+        RowAction = myPlayerInput.actions.FindAction("row");
+        RowAction.performed += OnPaddle;
+        RowAction.started += OnPaddle;
+        RowAction.canceled += OffPaddle;
 
         RightYawAction.canceled += OnYawCancel;
         LeftYawAction.canceled += OnYawCancel;
     }
-
+    private void OnPaddle(InputAction.CallbackContext context)
+    {
+        isMoving = true;
+    }
+    private void OffPaddle(InputAction.CallbackContext context)
+    {
+        isMoving = false;
+    }
     private void OnDestroy()
     {
         RightYawAction.canceled -= OnYawCancel;
