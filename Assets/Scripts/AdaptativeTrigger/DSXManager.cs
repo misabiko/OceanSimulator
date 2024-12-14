@@ -39,7 +39,7 @@ public class DSXManager : MonoBehaviour
 
         switch(mode)
         {
-            case 1: t = TriggerMode.Hard;
+            case 1: t = TriggerMode.FEEDBACK;
             break;
             case 2: t = TriggerMode.Soft;
             break;
