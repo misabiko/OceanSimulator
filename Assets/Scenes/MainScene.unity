@@ -1103,6 +1103,11 @@ PrefabInstance:
       objectReference: {fileID: 56914347}
     - target: {fileID: 7507723429645048162, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
+      propertyPath: forwardSpeed
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7507723429645048162, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
       propertyPath: birdController
       value: 
       objectReference: {fileID: 29142660}

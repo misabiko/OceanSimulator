@@ -19,7 +19,8 @@ public class BoatController : MonoBehaviour
     private Vector3 forwardMovement;
     private Quaternion targetRotation;
     private float forceMultiplier = 0.1f;//
-    [SerializeField] private bool isUnderWater = true;
+    [SerializeField] private bool isUnderWater = false;
+    [SerializeField] private int currentTrigger = 2;
 
     private void Awake()
     {
@@ -62,17 +63,26 @@ public class BoatController : MonoBehaviour
 
         if (inputManager.isMoving)
         {
-            myRigidbody.AddForce(new Vector3(forwardMovement.x, 0, forwardMovement.z)*forceMultiplier ,ForceMode.Impulse);
+            myRigidbody.AddForce(new Vector3(forwardMovement.x, 0, forwardMovement.z) * forceMultiplier, ForceMode.Impulse);
+
             rightpaddle.transform.Rotate(0, 0, -1.5f);
             leftpaddle.transform.Rotate(0, 0, -1.5f);
-            if(rightpaddle.transform.rotation.z <= 75 & rightpaddle.transform.rotation.z >= 75)
-                isUnderWater = true;
-            else isUnderWater = false;
-            if (isUnderWater)
+
+            float zRotation = rightpaddle.transform.localEulerAngles.z;
+            if (zRotation <= 75f && zRotation >= -75f) 
             {
-                DSXManager.instance.changeTrigger(1);
+                isUnderWater = true;
             }
-            else DSXManager.instance.changeTrigger(2);
+            else
+            {
+                isUnderWater = false;
+            }
+
+            currentTrigger = isUnderWater ? 1 : 2;
+            if (DSXManager.instance.currentTrigger != currentTrigger)
+            {
+                DSXManager.instance.changeTrigger(currentTrigger);
+            }
         }
     }
 

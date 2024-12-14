@@ -17,6 +17,7 @@ public class DSXManager : MonoBehaviour
     static DateTime TimeSent;
 
     static List<Device> devices = new List<Device>();
+    public  int currentTrigger { get; private set; }
     public static DSXManager instance {  get; private set; }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
@@ -26,6 +27,7 @@ public class DSXManager : MonoBehaviour
             Debug.LogError("More than one DSX manager in the scene");
         }
         instance = this;
+        currentTrigger = 2;
         Connect();
         GetConnectedDevicesFromDSX();
         if (!devices.Any())
@@ -35,16 +37,20 @@ public class DSXManager : MonoBehaviour
     }
     public void changeTrigger(int mode)
     {
-        TriggerMode t = TriggerMode.Soft;
+
+        Debug.Log("Trigchanged");
+        TriggerMode t = TriggerMode.Normal;
 
         switch(mode)
         {
-            case 1: t = TriggerMode.FEEDBACK;
+            case 1: t = TriggerMode.Hardest;
             break;
-            case 2: t = TriggerMode.Soft;
-            break;
+            case 2: t = TriggerMode.Normal;
+            break;   
 
         }
+
+        currentTrigger = mode;
 
         for (int i = 0; i < devices.Count; i++)
         {
