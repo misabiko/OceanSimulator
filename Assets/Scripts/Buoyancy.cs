@@ -80,7 +80,9 @@ public class Buoyancy : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-      rb.mass = _boatDensity * _gridSizeX * voxelSize * _gridSizeY * voxelSize * _gridSizeZ * voxelSize;
+      rb.mass = _boatDensity * _gridSizeX * voxelSize
+                * _gridSizeY * voxelSize * _gridSizeZ 
+                * voxelSize;
       float buoyancy = CalculateBuoyancy();
       rb.AddForce(Vector3.up * buoyancy, ForceMode.Force);
     }
@@ -183,15 +185,6 @@ public class Buoyancy : MonoBehaviour
         getCurrentOceanMesh();
         float submergedVolume = CalculateSubmergedVolume();
         return -(fluidDensity * submergedVolume * Physics.gravity.y * 1 / voxelCount);
-        // Vector4[] voxelsArray = new Vector4[_voxels.Count];
-        // for (int i = 0; i < _voxels.Count; i++)
-        // {
-        //     var voxel = _voxels[i];
-        //     voxelsArray[i] = new Vector4(voxel.Position.x + transform.position.x, voxel.Position.y + transform.position.y, voxel.Position.z + transform.position.z, 1);
-        // }
-        // _physicsShader.SetVectorArray("boatVoxels", voxelsArray);
-        //
-        // return 0.0f;
     }
 
     private async void StartGPURequest()
@@ -249,7 +242,7 @@ public class Buoyancy : MonoBehaviour
               foreach (var voxel in _voxels)
               {
                   Gizmos.color = Color.Lerp(Color.red, Color.yellow, voxel.SubmergedVolume);
-                  Gizmos.DrawSphere( transform.position + voxel.Position, GizmoSize * voxelSize);
+                  Gizmos.DrawSphere(transform.position + voxel.Position, GizmoSize * voxelSize);
               } 
       }
 }

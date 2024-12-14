@@ -554,7 +554,17 @@ PrefabInstance:
       objectReference: {fileID: 799800866}
     - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
+      propertyPath: GizmoSize
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
       propertyPath: voxelSize
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: showVoxels
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
@@ -595,7 +605,7 @@ PrefabInstance:
     - target: {fileID: 546443728347341381, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
       propertyPath: m_Constraints
-      value: 84
+      value: 80
       objectReference: {fileID: 0}
     - target: {fileID: 1807191335915035936, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
@@ -615,7 +625,7 @@ PrefabInstance:
     - target: {fileID: 1807191335915035936, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -5.5
+      value: -0.13
       objectReference: {fileID: 0}
     - target: {fileID: 1807191335915035936, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
@@ -664,8 +674,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5810443770826624813, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 45
+      objectReference: {fileID: 0}
+    - target: {fileID: 5810443770826624813, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
       propertyPath: m_LocalPosition.y
-      value: 5.06
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5810443770826624813, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 45
       objectReference: {fileID: 0}
     - target: {fileID: 5949475484452746978, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
@@ -1994,6 +2014,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   voxelSize: 0.5
+  showVoxels: 0
+  showWaterGizmos: 0
+  GizmoSize: 1
   fluidDensity: 0.8
   ocean: {fileID: 799800865}
   _boatDensity: 2
