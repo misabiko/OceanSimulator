@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using Unity.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -212,17 +209,17 @@ public class Buoyancy : MonoBehaviour
       private void OnDrawGizmos()
       {
           float totalVolume = 0;
-          if ( showWaterGizmos && _oceanMeshGenerator != null)
+          if ( showWaterGizmos && ocean != null)
           {
               float x_OceanPosition = _oceanPosition.x;
               float y_OceanPosition = _oceanPosition.y;
               float z_OceanPosition = _oceanPosition.z;
-              float step = _oceanMeshGenerator.size / _oceanMeshGenerator.sideVertexCount;
+              float step = ocean.tileSize / ocean.tileSideVertexCount;
               int i = 0;
               foreach (var data in _oceanCachedData)
               {
-                  float x_basePosition = i % _oceanMeshGenerator.sideVertexCount * step;
-                  float z_basePosition = Mathf.Floor(i / _oceanMeshGenerator.sideVertexCount) * step;
+                  float x_basePosition = i % ocean.tileSideVertexCount * step;
+                  float z_basePosition = Mathf.Floor(i / ocean.tileSideVertexCount) * step;
           
                   float x_dataPosition = data.r + x_basePosition + x_OceanPosition;
                   float y_dataPosition = data.g + y_OceanPosition;
