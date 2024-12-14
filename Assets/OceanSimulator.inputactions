@@ -348,6 +348,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "row",
+                    "type": "Button",
+                    "id": "859dbb46-2210-4c35-a53e-c2f9a257073c",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -518,17 +527,6 @@
                 },
                 {
                     "name": "",
-                    "id": "0a4c0016-4813-43de-972c-c0d9027012cf",
-                    "path": "<Gamepad>/rightTrigger",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Gamepad",
-                    "action": "Fire",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "4e11fc74-37cb-4468-aeff-4a7162215f1e",
                     "path": "<Mouse>/leftButton",
                     "interactions": "",
@@ -563,11 +561,22 @@
                 {
                     "name": "",
                     "id": "5f7bbce5-897a-42f1-966a-c1fd19996a5c",
-                    "path": "<XRController>/{PrimaryAction}",
+                    "path": "<Gamepad>/buttonEast",
                     "interactions": "",
                     "processors": "",
-                    "groups": "XR",
+                    "groups": "Gamepad",
                     "action": "Fire",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0a4c0016-4813-43de-972c-c0d9027012cf",
+                    "path": "<Gamepad>/rightTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "row",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
