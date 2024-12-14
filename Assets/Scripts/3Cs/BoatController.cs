@@ -11,6 +11,8 @@ public class BoatController : MonoBehaviour
     [SerializeField] private BoatRaycaster boatRaycaster;
     [SerializeField] private BirdController birdController;
     [SerializeField] private float rotLerpSpeed = 0.1f;
+    [SerializeField] private Component rightpaddle;
+    [SerializeField] private Component leftpaddle;
 
     private float currentSpeed;
     private Rigidbody myRigidbody;
@@ -53,6 +55,8 @@ public class BoatController : MonoBehaviour
     public void Paddle()
     {
         myRigidbody.AddForce(new Vector3(forwardMovement.x,0,forwardMovement.z), ForceMode.Impulse);
+        rightpaddle.transform.Rotate(0, 0, -10f);
+        leftpaddle.transform.Rotate(0, 0, -10f);
     }
 
     public void Switch()
