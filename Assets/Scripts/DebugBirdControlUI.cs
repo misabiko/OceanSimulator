@@ -19,7 +19,10 @@ public class DebugBirdControlUI : MonoBehaviour
     {
         if (PlayerStateManager.GetState() != PlayerState.Bird)
             return;
-        
+
+        if (birdController == null)
+            return;
+
         var t_bird = birdController.transform;
         var eulerAngles = t_bird.eulerAngles;
         var altitude = t_bird.position.y;
@@ -31,7 +34,6 @@ public class DebugBirdControlUI : MonoBehaviour
         forwardVector_txt.text = "Forward Vector: " + birdController.GetForwardMovement();
         eulerAngles_txt.text = "Euler Angles: " + eulerAngles;
         momentumFactor_txt.text = "Acceleration Multiplier: " + Math.Round(birdController.GetAccelerationMultiplier(), 3, MidpointRounding.AwayFromZero);
-        velocity_txt.text = "Velocity: " + birdController.GetVelocity();
         forwardSpeed_txt.text = "Forward Speed: " + birdController.ForwardSpeed();
     }
 

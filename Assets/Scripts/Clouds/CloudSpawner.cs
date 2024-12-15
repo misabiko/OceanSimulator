@@ -33,16 +33,17 @@ public class CloudSpawner : MonoBehaviour
     {
         var rand = new Random();
         float range = (float) rand.NextDouble() * (angle - -angle) + -angle;
-        float radians = (90 - range) * Mathf.Deg2Rad;
+        float theta = (90 - range) * Mathf.Deg2Rad;
         
         float heightRange =(float) rand.NextDouble() * (20 - -20) + -20;
         
-        Vector3 rotationVector = new Vector3(Mathf.Cos(radians), 0, Mathf.Sin(radians));
+        //v(cos(theta), 0, SinTheta)
+        Vector3 rotationVector = new Vector3(Mathf.Cos(theta), 0, Mathf.Sin(theta));
 
-        Vector3 startVector = transform.position + (rotationVector * innerRadius) + new Vector3(0, heightRange, 0);
-        Vector3 endVector = transform.position + (rotationVector * outerRadius)+ new Vector3(0, heightRange, 0); 
+        Vector3 startPosition = transform.position + (rotationVector * innerRadius) + new Vector3(0, heightRange, 0);
+        Vector3 endPosition = transform.position + (rotationVector * outerRadius)+ new Vector3(0, heightRange, 0); 
         
-        return GetRandomPositionBetweenTwoPoints(startVector, endVector);
+        return GetRandomPositionBetweenTwoPoints(startPosition, endPosition);
     }
 
     Vector3 GetRandomPositionBetweenTwoPoints(Vector3 a, Vector3 b)

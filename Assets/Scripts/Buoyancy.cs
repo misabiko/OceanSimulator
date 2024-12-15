@@ -1,13 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.UIElements;
 
 public class Buoyancy : MonoBehaviour
 {
     /*Voxel Spawner*/
     [SerializeField] private float voxelSize = 0.1f;
-    //[SerializeField] private GameObject voxelsBorder;
+    [SerializeField] private bool showVoxels = false;
+    [SerializeField] private bool showWaterGizmos = false;
+    [SerializeField, Range(0, 1)] private float GizmoSize = 1f;
+    [SerializeField] private float torqueModifier = 0.5f;
     private float _voxelBorderDepth;
     private float _voxelBorderHeight;
     private float _voxelBorderWidth;
@@ -18,6 +23,9 @@ public class Buoyancy : MonoBehaviour
     /*Buoyancy data*/
     [SerializeField] private float fluidDensity = 1.0f;
     [SerializeField] private Ocean ocean;
+    [SerializeField] private float correctiveTorque = 1.0f;
+    [SerializeField] private float angularFriction = 0.1f;
+    [SerializeField] private float lastTotalVolume = 0.0f;
     private int _gridSizeX;
     private int _gridSizeY;
     private int _gridSizeZ;
@@ -27,35 +35,38 @@ public class Buoyancy : MonoBehaviour
     /*Ocean data*/
     private RenderTexture _displacementTexture;
     private Vector3 _oceanPosition;
-    
+
     private bool _isRequestSent = false;
     private Color[] _oceanCachedData;
     [SerializeField] float _boatDensity = 2f;
+    [SerializeField] ComputeShader _physicsShader;
 
     private Rigidbody rb;
-    
+
     [SerializeField]
     private class GizmosData
     {
         public GizmosData(Vector3 position, Color color, Vector3 size)
         {
-            position = Position;
-            color = Color;
-            size = Size;
+            Position = position;
+            Color = color;
+            Size = size;
         }
 
-        public Vector3 Position { get; }
+        public Vector3 Position { get; set; }
 
-        public Color Color { get; }
+        public Color Color { get; set; }
 
-        public Vector3 Size { get; }
+        public Vector3 Size { get; set; }
+
+        public float SubmergedVolume { get; set; }
     }
-    
+
     // Start is called before the first frame update
     private void Start()
     {
         _voxelCollider = GetComponent<BoxCollider>();
-       _displacementTexture = ocean.displacement;
+        _displacementTexture = ocean.displacement;
         _voxelBorderWidth = _voxelCollider.bounds.size.x;
         _voxelBorderHeight = _voxelCollider.bounds.size.y;
         _voxelBorderDepth = _voxelCollider.bounds.size.z;
@@ -68,9 +79,16 @@ public class Buoyancy : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        rb.mass = _boatDensity * _gridSizeX * voxelSize * _gridSizeY * voxelSize * _gridSizeZ * voxelSize;
+        rb.mass = _boatDensity * voxelSize * voxelSize * voxelSize * voxelCount;
+        Quaternion oppositeRotation = Quaternion.Inverse(rb.rotation);
+        oppositeRotation.ToAngleAxis(out float angle, out Vector3 axis);
+        if (angle > 1 || angle < -1)
+        {
+            rb.AddTorque(angularFriction * correctiveTorque * angle * axis);
+        }
+
         float buoyancy = CalculateBuoyancy();
-        rb.AddForce(Vector3.up * buoyancy, ForceMode.Force);
+        //rb.AddForce(Vector3.up * buoyancy, ForceMode.Force);
     }
 
     private void CalculateNbrVoxels()
@@ -84,19 +102,21 @@ public class Buoyancy : MonoBehaviour
     private void PlaceVoxels()
     {
         var startPosition = new Vector3(voxelSize / 2 - _voxelBorderWidth / 2
-                                , voxelSize / 2 - _voxelBorderHeight / 2,
-                                voxelSize / 2 - _voxelBorderDepth / 2)
-                            + _voxelCollider.transform.position;
+            , voxelSize / 2 - _voxelBorderHeight / 2,
+            voxelSize / 2 - _voxelBorderDepth / 2);
         for (var x = 0; x < _gridSizeX; x++)
-        for (var y = 0; y < _gridSizeY; y++)
-        for (var z = 0; z < _gridSizeZ; z++)
         {
-            
-            var position = startPosition + new Vector3(x * voxelSize,
-                y * voxelSize,
-                z * voxelSize);
-            _voxels.Add(new GizmosData(position, Color.red, Vector3.one * voxelSize));
-            voxelCount++;
+            for (var y = 0; y < _gridSizeY; y++)
+            {
+                for (var z = 0; z < _gridSizeZ; z++)
+                {
+                    var position = startPosition + _voxelCollider.center + new Vector3(x * voxelSize,
+                        y * voxelSize,
+                        z * voxelSize);
+                    _voxels.Add(new GizmosData(position, Color.red, Vector3.one * voxelSize));
+                    voxelCount++;
+                }
+            }
         }
     }
 
@@ -116,54 +136,69 @@ public class Buoyancy : MonoBehaviour
             int i = 0;
             float step = ocean.tileSize / ocean.tileSideVertexCount;
             var moduloedPosition = new Vector3(
-	            Mathf.Abs(transform.position.x % ocean.tileSize),
-	            transform.position.y,
-	            Mathf.Abs(transform.position.z % ocean.tileSize)
+                Mathf.Abs(transform.position.x % ocean.tileSize),
+                transform.position.y,
+                Mathf.Abs(transform.position.z % ocean.tileSize)
             );
-            foreach (var data in _oceanCachedData)
+            foreach (var voxel in _voxels)
             {
-                float x_basePosition = i % ocean.tileSideVertexCount * step;
-                float z_basePosition = Mathf.Floor(i / ocean.tileSideVertexCount) * step;
-                
-                float x_dataPosition = data.r + x_basePosition + x_OceanPosition;
-                float y_dataPosition = data.g + y_OceanPosition;
-                float z_dataPosition = data.b + z_basePosition + z_OceanPosition; 
-                foreach (var voxel  in _voxels)
+                Vector3 voxelPosition = moduloedPosition + rb.rotation * voxel.Position;
+
+                Vector3 closestVertex = Vector3.zero;
+                float minDistance = float.MaxValue;
+                foreach (var data in _oceanCachedData)
                 {
-                  float x_voxelPositon = voxel.Position.x + moduloedPosition.x;
-                  float y_voxelPositon = voxel.Position.y + moduloedPosition.y;
-                  float z_voxelPositon = voxel.Position.z + moduloedPosition.z;
-                    if (x_dataPosition <= x_voxelPositon + voxelSize && x_dataPosition > x_voxelPositon - voxelSize 
-                                                                        && z_dataPosition <= z_voxelPositon + voxelSize 
-                                                                        && z_dataPosition > z_voxelPositon - voxelSize)
+
+                    float x_basePosition = i % ocean.tileSideVertexCount * step;
+                    float z_basePosition = Mathf.Floor(i / ocean.tileSideVertexCount) * step;
+
+                    Vector3 currentVertex = new Vector3(data.r + x_basePosition + x_OceanPosition,
+                        data.g + y_OceanPosition,
+                        data.b + z_basePosition + z_OceanPosition);
+                    // Debug.DrawLine(currentVertex, currentVertex + Vector3.up * 0.1f, Color.yellow);
+                    float currentDistance = Vector3.Distance(new Vector3(voxelPosition.x, 0, voxelPosition.z), new Vector3(currentVertex.x, 0, currentVertex.z));
+                    if (currentDistance < minDistance)
                     {
-                        float submergedHeight = 0;
-                        if (y_dataPosition > y_voxelPositon + voxelSize)
-                        {
-                            submergedHeight = voxelSize;
-                        }
-                        else if (y_dataPosition <= y_voxelPositon + voxelSize &&
-                            y_dataPosition > y_voxelPositon - voxelSize)
-                        {
-                            submergedHeight = y_dataPosition - (y_voxelPositon - voxelSize);
-                            
-                        }
-                        float voxel_submergedVolume = Mathf.Abs(voxelSize * voxelSize * (submergedHeight));
-                        totalVolume += voxel_submergedVolume ;
+                        minDistance = currentDistance;
+                        closestVertex = currentVertex;
                     }
+
+                    i++;
                 }
-                i++;
+                i = 0;
+                float submergedHeight = 0;
+                if (closestVertex.y > voxelPosition.y + voxelSize)
+                {
+                    submergedHeight = voxelSize;
+                }
+                else if (closestVertex.y <= voxelPosition.y + voxelSize &&
+                         closestVertex.y > voxelPosition.y - voxelSize)
+                {
+                    submergedHeight = closestVertex.y - (voxelPosition.y - voxelSize);
+                }
+
+
+                float voxel_submergedVolume = Mathf.Max(0,voxelSize * voxelSize * submergedHeight);
+                float buoyancyForce = -voxel_submergedVolume * Physics.gravity.y * fluidDensity;
+                Debug.DrawLine(voxelPosition,
+                    voxelPosition + Vector3.up * submergedHeight,
+                    Color.red);
+                var modifiedPos = Vector3.Lerp(transform.position, voxelPosition, torqueModifier);
+                rb.AddForceAtPosition(
+                    Vector3.up * buoyancyForce,
+                    modifiedPos
+                );
+                rb.AddForceAtPosition(Physics.gravity / voxelCount, modifiedPos, ForceMode.Acceleration);
+                totalVolume += voxel_submergedVolume;
             }
+            
         }
         else
         {
             Debug.LogWarning("Cached data not created");
         }
+        lastTotalVolume = totalVolume;
         return totalVolume;
-    }
-    
-    private void CalculatePlane()
-    {
     }
 
     private float CalculateBuoyancy()
@@ -199,19 +234,20 @@ public class Buoyancy : MonoBehaviour
         }
     }
 
-  /*  private void OnDrawGizmos()
+    private void OnDrawGizmos()
     {
-        if (_ocean != null)
+        float totalVolume = 0;
+        if (showWaterGizmos && ocean != null)
         {
             float x_OceanPosition = _oceanPosition.x;
             float y_OceanPosition = _oceanPosition.y;
             float z_OceanPosition = _oceanPosition.z;
-            float step = _ocean.size / _ocean.tileSideVertexCount;
+            float step = ocean.tileSize / ocean.tileSideVertexCount;
             int i = 0;
             foreach (var data in _oceanCachedData)
             {
-                float x_basePosition = i % _ocean.tileSideVertexCount * step;
-                float z_basePosition = Mathf.Floor(i / _ocean.tileSideVertexCount) * step;
+                float x_basePosition = i % ocean.tileSideVertexCount * step;
+                float z_basePosition = Mathf.Floor(i / ocean.tileSideVertexCount) * step;
 
                 float x_dataPosition = data.r + x_basePosition + x_OceanPosition;
                 float y_dataPosition = data.g + y_OceanPosition;
@@ -221,5 +257,13 @@ public class Buoyancy : MonoBehaviour
                 i++;
             }
         }
-    }*/
+
+
+        if (showVoxels)
+            foreach (var voxel in _voxels)
+            {
+                Gizmos.color = Color.Lerp(Color.red, Color.yellow, voxel.SubmergedVolume);
+                Gizmos.DrawSphere(transform.position + voxel.Position, GizmoSize * voxelSize);
+            }
+    }
 }
