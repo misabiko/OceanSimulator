@@ -554,68 +554,13 @@ PrefabInstance:
       objectReference: {fileID: 799800866}
     - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
-      propertyPath: GizmoSize
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
-        type: 3}
-      propertyPath: voxelSize
-      value: 0.7
-      objectReference: {fileID: 0}
-    - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
-        type: 3}
-      propertyPath: showVoxels
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
-        type: 3}
-      propertyPath: _boatDensity
-      value: 7
-      objectReference: {fileID: 0}
-    - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
-        type: 3}
-      propertyPath: fluidDensity
-      value: 1.69
-      objectReference: {fileID: 0}
-    - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
-        type: 3}
-      propertyPath: _physicsShader
-      value: 
-      objectReference: {fileID: 7200000, guid: bee02eccc5cc53943b505126a96be2e3, type: 3}
-    - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
-        type: 3}
-      propertyPath: torqueModifier
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
-        type: 3}
       propertyPath: buoyancyAdjustment
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 546443728347341381, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
-      propertyPath: m_Drag
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 546443728347341381, guid: f65c27762f3ede9489e9179eef1e5fab,
-        type: 3}
       propertyPath: m_Mass
       value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 546443728347341381, guid: f65c27762f3ede9489e9179eef1e5fab,
-        type: 3}
-      propertyPath: m_UseGravity
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 546443728347341381, guid: f65c27762f3ede9489e9179eef1e5fab,
-        type: 3}
-      propertyPath: m_AngularDrag
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 546443728347341381, guid: f65c27762f3ede9489e9179eef1e5fab,
-        type: 3}
-      propertyPath: m_Constraints
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1807191335915035936, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
@@ -2030,11 +1975,12 @@ MonoBehaviour:
   torqueModifier: 0.5
   fluidDensity: 0.8
   ocean: {fileID: 799800865}
-  correctiveTorque: 1
   angularFriction: 0.1
+  minCorrectionAngle: 100
   lastTotalVolume: 0
   _boatDensity: 2
   _physicsShader: {fileID: 0}
+  horizontalModifier: 1
 --- !u!54 &1850245279
 Rigidbody:
   m_ObjectHideFlags: 0
