@@ -570,12 +570,12 @@ PrefabInstance:
     - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
       propertyPath: _boatDensity
-      value: 0.5
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
       propertyPath: fluidDensity
-      value: 1
+      value: 1.69
       objectReference: {fileID: 0}
     - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
@@ -585,7 +585,7 @@ PrefabInstance:
     - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
       propertyPath: torqueModifier
-      value: 0.5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
@@ -595,7 +595,7 @@ PrefabInstance:
     - target: {fileID: 546443728347341381, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
       propertyPath: m_Drag
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 546443728347341381, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
@@ -605,7 +605,12 @@ PrefabInstance:
     - target: {fileID: 546443728347341381, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
       propertyPath: m_UseGravity
-      value: 1
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 546443728347341381, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_AngularDrag
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 546443728347341381, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}

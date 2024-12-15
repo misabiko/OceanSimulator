@@ -183,11 +183,15 @@ public class Buoyancy : MonoBehaviour
                 Debug.DrawLine(voxelPosition,
                     voxelPosition + Vector3.up * submergedHeight,
                     Color.red);
-                rb.AddForceAtPosition(Vector3.up * buoyancyForce,
-                    Vector3.Lerp(transform.position,
-                        voxelPosition, torqueModifier));
+                var modifiedPos = Vector3.Lerp(transform.position, voxelPosition, torqueModifier);
+                rb.AddForceAtPosition(
+                    Vector3.up * buoyancyForce,
+                    modifiedPos
+                );
+                rb.AddForceAtPosition(Physics.gravity / voxelCount, modifiedPos, ForceMode.Acceleration);
                 totalVolume += voxel_submergedVolume;
             }
+            
         }
         else
         {
