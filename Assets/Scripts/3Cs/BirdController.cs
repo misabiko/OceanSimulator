@@ -108,11 +108,6 @@ public class BirdController : MonoBehaviour
       return acceleration;
    }
 
-   public Vector3  GetVelocity()
-   {
-      return myRigidbody.linearVelocity;
-   }
-
    public float ForwardSpeed()
    {
       return currentSpeed;
