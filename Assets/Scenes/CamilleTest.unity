@@ -560,28 +560,33 @@ PrefabInstance:
     - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
       propertyPath: voxelSize
-      value: 1
+      value: 0.7
       objectReference: {fileID: 0}
     - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
       propertyPath: showVoxels
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
       propertyPath: _boatDensity
-      value: 0.045
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
       propertyPath: fluidDensity
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
       propertyPath: _physicsShader
       value: 
       objectReference: {fileID: 7200000, guid: bee02eccc5cc53943b505126a96be2e3, type: 3}
+    - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: torqueModifier
+      value: 0.5
+      objectReference: {fileID: 0}
     - target: {fileID: 530369119153403542, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
       propertyPath: buoyancyAdjustment
@@ -605,7 +610,7 @@ PrefabInstance:
     - target: {fileID: 546443728347341381, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
       propertyPath: m_Constraints
-      value: 80
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1807191335915035936, guid: f65c27762f3ede9489e9179eef1e5fab,
         type: 3}
@@ -2017,8 +2022,12 @@ MonoBehaviour:
   showVoxels: 0
   showWaterGizmos: 0
   GizmoSize: 1
+  torqueModifier: 0.5
   fluidDensity: 0.8
   ocean: {fileID: 799800865}
+  correctiveTorque: 1
+  angularFriction: 0.1
+  lastTotalVolume: 0
   _boatDensity: 2
   _physicsShader: {fileID: 0}
 --- !u!54 &1850245279
@@ -2113,13 +2122,28 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
         type: 3}
+      propertyPath: U10.x
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
+        type: 3}
+      propertyPath: U10.y
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
+        type: 3}
+      propertyPath: tileSize
+      value: 64
+      objectReference: {fileID: 0}
+    - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
+        type: 3}
       propertyPath: tileRadius
-      value: 8
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
         type: 3}
       propertyPath: tileSideVertexCount
-      value: 128
+      value: 64
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
