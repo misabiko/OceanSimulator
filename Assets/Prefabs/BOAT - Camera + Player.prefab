@@ -576,12 +576,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5810443770826624813}
+  - component: {fileID: 530369119153403542}
+  - component: {fileID: 546443728347341381}
   - component: {fileID: 5118312989139307759}
   - component: {fileID: 7507723429645048162}
-  - component: {fileID: 546443728347341381}
   - component: {fileID: 1398898669410139179}
   - component: {fileID: 3967773401120809039}
-  - component: {fileID: 530369119153403542}
   m_Layer: 0
   m_Name: BoatController
   m_TagString: Untagged
@@ -606,6 +606,58 @@ Transform:
   - {fileID: 4876311512501813803}
   m_Father: {fileID: 2634821815053839177}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &530369119153403542
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5949475484452746978}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 081d9c70c2ae7854885fe69314f669e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  voxelSize: 0.7
+  showVoxels: 0
+  showWaterGizmos: 0
+  GizmoSize: 0.5
+  torqueModifier: 1
+  fluidDensity: 36
+  ocean: {fileID: 0}
+  angularFriction: 50
+  minCorrectionAngle: 100
+  lastTotalVolume: 0
+  _boatDensity: 30
+  _physicsShader: {fileID: 7200000, guid: bee02eccc5cc53943b505126a96be2e3, type: 3}
+  horizontalModifier: 0
+--- !u!54 &546443728347341381
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5949475484452746978}
+  serializedVersion: 4
+  m_Mass: 5
+  m_Drag: 1
+  m_AngularDrag: 2
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!114 &5118312989139307759
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -644,33 +696,6 @@ MonoBehaviour:
   leftpaddle: {fileID: 8312113139048181732}
   isUnderWater: 0
   currentTrigger: 2
---- !u!54 &546443728347341381
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5949475484452746978}
-  serializedVersion: 4
-  m_Mass: 5
-  m_Drag: 1
-  m_AngularDrag: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 80
-  m_CollisionDetection: 0
 --- !u!114 &1398898669410139179
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -723,22 +748,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.4, y: 1, z: 12}
   m_Center: {x: 0, y: -0.5, z: 0}
---- !u!114 &530369119153403542
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5949475484452746978}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 081d9c70c2ae7854885fe69314f669e6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  voxelSize: 1
-  fluidDensity: 25
-  ocean: {fileID: 0}
-  _boatDensity: 0.045
 --- !u!1 &6943827698630476180
 GameObject:
   m_ObjectHideFlags: 0
