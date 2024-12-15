@@ -550,21 +550,10 @@
                 {
                     "name": "",
                     "id": "cf90bf67-b707-4e62-9e3a-a0af6dcb9d6f",
-                    "path": "<Joystick>/trigger",
+                    "path": "<Gamepad>/leftTrigger",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Joystick",
-                    "action": "Fire",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "5f7bbce5-897a-42f1-966a-c1fd19996a5c",
-                    "path": "<Gamepad>/buttonEast",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Gamepad",
+                    "groups": ";Gamepad",
                     "action": "Fire",
                     "isComposite": false,
                     "isPartOfComposite": false
