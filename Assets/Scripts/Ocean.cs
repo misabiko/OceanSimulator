@@ -20,6 +20,7 @@ public class Ocean : MonoBehaviour {
 	public RenderTexture DispSpatialZ { get; private set; }
 	public RenderTexture NormFreqY { get; private set; }
 	public RenderTexture NormSpatialY { get; private set; }
+	public RenderTexture Normals { get; private set; }
 	public RenderTexture ApproximateNormals { get; private set; }
 	public RenderTexture PingBuffer { get; private set; }
 	public RenderTexture PongBuffer { get; private set; }
@@ -82,12 +83,14 @@ public class Ocean : MonoBehaviour {
 
 		displacementComputeShader.SetTexture(0, DisplacementID, displacement);
 		displacementComputeShader.SetTexture(0, ApproximateNormalsID, ApproximateNormals);
+		displacementComputeShader.SetTexture(0, NormalsID, Normals);
 		displacementComputeShader.SetTexture(0, DispFreqXid, DispFreqX);
 		displacementComputeShader.SetTexture(0, DispFreqYid, DispFreqY);
 		displacementComputeShader.SetTexture(0, DispFreqZid, DispFreqZ);
 		displacementComputeShader.SetTexture(0, DispSpatialXid, DispSpatialX);
 		displacementComputeShader.SetTexture(0, DispSpatialYid, DispSpatialY);
 		displacementComputeShader.SetTexture(0, DispSpatialZid, DispSpatialZ);
+		displacementComputeShader.SetTexture(0, NormSpatialYid, NormSpatialY);
 		displacementComputeShader.SetFloat("Resolution", tileSideVertexCount);
 		displacementComputeShader.SetFloat("PI", Mathf.PI);
 		displacementComputeShader.SetFloat("g", -Physics.gravity.y);
@@ -149,8 +152,8 @@ public class Ocean : MonoBehaviour {
 
 		var materialInstance = new Material(tileMaterial);
 		materialInstance.SetTexture(TileMaterialDisplacement, displacement);
-		materialInstance.SetTexture(TileMaterialNormalMap, NormSpatialY);
 		materialInstance.SetTexture(TileMaterialApproximateNormalMap, ApproximateNormals);
+		materialInstance.SetTexture(TileMaterialNormalMap, Normals);
 		materialInstance.SetVector(TileMaterialResolution, new Vector2(tileSize, tileSize));
 
 		for (int x = -tileRadius; x <= tileRadius; ++x)
@@ -182,6 +185,7 @@ public class Ocean : MonoBehaviour {
 		DispSpatialZ = CreateRenderTexture();
 		NormFreqY = CreateRenderTexture();
 		NormSpatialY = CreateRenderTexture();
+		Normals = CreateRenderTexture();
 		ApproximateNormals = CreateRenderTexture();
 		PingBuffer = CreateRenderTexture();
 		PongBuffer = CreateRenderTexture();
@@ -219,11 +223,15 @@ public class Ocean : MonoBehaviour {
 	// 	simpleSinusoid.Dispatch(0, tileSideVertexCount / 8, tileSideVertexCount / 8, 1);
 	// }
 
-	RenderTexture CreateRenderTexture() {
+	RenderTexture CreateRenderTexture(uint components = 4) {
 		var rt = new RenderTexture(tileSideVertexCount, tileSideVertexCount, 32) {
 			enableRandomWrite = true,
 			filterMode = FilterMode.Point,
-			graphicsFormat = UnityEngine.Experimental.Rendering.GraphicsFormat.R32G32B32A32_SFloat,
+			graphicsFormat = components switch {
+				3 => UnityEngine.Experimental.Rendering.GraphicsFormat.R32G32B32_SFloat,
+				4 => UnityEngine.Experimental.Rendering.GraphicsFormat.R32G32B32A32_SFloat,
+				_ => throw new System.Exception("Unhandled number of components"),
+			},
 			autoGenerateMips = false,
 		};
 		rt.Create();
@@ -340,6 +348,7 @@ public class Ocean : MonoBehaviour {
 		AddTextureDebug(DispSpatialZ, new Vector2Int(2, -2), "dispSpatialZ");
 		AddTextureDebug(NormFreqY, new Vector2Int(3, 0), "normFreqY");
 		AddTextureDebug(NormSpatialY, new Vector2Int(3, -1), "normSpatialY");
+		AddTextureDebug(Normals, new Vector2Int(3, -2), "Normals");
 	}
 
 	void AddTextureDebug(Texture texture, Vector2Int position, string textureName) {
@@ -375,4 +384,6 @@ public class Ocean : MonoBehaviour {
 	static readonly int DispSpatialYid = Shader.PropertyToID("DispSpatialY");
 	static readonly int DispSpatialZid = Shader.PropertyToID("DispSpatialZ");
 	static readonly int NormFreqYid = Shader.PropertyToID("NormFreqY");
+	static readonly int NormalsID = Shader.PropertyToID("Normals");
+	static readonly int NormSpatialYid = Shader.PropertyToID("NormSpatialY");
 }

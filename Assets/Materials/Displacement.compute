@@ -6,8 +6,10 @@ Texture2D DispFreqZ;
 Texture2D DispSpatialX;
 Texture2D DispSpatialY;
 Texture2D DispSpatialZ;
+Texture2D NormSpatialY;
 
 RWTexture2D<float4> Displacement;
+RWTexture2D<float4> Normals;
 RWTexture2D<float4> ApproximateNormals;
 
 float Resolution;
@@ -34,6 +36,49 @@ float3 normalTest3;
 //And I really don't understand negation issue, something about baked origin shift or DC component in the FFT implementation?
 float factor(uint x, uint y) {
 	return (((x % 2 == 0) ^ (y % 2 == 0)) ? -1 : 1);
+}
+
+void normals(uint2 id)
+{
+	float f = factor(id.x, id.y);
+	float nx = NormSpatialY[id].x * f;
+	float nz = NormSpatialY[id].z * f;
+	Normals[id] = float4(
+		float3(
+			nx,
+			1,
+			nz
+		) / sqrt(1 + nx * nx + nz * nz),
+		1
+	);
+}
+
+void approximateNormals(uint2 id)
+{
+	// float3 x1 = float3(
+	// 	dtest1 * DispSpatialX[id.xy + int2(-1, 0)].xy) - Resolution / 2.0 / L,
+	// 	dtest2 * DispSpatialY[id.xy + int2(-1, 0)].xy),
+	// 	dtest3 * DispSpatialZ[id.xy + int2(-1, 0)].xy)
+	// );
+	// float3 x2 = float3(
+	// 	dtest1 * DispSpatialX[id.xy + int2(1, 0)].xy) + Resolution / 2.0 / L,
+	// 	dtest2 * DispSpatialY[id.xy + int2(1, 0)].xy),
+	// 	dtest3 * DispSpatialZ[id.xy + int2(1, 0)].xy)
+	// );
+	// float3 z1 = float3(
+	// 	dtest1 * DispSpatialX[id.xy + int2(0, -1)].xy),
+	// 	dtest2 * DispSpatialY[id.xy + int2(0, -1)].xy),
+	// 	dtest3 * DispSpatialZ[id.xy + int2(0, -1)].xy) - Resolution / 2.0 / L
+	// );
+	// float3 z2 = float3(
+	// 	dtest1 * DispSpatialX[id.xy + int2(0, 1)].xy),
+	// 	dtest2 * DispSpatialY[id.xy + int2(0, 1)].xy),
+	// 	dtest3 * DispSpatialZ[id.xy + int2(0, 1)].xy) + Resolution / 2.0 / L
+	// );
+	// float3 x = x2 - x1;
+	// float3 z = z2 - z1;
+	// ApproximateNormals[id.xy] = float4(normalize(cross(z, x)), 0);
+	ApproximateNormals[id] = float4(0, 1, 0, 0);
 }
 
 [numthreads(8,8,1)]
@@ -70,30 +115,9 @@ void CSMain(uint3 id : SV_DispatchThreadID) {
 
 	//TODO Have Displacement in RGB
 	Displacement[id.xy] = float4(displacement, 0);
-	// float3 x1 = float3(
-	// 	dtest1 * DispSpatialX[id.xy + int2(-1, 0)].xy) - Resolution / 2.0 / L,
-	// 	dtest2 * DispSpatialY[id.xy + int2(-1, 0)].xy),
-	// 	dtest3 * DispSpatialZ[id.xy + int2(-1, 0)].xy)
-	// );
-	// float3 x2 = float3(
-	// 	dtest1 * DispSpatialX[id.xy + int2(1, 0)].xy) + Resolution / 2.0 / L,
-	// 	dtest2 * DispSpatialY[id.xy + int2(1, 0)].xy),
-	// 	dtest3 * DispSpatialZ[id.xy + int2(1, 0)].xy)
-	// );
-	// float3 z1 = float3(
-	// 	dtest1 * DispSpatialX[id.xy + int2(0, -1)].xy),
-	// 	dtest2 * DispSpatialY[id.xy + int2(0, -1)].xy),
-	// 	dtest3 * DispSpatialZ[id.xy + int2(0, -1)].xy) - Resolution / 2.0 / L
-	// );
-	// float3 z2 = float3(
-	// 	dtest1 * DispSpatialX[id.xy + int2(0, 1)].xy),
-	// 	dtest2 * DispSpatialY[id.xy + int2(0, 1)].xy),
-	// 	dtest3 * DispSpatialZ[id.xy + int2(0, 1)].xy) + Resolution / 2.0 / L
-	// );
-	// float3 x = x2 - x1;
-	// float3 z = z2 - z1;
-	// ApproximateNormals[id.xy] = float4(normalize(cross(z, x)), 0);
-	ApproximateNormals[id.xy] = float4(0, 1, 0, 0);
+
+	normals(id.xy);
+	approximateNormals(id.xy);
 	//TODO Draw textures in ui with alpha 0
 	//Setting alpha to 1 so it shows up on UI Toolkit, will probably cause issues
 	// {
