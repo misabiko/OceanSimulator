@@ -20,6 +20,7 @@ public class Ocean : MonoBehaviour {
 	public RenderTexture DispSpatialZ { get; private set; }
 	public RenderTexture NormFreqY { get; private set; }
 	public RenderTexture NormSpatialY { get; private set; }
+	public RenderTexture Normals { get; private set; }
 	public RenderTexture ApproximateNormals { get; private set; }
 	public RenderTexture PingBuffer { get; private set; }
 	public RenderTexture PongBuffer { get; private set; }
@@ -27,7 +28,6 @@ public class Ocean : MonoBehaviour {
 
 	[Min(0)] public float F = 1400000;
 	public Vector2 U10 = new(20, 0);
-	public Transform windArrow;
 	[Min(0)] public float gamma = 3.3f;
 
 	[Header("Phillips Spectrum")] [Min(0)] public float phillipsA = 1;
@@ -79,14 +79,18 @@ public class Ocean : MonoBehaviour {
 		frequencyDomainFieldComputeShader.SetTexture(0, DispFreqZid, DispFreqZ);
 		frequencyDomainFieldComputeShader.SetTexture(0, NormFreqYid, NormFreqY);
 
+		fftComputeShader.SetBool(FFTForward, false);
+
 		displacementComputeShader.SetTexture(0, DisplacementID, displacement);
 		displacementComputeShader.SetTexture(0, ApproximateNormalsID, ApproximateNormals);
+		displacementComputeShader.SetTexture(0, NormalsID, Normals);
 		displacementComputeShader.SetTexture(0, DispFreqXid, DispFreqX);
 		displacementComputeShader.SetTexture(0, DispFreqYid, DispFreqY);
 		displacementComputeShader.SetTexture(0, DispFreqZid, DispFreqZ);
 		displacementComputeShader.SetTexture(0, DispSpatialXid, DispSpatialX);
 		displacementComputeShader.SetTexture(0, DispSpatialYid, DispSpatialY);
 		displacementComputeShader.SetTexture(0, DispSpatialZid, DispSpatialZ);
+		displacementComputeShader.SetTexture(0, NormSpatialYid, NormSpatialY);
 		displacementComputeShader.SetFloat("Resolution", tileSideVertexCount);
 		displacementComputeShader.SetFloat("PI", Mathf.PI);
 		displacementComputeShader.SetFloat("g", -Physics.gravity.y);
@@ -106,7 +110,7 @@ public class Ocean : MonoBehaviour {
 		frequencyDomainFieldComputeShader.SetFloat("time", Time.time * timeScale + timeOffset);
 		frequencyDomainFieldComputeShader.SetFloat("L", tileSize);
 		frequencyDomainFieldComputeShader.SetFloat("F", F);
-		frequencyDomainFieldComputeShader.SetVector("U10", windArrow != null ? new Vector2(U10.x * windArrow.localPosition.x, U10.y * windArrow.localPosition.z) : U10);
+		frequencyDomainFieldComputeShader.SetVector("U10", U10);
 		frequencyDomainFieldComputeShader.SetFloat("gamma", gamma);
 		frequencyDomainFieldComputeShader.SetFloat("heightTest", heightTest);
 		frequencyDomainFieldComputeShader.SetFloat("phillipsA", phillipsA);
@@ -114,11 +118,11 @@ public class Ocean : MonoBehaviour {
 		frequencyDomainFieldComputeShader.SetVector("phillipsWindDir", phillipsWindDir.normalized);
 		frequencyDomainFieldComputeShader.Dispatch(0, tileSideVertexCount / 8, tileSideVertexCount / 8, 1);
 
-		RunFFT(DispFreqY, PingBuffer, PongBuffer, DispSpatialY);
+		RunIFFT(DispFreqY, PingBuffer, PongBuffer, DispSpatialY);
 		//TODO Merge dispFreqX and dispFreqZ in the same texture
-		RunFFT(DispFreqX, PingBuffer, PongBuffer, DispSpatialX);
-		RunFFT(DispFreqZ, PingBuffer, PongBuffer, DispSpatialZ);
-		RunFFT(NormFreqY, PingBuffer, PongBuffer, NormSpatialY);
+		RunIFFT(DispFreqX, PingBuffer, PongBuffer, DispSpatialX);
+		RunIFFT(DispFreqZ, PingBuffer, PongBuffer, DispSpatialZ);
+		RunIFFT(NormFreqY, PingBuffer, PongBuffer, NormSpatialY);
 
 		// SetupSimpleSinusoid();
 
@@ -148,8 +152,8 @@ public class Ocean : MonoBehaviour {
 
 		var materialInstance = new Material(tileMaterial);
 		materialInstance.SetTexture(TileMaterialDisplacement, displacement);
-		materialInstance.SetTexture(TileMaterialNormalMap, NormSpatialY);
 		materialInstance.SetTexture(TileMaterialApproximateNormalMap, ApproximateNormals);
+		materialInstance.SetTexture(TileMaterialNormalMap, Normals);
 		materialInstance.SetVector(TileMaterialResolution, new Vector2(tileSize, tileSize));
 
 		for (int x = -tileRadius; x <= tileRadius; ++x)
@@ -173,7 +177,6 @@ public class Ocean : MonoBehaviour {
 	void InitTextures() {
 		NoiseTexture = CreateTexture();
 		InitializingNoise();
-		//TODO Create every textures in a block
 		DispFreqX = CreateRenderTexture();
 		DispFreqY = CreateRenderTexture();
 		DispFreqZ = CreateRenderTexture();
@@ -182,6 +185,7 @@ public class Ocean : MonoBehaviour {
 		DispSpatialZ = CreateRenderTexture();
 		NormFreqY = CreateRenderTexture();
 		NormSpatialY = CreateRenderTexture();
+		Normals = CreateRenderTexture();
 		ApproximateNormals = CreateRenderTexture();
 		PingBuffer = CreateRenderTexture();
 		PongBuffer = CreateRenderTexture();
@@ -192,19 +196,10 @@ public class Ocean : MonoBehaviour {
 		NoiseTexture = CreateTexture();
 
 		//https://stackoverflow.com/a/218600/2692695
-		// int greenNoise = Random.Range(0, 10000);
 		const float mean = 0;
 		const float stdDev = 1;
 		for (int x = 0; x < tileSideVertexCount; ++x)
 		for (int y = 0; y < tileSideVertexCount; ++y) {
-			// noiseTexture.SetPixel(x, y, new Color(
-			// 	Mathf.PerlinNoise(x / noiseResolution, y / noiseResolution),
-			// 	Mathf.PerlinNoise(x / noiseResolution + greenNoise, y / noiseResolution + greenNoise),
-			// 	0,
-			// 	1
-			// ));
-			// noiseTexture.SetPixel(x, y, new Color(.5f, .5f, 0, 0));
-
 			var u1 = Vector2.one - new Vector2(Random.value, Random.value);
 			var u2 = Vector2.one - new Vector2(Random.value, Random.value);
 			var randStdNormal = new Vector2(
@@ -228,11 +223,15 @@ public class Ocean : MonoBehaviour {
 	// 	simpleSinusoid.Dispatch(0, tileSideVertexCount / 8, tileSideVertexCount / 8, 1);
 	// }
 
-	RenderTexture CreateRenderTexture() {
+	RenderTexture CreateRenderTexture(uint components = 4) {
 		var rt = new RenderTexture(tileSideVertexCount, tileSideVertexCount, 32) {
 			enableRandomWrite = true,
 			filterMode = FilterMode.Point,
-			graphicsFormat = UnityEngine.Experimental.Rendering.GraphicsFormat.R32G32B32A32_SFloat,
+			graphicsFormat = components switch {
+				3 => UnityEngine.Experimental.Rendering.GraphicsFormat.R32G32B32_SFloat,
+				4 => UnityEngine.Experimental.Rendering.GraphicsFormat.R32G32B32A32_SFloat,
+				_ => throw new System.Exception("Unhandled number of components"),
+			},
 			autoGenerateMips = false,
 		};
 		rt.Create();
@@ -243,129 +242,56 @@ public class Ocean : MonoBehaviour {
 		filterMode = FilterMode.Point,
 	};
 
-	void OnDrawGizmos() {
-		if (windArrow != null) {
-			Gizmos.color = Color.yellow;
-			Gizmos.DrawLine(windArrow.parent.position, windArrow.position);
-		}
-	}
-
-	class Uniforms {
-		public RenderTexture input;
-		public string inputName;
-		public RenderTexture output;
-		public string outputName;
-		public bool horizontal;
-		public bool forward;
-		public Vector2 resolution;
-		public float normalization;
-		public float subtransformSize;
-
-		public void SetUniforms(ComputeShader shader) {
-			shader.SetTexture(0, FFTSrc, input);
-			if (output != null)
-				shader.SetTexture(0, FFTOutput, output);
-			shader.SetBool(FFTHorizontal, horizontal);
-			shader.SetBool(FFTForward, forward);
-			shader.SetFloats(FFTOneOverResolution, resolution.x, resolution.y);
-			shader.SetFloat(FFTNormalization, normalization);
-			shader.SetFloat(FFTSubtransformSize, subtransformSize);
-		}
-
-		public Uniforms Copy() {
-			return new Uniforms {
-				input = input,
-				inputName = inputName,
-				output = output,
-				outputName = outputName,
-				horizontal = horizontal,
-				forward = forward,
-				resolution = resolution,
-				normalization = normalization,
-				subtransformSize = subtransformSize,
-			};
-		}
-
-		public override string ToString() {
-			return $"input: {inputName}, output: {outputName}, horizontal: {horizontal}, forward: {forward}, resolution: {resolution}, normalization: {normalization}, subtransformSize: {subtransformSize}";
-		}
-	}
-
-	void RunFFT(
-		RenderTexture optsInput,
-		RenderTexture optsPing,
-		RenderTexture optsPong,
-		RenderTexture optsOutput
+	void RunIFFT(
+		RenderTexture initInput,
+		RenderTexture initPing,
+		RenderTexture initPong,
+		RenderTexture initOutput
 	) {
-		int i;
-		RenderTexture ping;
-		RenderTexture pong;
-		Uniforms uniforms = new();
-		RenderTexture tmp;
-		int width = tileSideVertexCount;
-		int height = tileSideVertexCount;
-
-		const bool forward = false;
-		const bool splitNormalization = true;
-
-		void Swap() {
-			tmp = ping;
-			ping = pong;
-			pong = tmp;
-		}
-
 		// Swap to avoid collisions with the input:
-		ping = optsPing;
-		if (optsInput == optsPong) {
-			ping = optsPong;
-		}
+		var ping = initInput == initPong ? initPong : initPing;
+		var pong = ping == initPing ? initPong : initPing;
 
-		pong = ping == optsPing ? optsPong : optsPing;
-
-		int xIterations = Mathf.RoundToInt(Mathf.Log(width) / Mathf.Log(2));
-		int yIterations = Mathf.RoundToInt(Mathf.Log(height) / Mathf.Log(2));
-		int iterations = xIterations + yIterations;
+		int xIterations = Mathf.RoundToInt(Mathf.Log(tileSideVertexCount) / Mathf.Log(2));
+		int iterations = 2 * xIterations;
 
 		// Swap to avoid collisions with output:
-		if (optsOutput == ((iterations % 2 == 0) ? pong : ping))
-			Swap();
+		if (initOutput == ((iterations % 2 == 0) ? pong : ping))
+			(ping, pong) = (pong, ping);
 
 		// If we've avoiding collision with output creates an input collision,
 		// then you'll just have to rework your framebuffers and try again.
-		if (optsInput == pong)
+		if (initInput == pong)
 			throw new System.Exception("not enough framebuffers to compute without copying data. You may perform the computation with only two framebuffers, but the output must equal the input when an even number of iterations are required.");
 
-		for (i = 0; i < iterations; ++i) {
-			uniforms.input = ping;
-			uniforms.output = pong;
-			uniforms.horizontal = i < xIterations;
-			uniforms.forward = forward;
-			uniforms.resolution = new Vector2(1f / width, 1f / height);
+		for (int i = 0; i < iterations; ++i) {
+			var input = ping;
+			var output = pong;
 
+			float normalization;
 			if (i == 0) {
-				uniforms.input = optsInput;
-			}
-			else if (i == iterations - 1) {
-				uniforms.output = optsOutput;
-			}
-
-			if (i == 0) {
-				if (splitNormalization)
-					uniforms.normalization = 1f / Mathf.Sqrt(width * height);
-				else if (!forward)
-					uniforms.normalization = 1f / width / height;
+				input = initInput;
+				normalization = 1f / tileSideVertexCount;
+			}else {
+				if (i == iterations - 1) {
+					output = initOutput;
+					normalization = tileSideVertexCount;
+				}
 				else
-					uniforms.normalization = 1f;
+					normalization = 1f;
 			}
-			else
-				uniforms.normalization = 1f;
 
-			uniforms.subtransformSize = Mathf.Pow(2, (uniforms.horizontal ? i : (i - xIterations)) + 1);
+			bool horizontal = i < xIterations;
 
-			uniforms.SetUniforms(fftComputeShader);
-			fftComputeShader.Dispatch(0, width / 8, height / 8, 1);
+			fftComputeShader.SetTexture(0, FFTSrc, input);
+			fftComputeShader.SetTexture(0, FFTOutput, output);
+			fftComputeShader.SetBool(FFTHorizontal, horizontal);
+			fftComputeShader.SetFloats(FFTOneOverResolution, 1f / tileSideVertexCount, 1f / tileSideVertexCount);
+			fftComputeShader.SetFloat(FFTNormalization, normalization);
+			fftComputeShader.SetFloat(FFTSubtransformSize, Mathf.Pow(2, (horizontal ? i : (i - xIterations)) + 1));
+			fftComputeShader.Dispatch(0, tileSideVertexCount / 8, tileSideVertexCount / 8, 1);
 
-			Swap();
+			(ping, pong) = (pong, ping);
 		}
 	}
 
@@ -422,6 +348,7 @@ public class Ocean : MonoBehaviour {
 		AddTextureDebug(DispSpatialZ, new Vector2Int(2, -2), "dispSpatialZ");
 		AddTextureDebug(NormFreqY, new Vector2Int(3, 0), "normFreqY");
 		AddTextureDebug(NormSpatialY, new Vector2Int(3, -1), "normSpatialY");
+		AddTextureDebug(Normals, new Vector2Int(3, -2), "Normals");
 	}
 
 	void AddTextureDebug(Texture texture, Vector2Int position, string textureName) {
@@ -457,4 +384,6 @@ public class Ocean : MonoBehaviour {
 	static readonly int DispSpatialYid = Shader.PropertyToID("DispSpatialY");
 	static readonly int DispSpatialZid = Shader.PropertyToID("DispSpatialZ");
 	static readonly int NormFreqYid = Shader.PropertyToID("NormFreqY");
+	static readonly int NormalsID = Shader.PropertyToID("Normals");
+	static readonly int NormSpatialYid = Shader.PropertyToID("NormSpatialY");
 }
