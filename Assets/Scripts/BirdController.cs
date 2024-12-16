@@ -110,7 +110,7 @@ public class BirdController : MonoBehaviour
 
    public Vector3  GetVelocity()
    {
-      return myRigidbody.velocity; //.linearVelocity;
+      return myRigidbody.linearVelocity;
    }
 
    public float ForwardSpeed()
