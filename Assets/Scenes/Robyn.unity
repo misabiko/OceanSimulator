@@ -693,7 +693,7 @@ MonoBehaviour:
   Cohesion: 0.2
   Alignment: 0.2
   Separation: 4
-  MaxSpeed: 15
+  MaxSpeed: 22
   SpaceBoundSizeRadius: {x: 42.6, y: 20, z: 40}
   BoundAvoidanceWeight: 0.25
   GoalWeight: 0.1

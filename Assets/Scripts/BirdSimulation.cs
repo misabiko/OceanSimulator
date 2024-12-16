@@ -50,28 +50,52 @@ public class BirdSimulation : MonoBehaviour
     private Vector3[] positions;
     private float[] animationTimes;
 
+    [SerializeField] public Mesh mesh;               // The mesh to render
+    [SerializeField] public Material material;       // The material to use
+    //[SerializeField] private int instanceCount = 100; // Number of instances
+    //private Matrix4x4[] instanceMatrices;             // Array of instance transforms
+    private InstanceData[] instances;
+    struct InstanceData
+    {
+        public Matrix4x4 matrix;
+        public float animationTime;
+    }
+    private RenderParams rp;
+
     // Start is called before the first frame update
     private void Start()
     {
         allBoids = new GameObject[boidCount];
         for (var i = 0; i < boidCount; i++)
         {
-            
             Vector3 pos = this.transform.position + RandomInsideBound();
             allBoids[i] = Instantiate(boidPrefab, pos, Quaternion.identity);
         }
 
         instance = this;
         goalPos = this.transform.position;
+        rp = new RenderParams(material);
+        instances = new InstanceData[boidCount];
     }
 
     // Update is called once per frame
     private void Update()
     {
-        if (Random.Range(0, 100) < 1)
+        //if (Random.Range(0, 100) < 1)
+        //{
+        //    goalPos = Vector3.Lerp(goalPos, this.transform.position + RandomInsideBound(), 0.2f);
+        //}
+        // Render all instances using instanced rendering
+        //Graphics.DrawMeshInstanced(mesh, 0, material, instanceMatrices);
+
+        for (int i = 0; i < boidCount; ++i)
         {
-            goalPos = Vector3.Lerp(goalPos, this.transform.position + RandomInsideBound(), 0.2f);
+            instances[i].matrix = Matrix4x4.Translate(new Vector3(-4.5f + i, 0.0f, 5.0f));
+            instances[i].animationTime += Time.deltaTime;
+            instances[i].animationTime %= 0.956f; // animationLength
         }
+        
+        Graphics.RenderMeshInstanced(rp, mesh, 0, instances);
     }
 
     private void OnDrawGizmos()

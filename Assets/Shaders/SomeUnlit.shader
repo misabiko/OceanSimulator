@@ -14,6 +14,7 @@ Shader "Unlit/SomeUnlit" {
 			#pragma fragment frag
 			// make fog work
 			#pragma multi_compile_fog
+			#pragma multi_compile_instancing
 
 			#include "UnityCG.cginc"
 
@@ -37,7 +38,11 @@ Shader "Unlit/SomeUnlit" {
             sampler2D _MainTex;
             float4 _MainTex_ST;
             sampler2D _BoneTransformTex;
-            float _AnimationTime; // Custom uniform for animation control.
+            //float _AnimationTime; // Custom uniform for animation control.
+			
+			UNITY_INSTANCING_BUFFER_START(Props)
+			   UNITY_DEFINE_INSTANCED_PROP(float, _AnimationTime)
+			UNITY_INSTANCING_BUFFER_END(Props)
 
             // get a pixel color from an index
             float4 sample_lib_data(int index) {
@@ -127,7 +132,8 @@ Shader "Unlit/SomeUnlit" {
                 float anim_frame_count = anim_data.b;
                 float anim_pixel_index = anim_data.a;
 
-                float progress = (_AnimationTime / anim_length) * anim_frame_count;
+				float animationTime = UNITY_ACCESS_INSTANCED_PROP(Props, _AnimationTime);
+                float progress = (animationTime / anim_length) * anim_frame_count;
                 float frame0 = floor(progress);
                 float frame1 = frame0 + 1.0;
                 float fraction = frac(progress);

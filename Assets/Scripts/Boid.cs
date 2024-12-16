@@ -8,7 +8,7 @@ using Random = UnityEngine.Random;
 public class Boid : MonoBehaviour
 {
     private SkinnedMeshRenderer mesh;
-    private SphereCollider collider;
+    //private SphereCollider collider;
 
     public Vector3 velocity;
     public Vector3 centroid;
@@ -19,7 +19,7 @@ public class Boid : MonoBehaviour
     void Start()
     {
         mesh = GetComponentInChildren<SkinnedMeshRenderer>();
-        collider = GetComponentInChildren<SphereCollider>();
+        //collider = GetComponentInChildren<SphereCollider>();
         velocity = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1), Random.Range(-1, 1)).normalized * Random.Range(1, Simulation.MaxSpeed);
     }
 
