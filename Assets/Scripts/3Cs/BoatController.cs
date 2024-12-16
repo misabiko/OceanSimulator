@@ -65,6 +65,8 @@ public class BoatController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+	    if (AudioManager.instance == null)
+		    Debug.LogError("AudioManager is missing in the scene");
         if (Input.GetKeyDown(KeyCode.M))
             PlayerStateManager.SwitchTo(PlayerState.Bird);
 
