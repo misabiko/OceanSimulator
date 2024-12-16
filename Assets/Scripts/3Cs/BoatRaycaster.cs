@@ -25,6 +25,8 @@ public class BoatRaycaster : MonoBehaviour
         {
             if (hit.collider.CompareTag("BirdBoid"))
             {
+                if(currentSelectedBoid != null)
+                    currentSelectedBoid.SetIsSelected(false);
                 currentSelectedBoid = hit.collider.GetComponent<BoidSelection>().SelectBoid();
                 Debug.Log("Hit Bird");
             }

@@ -655,6 +655,7 @@ MonoBehaviour:
   moveDirection: {x: 0, y: 0}
   lookDirection: {x: 0, y: 0}
   Yaw: 0
+  isMoving: 0
 --- !u!114 &257085678305653157
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -742,7 +743,7 @@ MonoBehaviour:
     m_ActionId: 1a2d579b-e08b-400d-abe6-0fc71eee7ec1
     m_ActionName: 'Player/Left Yaw[/Keyboard/q]'
   m_NeverAutoSwitchControlSchemes: 0
-  m_DefaultControlScheme: 
+  m_DefaultControlScheme: Gamepad
   m_DefaultActionMap: Bird
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
