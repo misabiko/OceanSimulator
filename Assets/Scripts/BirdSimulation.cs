@@ -1,18 +1,18 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.InputSystem.HID.HID;
+using Random = UnityEngine.Random;
 
 public class BirdSimulation : MonoBehaviour
 {
     public static BirdSimulation instance;
     public GameObject boidPrefab;
-    public int boidCount = 20;
     public GameObject[] allBoids;
     public Vector3 goalPos = new Vector3(0, 0, 0);
 
+    public int boidCount = 20;
     [Header("Boid settings")]
-    [Range(0f, 100)]
-    public int MaxCountInProximity;
     [Range(0f, 100.0f)]
     public float DetectRadius;
     [Range(0f, 100.0f)]
@@ -24,6 +24,15 @@ public class BirdSimulation : MonoBehaviour
     [Range(0f, 100.0f)]
     public float Separation;
     [Range(0f, 100.0f)]
+    public float MaxSpeed = 5f;
+
+    public Vector3 SpaceBoundSizeRadius = new Vector3(60, 60, 60);
+    [Range(0f, 100.0f)]
+    public float BoundAvoidanceWeight;
+
+    [Range(0f, 1.0f)]
+    public float GoalFollowersPercent = 0.3f;
+    [Range(0f, 100.0f)]
     public float GoalWeight;
     [Range(0f, 100.0f)]
     public float WanderWeight;
@@ -31,108 +40,70 @@ public class BirdSimulation : MonoBehaviour
     public float ObstacleAvoidanceWeight;
     [Range(0f, 100.0f)]
     public float OvercrowdWeight;
-    [Range(0f, 100.0f)]
-    public float MaxSpeed = 5f;
-    [Range(10f, 100.0f)]
-    public float SpaceBoundRadius;
-    [Range(0f, 100.0f)]
-    public float BoundAvoidanceWeight;
+    [Range(0f, 100)]
+    public int MaxCountInProximity;
     [Range(0f, 100.0f)] 
     public float VelocityLerp;
 
-    public void bake()
-    {
-        SkinnedMeshRenderer smr = new();
-        var bones = smr.bones;
-        var weights = new System.Collections.Generic.List<BoneWeight>();
-        smr.sharedMesh.GetBoneWeights(weights);
-        //smr.bones[0].
+    private int chunkWidth;
+    private int chunkHeight;
+    private int[] chunks;
+    private Vector3[] velocities;
+    private Vector3[] positions;
+    private float[] animationTimes;
 
-
-        Animator animator = new();
-        animator.Play("idle");
-
-
-
-        int iLayer = 0;
-        //float fNormalizedTime = .5f;
-        //Get Current State
-        AnimatorStateInfo aniStateInfo = animator.GetCurrentAnimatorStateInfo(iLayer);
-        var info = animator.GetCurrentAnimatorClipInfo(iLayer);
-
-        float length = info[0].clip.length;
-        float framerate = 15f;
-        int frameCount = (int) Math.Ceiling(length * framerate);
-        float adjustedTimePerFrame = length / (frameCount - 1);
-        float adjustedFramerate = 1f / adjustedTimePerFrame;
-
-        List<float> pixels = new();
-        float currenTime = 0;
-        for (int i = 0; i < frameCount; i++)
-        {
-            //Set Normalized Time
-            //animator.Play(aniStateInfo.shortNameHash, iLayer, fNormalizedTime);
-            animator.PlayInFixedTime(aniStateInfo.shortNameHash, iLayer, currenTime);
-            //Force Update
-            animator.Update(0f);
-            currenTime += adjustedTimePerFrame;
-            foreach(var bone in smr.bones)
-            {
-                PushBone(pixels, bone);
-            }
-        }
-
-        smr.sharedMesh.GetBonesPerVertex();
-    }
-
-    private void PushBone(List<float> pixels, Transform bone)
-    {
-        var a = bone.localToWorldMatrix;
-        //var b = bone.worldToLocalMatrix;
-        // row
-        for(int i = 0; i < 4; i++)
-        {
-            // column
-            for(int j = 0; j < 4; j++)
-            {
-                pixels.Add(a[i, j]);
-                pixels.Add(a[i, j]);
-                pixels.Add(a[i, j]);
-                pixels.Add(a[i, j]);
-            }
-        }
-    }
-
+    private BoatController _boatController;
+    private BirdController _birdController;
 
     // Start is called before the first frame update
     private void Start()
     {
+        _birdController = GameObject.FindAnyObjectByType<BirdController>();
+        _boatController = GameObject.FindAnyObjectByType<BoatController>();
         allBoids = new GameObject[boidCount];
         for (var i = 0; i < boidCount; i++)
         {
-            Vector3 pos = this.transform.position + UnityEngine.Random.insideUnitSphere * SpaceBoundRadius;
-            allBoids[i] = Instantiate(boidPrefab, pos, Quaternion.identity);
+            
+            Vector3 pos = this.transform.position + RandomInsideBound();
+            var instance = Instantiate(boidPrefab, pos, Quaternion.identity);
+            var boid = instance.GetComponent<Boid>();
+            boid.id = i;
+            allBoids[i] = instance;
         }
 
         instance = this;
-        goalPos = transform.position;
+        goalPos = this.transform.position;
     }
 
     // Update is called once per frame
     private void Update()
     {
-        if (UnityEngine.Random.Range(0, 100) < 1)
-        {
-            goalPos = Vector3.Lerp(goalPos, this.transform.position + UnityEngine.Random.insideUnitSphere * SpaceBoundRadius, 0.2f);
-        }
+        //if (UnityEngine.Random.Range(0, 100) < 1)
+        //{
+        //    goalPos = Vector3.Lerp(goalPos, this.transform.position + RandomInsideBound(), 0.2f);
+        //}
+        if (PlayerStateManager.GetState() == PlayerState.Bird)
+            goalPos = _birdController.transform.position;
+        else 
+        if (PlayerStateManager.GetState() == PlayerState.Boat)
+            goalPos = new Vector3(_boatController.transform.position.x, 15, _boatController.transform.position.z);
     }
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = new Color(0, 1, 0);
-        Gizmos.DrawWireSphere(this.goalPos, 1);
+        //Gizmos.color = new Color(0, 1, 0);
+        //Gizmos.DrawWireSphere(this.goalPos, 1);
         Gizmos.color = new Color(1, 0, 0);
-        Gizmos.DrawWireSphere(Vector3.zero, SpaceBoundRadius);
+        Gizmos.DrawWireCube(this.transform.position, SpaceBoundSizeRadius * 2);
+    }
+
+    private Vector3 RandomInsideBound()
+    {
+        return new Vector3(
+                    Random.Range(-SpaceBoundSizeRadius.x, SpaceBoundSizeRadius.x),
+                    Random.Range(-SpaceBoundSizeRadius.y, SpaceBoundSizeRadius.z),
+                    Random.Range(-SpaceBoundSizeRadius.y, SpaceBoundSizeRadius.z)
+                );
     }
 
 }

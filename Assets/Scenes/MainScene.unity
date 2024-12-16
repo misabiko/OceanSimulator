@@ -687,6 +687,26 @@ PrefabInstance:
       propertyPath: m_Name
       value: Environnement_Spawner_Prefab
       objectReference: {fileID: 0}
+    - target: {fileID: 6252195428100752918, guid: 3ba4c81e0a75cd241909de95134341b1,
+        type: 3}
+      propertyPath: maxHeight
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 6252195428100752918, guid: 3ba4c81e0a75cd241909de95134341b1,
+        type: 3}
+      propertyPath: minHeight
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 6252195428100752918, guid: 3ba4c81e0a75cd241909de95134341b1,
+        type: 3}
+      propertyPath: innerRadius
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 6252195428100752918, guid: 3ba4c81e0a75cd241909de95134341b1,
+        type: 3}
+      propertyPath: outerRadius
+      value: 200
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1150,7 +1170,7 @@ PrefabInstance:
     - target: {fileID: 6949285036345685929, guid: d5f9884c59e501e4b8d9b8df5ce93208,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2
+      value: 45
       objectReference: {fileID: 0}
     - target: {fileID: 6949285036345685929, guid: d5f9884c59e501e4b8d9b8df5ce93208,
         type: 3}
@@ -1221,22 +1241,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   boidPrefab: {fileID: 2176301407503456708, guid: 4b17a840543d03746aabb122d40d0857,
     type: 3}
-  boidCount: 20
   allBoids: []
   goalPos: {x: 0, y: 0, z: 0}
-  MaxCountInProximity: 0
-  DetectRadius: 30
-  AvoidanceRadius: 6
+  boidCount: 100
+  DetectRadius: 10
+  AvoidanceRadius: 3
   Cohesion: 0.2
   Alignment: 0.2
-  Separation: 3
-  GoalWeight: 0
-  WanderWeight: 0.1
-  ObstacleAvoidanceWeight: 0
-  OvercrowdWeight: 0
-  MaxSpeed: 5
-  SpaceBoundRadius: 30
+  Separation: 4
+  MaxSpeed: 20
+  SpaceBoundSizeRadius: {x: 100, y: 20, z: 100}
   BoundAvoidanceWeight: 0.4
+  GoalFollowersPercent: 0.4
+  GoalWeight: 4
+  WanderWeight: 0
+  ObstacleAvoidanceWeight: 1.5
+  OvercrowdWeight: 0.15
+  MaxCountInProximity: 10
   VelocityLerp: 0.2
 --- !u!114 &1096928441 stripped
 MonoBehaviour:

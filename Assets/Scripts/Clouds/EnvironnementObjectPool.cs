@@ -39,8 +39,8 @@ public class EnvironnementObjectPool : MonoBehaviour
 
                 if (pool.tag == "Clouds")
                     instance = InstantiateCloud(pool, index);
-               // else if (pool.tag == "Rocks")
-                   // instance = InstantiateRocks(pool, index);
+                else if (pool.tag == "Rocks")
+                    instance = InstantiateRocks(pool, index);
 
                 if (instance != null)
                     objectPool.Enqueue(instance);
@@ -71,7 +71,7 @@ public class EnvironnementObjectPool : MonoBehaviour
     private void Update()
     {
         UpdateClouds( PoolDictionary["Clouds"]);
-        //UpdateRocks( PoolDictionary["Rocks"]);
+        UpdateRocks( PoolDictionary["Rocks"]);
     }
 
     private void UpdateClouds(Queue<GameObject> pool)
