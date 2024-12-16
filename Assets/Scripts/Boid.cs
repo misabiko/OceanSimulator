@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using Unity.Cinemachine;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -102,10 +103,20 @@ public class Boid : MonoBehaviour
         vel0 += (Simulation.goalPos - pos0).normalized * Simulation.GoalWeight;
 
         // Avoid Bounds
-        var forwardDetection = pos0 + vel0.normalized * Simulation.DetectRadius;
-        if (forwardDetection.magnitude > Simulation.SpaceBoundRadius)
+        var vectorToOrigin = (pos0 - Simulation.transform.position);
+        var forwardDetection = vectorToOrigin + vel0.normalized * Simulation.DetectRadius;
+        var boundDelta = forwardDetection.Abs() - (Simulation.SpaceBoundSizeRadius);
+        if (boundDelta.x > 0)
         {
-            vel0 += pos0.normalized * (Simulation.SpaceBoundRadius - pos0.magnitude) * Simulation.BoundAvoidanceWeight;
+            vel0 += -boundDelta.x * Simulation.BoundAvoidanceWeight * vectorToOrigin.normalized.x * Vector3.right;
+        }
+        if (boundDelta.y > 0)
+        {
+            vel0 += -boundDelta.y * Simulation.BoundAvoidanceWeight * vectorToOrigin.normalized.y * Vector3.up;
+        }
+        if (boundDelta.z > 0)
+        {
+            vel0 += -boundDelta.z * Simulation.BoundAvoidanceWeight * vectorToOrigin.normalized.z * Vector3.forward;
         }
 
         // Avoid Obstacles
