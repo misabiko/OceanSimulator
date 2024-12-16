@@ -8,10 +8,10 @@ public class BirdSimulation : MonoBehaviour
 {
     public static BirdSimulation instance;
     public GameObject boidPrefab;
-    public int boidCount = 20;
     public GameObject[] allBoids;
     public Vector3 goalPos = new Vector3(0, 0, 0);
 
+    public int boidCount = 20;
     [Header("Boid settings")]
     [Range(0f, 100.0f)]
     public float DetectRadius;
@@ -30,6 +30,8 @@ public class BirdSimulation : MonoBehaviour
     [Range(0f, 100.0f)]
     public float BoundAvoidanceWeight;
 
+    [Range(0f, 1.0f)]
+    public float GoalFollowersPercent = 0.3f;
     [Range(0f, 100.0f)]
     public float GoalWeight;
     [Range(0f, 100.0f)]
@@ -61,15 +63,23 @@ public class BirdSimulation : MonoBehaviour
         public float animationTime;
     }
     private RenderParams rp;
+    private BoatController _boatController;
+    private BirdController _birdController;
 
     // Start is called before the first frame update
     private void Start()
     {
+        _birdController = GameObject.FindAnyObjectByType<BirdController>();
+        _boatController = GameObject.FindAnyObjectByType<BoatController>();
         allBoids = new GameObject[boidCount];
         for (var i = 0; i < boidCount; i++)
         {
+            
             Vector3 pos = this.transform.position + RandomInsideBound();
-            allBoids[i] = Instantiate(boidPrefab, pos, Quaternion.identity);
+            var instance = Instantiate(boidPrefab, pos, Quaternion.identity);
+            var boid = instance.GetComponent<Boid>();
+            boid.id = i;
+            allBoids[i] = instance;
         }
 
         instance = this;
@@ -81,10 +91,16 @@ public class BirdSimulation : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        //if (Random.Range(0, 100) < 1)
+        //if (UnityEngine.Random.Range(0, 100) < 1)
         //{
         //    goalPos = Vector3.Lerp(goalPos, this.transform.position + RandomInsideBound(), 0.2f);
         //}
+        if (PlayerStateManager.GetState() == PlayerState.Bird)
+            goalPos = _birdController.transform.position;
+        else 
+        if (PlayerStateManager.GetState() == PlayerState.Boat)
+            goalPos = new Vector3(_boatController.transform.position.x, 15, _boatController.transform.position.z);
+            
         // Render all instances using instanced rendering
         //Graphics.DrawMeshInstanced(mesh, 0, material, instanceMatrices);
 
