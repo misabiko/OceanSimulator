@@ -65,6 +65,8 @@ public class BoatController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+	    if (AudioManager.instance == null)
+		    Debug.LogError("AudioManager is missing in the scene");
         if (Input.GetKeyDown(KeyCode.M))
             PlayerStateManager.SwitchTo(PlayerState.Bird);
 
@@ -98,13 +100,14 @@ public class BoatController : MonoBehaviour
             float zRotation = rightpaddle.transform.localEulerAngles.z;
             if (zRotation <= 75f && zRotation >= -75f) 
             {
-                //j'aimrai juste declncehr ça une fois, quand on passe en dessous de 75 deg
+                //j'aimrai juste declncehr ï¿½a une fois, quand on passe en dessous de 75 deg
                 if(!hasPlayedSound)AudioManager.instance.PlayOneShot(FMODEvents.instance.rowSound, this.transform.position);
                 hasPlayedSound = true;
 
                 isUnderWater = true;
-                myRigidbody.AddForce(new Vector3(forwardMovement.x, 0, forwardMovement.z), ForceMode.Impulse);
-                
+                myRigidbody.AddForce(new Vector3(forwardMovement.x, 0, forwardMovement.z), ForceMode.VelocityChange);
+                // Debug.Log("IMPULSE: "+new Vector3(forwardMovement.x, 0, forwardMovement.z));
+
             }
             else
             {
@@ -151,7 +154,7 @@ public class BoatController : MonoBehaviour
         float minOutput = 0f;
         float maxOutput = 1f;
 
-        // Clamp pour limiter la valeur à la plage
+        // Clamp pour limiter la valeur ï¿½ la plage
         value = Mathf.Clamp(value, minInput, maxInput);
 
         // Normalisation

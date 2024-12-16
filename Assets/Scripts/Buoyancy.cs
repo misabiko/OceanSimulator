@@ -182,7 +182,7 @@ public class Buoyancy : MonoBehaviour {
 				var toLowestNeighbor = lowestNeighbor - voxelPosition;
 				var force = (Vector3.up /*+ new Vector3(toLowestNeighbor.x, 0, toLowestNeighbor.z).normalized * (Mathf.Max(0, closestVertex.y - lowestNeighbor.y) * horizontalModifier)*/).normalized * buoyancyForce;
 				rb.AddForceAtPosition(force, modifiedPos);
-				Debug.DrawLine(voxelPosition, voxelPosition + force * 0.01f, Color.yellow);
+				// Debug.DrawLine(voxelPosition, voxelPosition + force * 0.01f, Color.yellow);
 				rb.AddForceAtPosition(Physics.gravity / voxelCount, modifiedPos, ForceMode.Acceleration);
 				totalVolume += voxel.SubmergedVolume;
 			}

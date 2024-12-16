@@ -71,7 +71,7 @@ public class EnvironnementObjectPool : MonoBehaviour
     private void Update()
     {
         UpdateClouds( PoolDictionary["Clouds"]);
-        UpdateRocks( PoolDictionary["Rocks"]);
+        //UpdateRocks( PoolDictionary["Rocks"]);
     }
 
     private void UpdateClouds(Queue<GameObject> pool)
