@@ -34,8 +34,8 @@ namespace FMODUnity
         private FMOD.DEBUG_CALLBACK debugCallback;
         private FMOD.SYSTEM_CALLBACK errorCallback;
 
-        private FMOD.Studio.System studioSystem;
-        private FMOD.System coreSystem;
+        private FMOD.Studio.System studioSystem, studioHapticsSystem;
+        private FMOD.System coreSystem, hapticsSystem;
         private FMOD.DSP mixerHead;
 
         private bool isMuted = false;
@@ -230,6 +230,17 @@ namespace FMODUnity
             get { return Instance.coreSystem; }
         }
 
+        public static FMOD.System HapticsSystem
+        {
+            get { return Instance.hapticsSystem; }
+        }
+
+        public static FMOD.Studio.System StudioHapticsSystem
+        {
+            get { return Instance.studioHapticsSystem; }
+        }
+
+
         private struct LoadedBank
         {
             public FMOD.Studio.Bank Bank;
@@ -323,6 +334,12 @@ namespace FMODUnity
 retry:
             result = FMOD.Studio.System.create(out studioSystem);
             CheckInitResult(result, "FMOD.Studio.System.create");
+
+            result = FMOD.Studio.System.create(out studioHapticsSystem);
+            CheckInitResult(result, "Creating System Object");
+
+            result =studioHapticsSystem.getCoreSystem(out hapticsSystem);
+            CheckInitResult(result, "Creating System haptics Object");
 
             result = studioSystem.getCoreSystem(out coreSystem);
             CheckInitResult(result, "FMOD.Studio.System.getCoreSystem");
