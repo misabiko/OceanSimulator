@@ -44,7 +44,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e697431fd4e4412ba27061b65c2e8385, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tileRadius: 8
   tileSideVertexCount: 32
   tileSize: 64
   tileMaterial: {fileID: 2100000, guid: 5c2891b1541b5b042a952833aa73b0b7, type: 2}
@@ -57,7 +56,14 @@ MonoBehaviour:
   F: 140000000
   U10: {x: 100, y: 100}
   gamma: 3.3
+  waveFreqSharpness: 1
   waveSharpness: 2.1
+  waveFreqHeight: 1
+  waveHeight: 1
+  normalizingFactor: 0
+  unloadTileRadiusPadding: 2
+  frustumAngle: 60
+  backOffset: 2
   timeScale: 1
   timeOffset: 1000
   test2d: {x: 0, y: 128}

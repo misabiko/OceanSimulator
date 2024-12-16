@@ -878,18 +878,8 @@ PrefabInstance:
       objectReference: {fileID: 1101096844}
     - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
         type: 3}
-      propertyPath: backOffset
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
-        type: 3}
       propertyPath: tileRadius
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
-        type: 3}
-      propertyPath: frustumAngle
-      value: 60
       objectReference: {fileID: 0}
     - target: {fileID: 5546129352840701876, guid: 5c762e853944b83428dc3f2a217deb2c,
         type: 3}
