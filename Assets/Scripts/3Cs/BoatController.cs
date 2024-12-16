@@ -65,6 +65,8 @@ public class BoatController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+	    if (AudioManager.instance == null)
+		    Debug.LogError("AudioManager is missing in the scene");
         if (Input.GetKeyDown(KeyCode.M))
             PlayerStateManager.SwitchTo(PlayerState.Bird);
 
@@ -103,8 +105,8 @@ public class BoatController : MonoBehaviour
                 hasPlayedSound = true;
 
                 isUnderWater = true;
-                myRigidbody.AddForce(new Vector3(forwardMovement.x, 0, forwardMovement.z), ForceMode.Impulse);
-                Debug.Log("IMPULSE: "+new Vector3(forwardMovement.x, 0, forwardMovement.z));
+                myRigidbody.AddForce(new Vector3(forwardMovement.x, 0, forwardMovement.z), ForceMode.VelocityChange);
+                // Debug.Log("IMPULSE: "+new Vector3(forwardMovement.x, 0, forwardMovement.z));
 
             }
             else
