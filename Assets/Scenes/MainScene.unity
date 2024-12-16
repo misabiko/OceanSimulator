@@ -1241,9 +1241,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   boidPrefab: {fileID: 2176301407503456708, guid: 4b17a840543d03746aabb122d40d0857,
     type: 3}
-  boidCount: 100
   allBoids: []
   goalPos: {x: 0, y: 0, z: 0}
+  boidCount: 100
   DetectRadius: 10
   AvoidanceRadius: 3
   Cohesion: 0.2
@@ -1252,9 +1252,10 @@ MonoBehaviour:
   MaxSpeed: 20
   SpaceBoundSizeRadius: {x: 100, y: 20, z: 100}
   BoundAvoidanceWeight: 0.4
-  GoalWeight: 0
+  GoalFollowersPercent: 0.4
+  GoalWeight: 4
   WanderWeight: 0
-  ObstacleAvoidanceWeight: 0.4
+  ObstacleAvoidanceWeight: 1.5
   OvercrowdWeight: 0.15
   MaxCountInProximity: 10
   VelocityLerp: 0.2

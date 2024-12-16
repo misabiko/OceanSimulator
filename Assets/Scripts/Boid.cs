@@ -13,6 +13,8 @@ public class Boid : MonoBehaviour
     public Vector3 velocity;
     public Vector3 centroid;
 
+    public int id = 0;
+
     private BirdSimulation Simulation => BirdSimulation.instance;
 
     // Start is called before the first frame update
@@ -99,8 +101,9 @@ public class Boid : MonoBehaviour
             vel0 -= (centroid - pos0) * Simulation.OvercrowdWeight; //  * (Simulation.MaxCountInProximity - countInProximity);
         }
 
-        // Goal
-        vel0 += (Simulation.goalPos - pos0).normalized * Simulation.GoalWeight;
+        // Goal, if within a portion of the boids
+        if(id < Simulation.boidCount * Simulation.GoalFollowersPercent)
+            vel0 += (Simulation.goalPos - pos0).normalized * Simulation.GoalWeight;
 
         // Avoid Bounds
         var vectorToOrigin = (pos0 - Simulation.transform.position);
