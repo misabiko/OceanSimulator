@@ -1,4 +1,8 @@
+using FMOD;
 using FMODUnity;
+using System;
+using System.Text;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class FMODEvents : MonoBehaviour
@@ -13,9 +17,10 @@ public class FMODEvents : MonoBehaviour
 
     private void Awake()
     {
+        
         if (instance != null)
         {
-            Debug.LogError("Found more than ne FMOD events instance");
+            UnityEngine.Debug.LogError("Found more than ne FMOD events instance");
         }
         instance = this;
     }

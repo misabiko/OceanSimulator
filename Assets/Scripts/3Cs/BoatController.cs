@@ -63,8 +63,8 @@ public class BoatController : MonoBehaviour
 
         if (inputManager.isMoving)
         {
-            rightpaddle.transform.Rotate(0, 0, -1.5f);
-            leftpaddle.transform.Rotate(0, 0, -1.5f);
+            rightpaddle.transform.Rotate(0, 0, -10f);
+            leftpaddle.transform.Rotate(0, 0, -10f);
             float zRotation = rightpaddle.transform.localEulerAngles.z;
             if (zRotation <= 75f && zRotation >= -75f) 
             {

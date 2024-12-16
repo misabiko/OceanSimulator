@@ -25,7 +25,6 @@ public class InputManager : MonoBehaviour
         RowAction.performed += OnPaddle;
         RowAction.started += OnPaddle;
         RowAction.canceled += OffPaddle;
-
         RightYawAction.canceled += OnYawCancel;
         LeftYawAction.canceled += OnYawCancel;
     }
