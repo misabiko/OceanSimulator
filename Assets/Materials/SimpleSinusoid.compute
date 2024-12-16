@@ -3,7 +3,7 @@
 RWTexture2D<float4> DispSpatialX;
 RWTexture2D<float4> DispSpatialY;
 RWTexture2D<float4> DispSpatialZ;
-float time;
+float Time;
 float resolution;
 float2 frequency;
 float2 angularFrequency;
@@ -13,7 +13,7 @@ float2 phase;
 [numthreads(8,8,1)]
 void CSMain(uint3 id : SV_DispatchThreadID) {
 	float2 m = angularFrequency / resolution;
-	float2 p = frequency * time + phase;
+	float2 p = frequency * Time + phase;
 	DispSpatialX[id.xy] = float4(amplitude.x * (sin(id.x * m.x + p.x) + cos(id.y * m.y + p.y)), 0, 0, 1);
 	DispSpatialY[id.xy] = float4(amplitude.y * (sin(id.x * m.x + p.x) + cos(id.y * m.y + p.y)), 0, 0, 1);
 	DispSpatialZ[id.xy] = float4(amplitude.z * (sin(id.x * m.x + p.x) + cos(id.y * m.y + p.y)), 0, 0, 1);

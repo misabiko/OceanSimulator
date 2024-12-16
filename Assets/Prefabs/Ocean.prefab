@@ -44,7 +44,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e697431fd4e4412ba27061b65c2e8385, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tileRadius: 8
   tileSideVertexCount: 32
   tileSize: 64
   tileMaterial: {fileID: 2100000, guid: 5c2891b1541b5b042a952833aa73b0b7, type: 2}
@@ -54,16 +53,19 @@ MonoBehaviour:
     type: 3}
   fftComputeShader: {fileID: 7200000, guid: 402468975e3d45a0bd984b415e9e8878, type: 3}
   displacement: {fileID: 0}
-  F: 1400
+  F: 140000000
   U10: {x: 100, y: 100}
-  windArrow: {fileID: 0}
   gamma: 3.3
-  phillipsA: 1
-  phillipsSmallLength: 0.1
-  phillipsWindDir: {x: 1, y: 0}
+  waveFreqSharpness: 1
+  waveSharpness: 2.1
+  waveFreqHeight: 1
+  waveHeight: 1
+  normalizingFactor: 0
+  unloadTileRadiusPadding: 2
+  frustumAngle: 60
+  backOffset: 2
   timeScale: 1
   timeOffset: 1000
-  heightTest: 0
   test2d: {x: 0, y: 128}
   test2d2: {x: 0, y: 0}
   test2d3: {x: 0, y: 0}
@@ -76,9 +78,6 @@ MonoBehaviour:
   normalTestZ: {x: 1, y: 1, z: 1}
   normalTest2: 128
   normalTest3: {x: 1, y: 0, z: 0}
-  waveVector: {x: 1, y: 1}
-  amplitude: 1
-  angularFrequency: 0
   textureDebugParent: {fileID: 0}
   textureDebugPrefab: {fileID: 7896628136871844511, guid: 04ea4b41ee42ca645a2ce0a734d4cb84,
     type: 3}

@@ -18,17 +18,18 @@ float F;
 float2 U10;
 float gamma;
 
-float phillipsA;
-float phillipsSmallLength;
-float2 phillipsWindDir;
+float WaveSharpness;
+float WaveHeight;
 
-float time;
+// float phillipsA;
+// float phillipsSmallLength;
+// float2 phillipsWindDir;
+
+float Time;
 
 //TODO Is there a better way to define PI?
 float PI;
 float g;
-
-float heightTest;
 
 float2 test;
 float2 test2;
@@ -60,12 +61,12 @@ float directionalSpread(float2 k)
 }
 
 
-float phillipsSpectrum(float2 k)
-{
-	float V = length(U10);
-	float kLen = length(k);
-	return phillipsA * (exp(-1 / pow((kLen * (V * V / g)), 2)) / pow(kLen, 4)) * pow(abs(dot(normalize(k), normalize(phillipsWindDir))), 2) * exp(-pow(kLen * phillipsSmallLength, 2));
-}
+// float phillipsSpectrum(float2 k)
+// {
+// 	float V = length(U10);
+// 	float kLen = length(k);
+// 	return phillipsA * (exp(-1 / pow((kLen * (V * V / g)), 2)) / pow(kLen, 4)) * pow(abs(dot(normalize(k), normalize(phillipsWindDir))), 2) * exp(-pow(kLen * phillipsSmallLength, 2));
+// }
 
 float2 h0(float2 noise, float2 k, float omega)
 {
@@ -92,7 +93,7 @@ float2 complexExponential(float theta)
 //hFreq(k, t) = h0(k) * e^(iwt) + h0(-k) * e^(-iwt) (tess#43)
 float2 hFreq(float omega, float2 h0, float2 h0Conjugate)
 {
-	return complexMul(h0, complexExponential(omega * time)) + complexMul(h0Conjugate, complexExponential(-omega * time));
+	return complexMul(h0, complexExponential(omega * Time)) + complexMul(h0Conjugate, complexExponential(-omega * Time));
 }
 
 [numthreads(8,8,1)]
@@ -108,21 +109,21 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 
 	float2 h0y = h0(Noise[id.xy].xy, k, omega);
 	float2 h0ymk = conjugate(h0(Noise[id.xy].xy, -k, omega));
-	float2 hy = hFreq(omega, h0y, h0ymk);
-	DispFreqY[id.xy] = float4(hy, hy);
+	float2 hy = hFreq(omega, h0y, h0ymk) * WaveHeight;
+	DispFreqY[id.xy] = float4(hy, 0, 0);
 
 	float2 hx = hFreq(
 		omega,
 		float2(-k.x / length(k) * h0y.y, k.x / length(k) * h0y.x),
 		float2(k.x / length(k) * h0ymk.y, -k.x / length(k) * h0ymk.x)
-	);
+	) * WaveSharpness;
 	DispFreqX[id.xy] = float4(hx, 0, 0);
 
 	float2 hz = hFreq(
 		omega,
 		float2(-k.y / length(k) * h0y.y, k.y / length(k) * h0y.x),
 		float2(k.y / length(k) * h0ymk.y, -k.y / length(k) * h0ymk.x)
-	);
+	) * WaveSharpness;
 	DispFreqZ[id.xy] = float4(hz, 0, 0);
 
 	float2 ikx = float2(0, k.x);
