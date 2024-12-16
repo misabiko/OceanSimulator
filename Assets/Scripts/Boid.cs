@@ -20,6 +20,7 @@ public class Boid : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
         mesh = GetComponentInChildren<SkinnedMeshRenderer>();
         collider = GetComponentInChildren<SphereCollider>();
         velocity = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1), Random.Range(-1, 1)).normalized * Random.Range(1, Simulation.MaxSpeed);

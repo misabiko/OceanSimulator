@@ -57,7 +57,7 @@ public class DSXManager : MonoBehaviour
             int controllerIndex = devices[i].Index;
 
             packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, t, new List<int>());
-            packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, t, new List<int>());
+           // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, t, new List<int>());
 
             SendDataToDSX(packet);
         }

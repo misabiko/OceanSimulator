@@ -55,6 +55,10 @@ public class BirdSimulation : MonoBehaviour
     private BoatController _boatController;
     private BirdController _birdController;
 
+    private void Awake()
+    {
+        instance = this;
+    }
     // Start is called before the first frame update
     private void Start()
     {

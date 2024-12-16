@@ -559,8 +559,8 @@ GameObject:
   m_Component:
   - component: {fileID: 5040503386842940426}
   - component: {fileID: 5275775085013755062}
-  - component: {fileID: 1084305403443868410}
   - component: {fileID: 8323214229949880748}
+  - component: {fileID: 1084305403443868410}
   - component: {fileID: 257085678305653157}
   m_Layer: 0
   m_Name: Bird Controller
@@ -613,6 +613,22 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &8323214229949880748
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6201279889684114038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96a0bcdb77c3bc94ba91cff8f34d2656, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveDirection: {x: 0, y: 0}
+  lookDirection: {x: 0, y: 0}
+  Yaw: 0
+  isMoving: 0
 --- !u!114 &1084305403443868410
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -640,22 +656,8 @@ MonoBehaviour:
   upwardsLerpSpeed: 0.7
   downwardsLerpSpeed: 0.7
   decellerationLerpSpeed: 2
---- !u!114 &8323214229949880748
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6201279889684114038}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 96a0bcdb77c3bc94ba91cff8f34d2656, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  moveDirection: {x: 0, y: 0}
-  lookDirection: {x: 0, y: 0}
-  Yaw: 0
-  isMoving: 0
+  state: {fileID: 0}
+  acceleration: 0
 --- !u!114 &257085678305653157
 MonoBehaviour:
   m_ObjectHideFlags: 0
