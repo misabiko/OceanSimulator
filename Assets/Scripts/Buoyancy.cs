@@ -36,13 +36,13 @@ public class Buoyancy : MonoBehaviour {
 	private bool _isRequestSent = false;
 	private Color[] _oceanCachedData;
 	[SerializeField] float _boatDensity = 2f;
-	[SerializeField] ComputeShader _physicsShader;
 
 	private Rigidbody rb;
+	private RenderTexture _renderTexture;
 
 	[SerializeField] float horizontalModifier = 1f;
 
-	[SerializeField]
+	[SerializeField] ComputeShader _physicsShader;
 	private class GizmosData {
 		public GizmosData(Vector3 position, Color color, Vector3 size) {
 			Position = position;
@@ -70,6 +70,19 @@ public class Buoyancy : MonoBehaviour {
 		CalculateNbrVoxels();
 		PlaceVoxels();
 		rb = GetComponent<Rigidbody>();
+		_renderTexture = new RenderTexture(ocean.tileSideVertexCount, ocean.tileSideVertexCount, 32) {
+			enableRandomWrite = true,
+			filterMode = FilterMode.Point,
+			graphicsFormat = UnityEngine.Experimental.Rendering.GraphicsFormat.R32G32B32A32_SFloat,
+			autoGenerateMips = false,
+		};
+		_renderTexture.Create();
+		_physicsShader.SetFloat("VoxelSize", voxelSize);
+		_physicsShader.SetInt("Resolution", ocean.tileSideVertexCount);
+		_physicsShader.SetTexture(0, "Displacement", _displacementTexture);
+		_physicsShader.SetTexture(0, "VoxelForce", _renderTexture);
+		_physicsShader.SetFloat("Gravity", Physics.gravity.y);
+		// set Float3 for shader
 	}
 
 	// Update is called once per frame
@@ -100,11 +113,14 @@ public class Buoyancy : MonoBehaviour {
 					var position = startPosition + _voxelCollider.center + new Vector3(x * voxelSize,
 						y * voxelSize,
 						z * voxelSize);
-					_voxels.Add(new GizmosData(position, Color.red, Vector3.one * voxelSize));
+					
+					//_voxels.Add(new GizmosData(position, Color.red, Vector3.one * voxelSize));
 					voxelCount++;
 				}
 			}
 		}
+		// Place the voxels by count in the collider
+		
 	}
 
 	private float CalculateSubmergedVolume() {
@@ -124,68 +140,102 @@ public class Buoyancy : MonoBehaviour {
 				transform.position.y,
 				Mathf.Abs(transform.position.z % ocean.tileSize)
 			);
-			foreach (var voxel in _voxels) {
-				Vector3 voxelPosition = moduloedPosition + rb.rotation * voxel.Position;
-
-				Vector3 closestVertex = Vector3.zero;
-				float minDistance = float.MaxValue;
-				foreach (var data in _oceanCachedData) {
-					Vector2 basePosition = VertexBasePosition(i);
-					Vector3 currentVertex = new Vector3(
-						data.r + basePosition.x + x_OceanPosition,
-						data.g + y_OceanPosition,
-						data.b + basePosition.y + z_OceanPosition
-					);
-					float currentDistance = Vector3.Distance(voxelPosition, currentVertex);
-					if (currentDistance < minDistance) {
-						minDistance = currentDistance;
-						closestVertex = currentVertex;
-					}
-
-					i++;
-				}
-
-				i = 0;
-				float submergedHeight = 0;
-				if (closestVertex.y > voxelPosition.y + voxelSize) {
-					submergedHeight = voxelSize;
-				}
-				else if (closestVertex.y <= voxelPosition.y + voxelSize &&
-				         closestVertex.y > voxelPosition.y - voxelSize) {
-					submergedHeight = closestVertex.y - (voxelPosition.y - voxelSize);
-				}
-
-				var lowestNeighbor = closestVertex;
-				for (int x = -1; x <= 1; x++) {
-					for (int z = -1; z <= 1; z++) {
-						if (x == 0 && z == 0) continue;
-						int neighborIndex = i + x * ocean.tileSideVertexCount + z;
-						if (neighborIndex < 0 || neighborIndex >= _oceanCachedData.Length) continue;
-						if (_oceanCachedData[neighborIndex].g < lowestNeighbor.y) {
-							lowestNeighbor = new Vector3(
-								_oceanCachedData[neighborIndex].r + VertexBasePosition(neighborIndex).x + x_OceanPosition,
-								_oceanCachedData[neighborIndex].g + y_OceanPosition,
-								_oceanCachedData[neighborIndex].b + VertexBasePosition(neighborIndex).y + z_OceanPosition
-							);
-						}
-					}
-				}
+			_physicsShader.SetVector("_BoatRotation", new Vector4(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w));
+			_physicsShader.SetVector("VoxelBoxCenter" ,new Vector4(_voxelCollider.center.x, _voxelCollider.center.y, _voxelCollider.center.z, 1));
+			_physicsShader.SetVector("ModuloedPosition", moduloedPosition);
+			_physicsShader.SetFloat("FluidDensity", fluidDensity);
+			_physicsShader.SetFloat("TorqueModifier", torqueModifier);
+			_physicsShader.Dispatch(0, _gridSizeX, _gridSizeY, 1);
 
 
-				voxel.SubmergedVolume = Mathf.Max(0, voxelSize * voxelSize * submergedHeight);
-				float buoyancyForce = -voxel.SubmergedVolume * Physics.gravity.y * fluidDensity;
-				// Debug.DrawLine(voxelPosition,
-				// 	voxelPosition + Vector3.up * submergedHeight,
-				// 	Color.red);
-				// Debug.DrawLine(voxelPosition, closestVertex, Color.yellow);
-				var modifiedPos = Vector3.Lerp(transform.position, voxelPosition, torqueModifier);
-				var toLowestNeighbor = lowestNeighbor - voxelPosition;
-				var force = (Vector3.up /*+ new Vector3(toLowestNeighbor.x, 0, toLowestNeighbor.z).normalized * (Mathf.Max(0, closestVertex.y - lowestNeighbor.y) * horizontalModifier)*/).normalized * buoyancyForce;
-				rb.AddForceAtPosition(force, modifiedPos);
-				Debug.DrawLine(voxelPosition, voxelPosition + force * 0.01f, Color.yellow);
-				rb.AddForceAtPosition(Physics.gravity / voxelCount, modifiedPos, ForceMode.Acceleration);
-				totalVolume += voxel.SubmergedVolume;
+			// foreach (var data in _oceanCachedData)
+			// {
+			// 	Vector3 voxelPosition = new Vector3(
+			// 		data.r + x_OceanPosition,
+			// 		data.g + y_OceanPosition,
+			// 		data.b + z_OceanPosition
+			// 	);
+			// 	float buoyancyForce = data.a;
+			// 	Debug.Log("Buoyancy Force "+ buoyancyForce);
+			// 	Debug.Log("Gravity " +Vector3.up * Physics.gravity.y);
+			// 	rb.AddForceAtPosition(Vector3.up * buoyancyForce, voxelPosition);
+			// 	rb.AddForceAtPosition(Physics.gravity / voxelCount, voxelPosition, ForceMode.Acceleration);
+			// }
+
+			foreach (var data in _oceanCachedData)
+			{
+				Vector3 voxelPosition = new Vector3(
+					data.r + x_OceanPosition,
+					data.g + y_OceanPosition,
+					data.b + z_OceanPosition
+				);	
+				float buoyancyForce = data.a;
+				
+				rb.AddForceAtPosition(Vector3.up * buoyancyForce, voxelPosition);
+				Debug.Log("Buoyancy Force "+ buoyancyForce);
+				Debug.Log("Gravity " +Physics.gravity / (_gridSizeX * _gridSizeY * _gridSizeZ));
+				rb.AddForceAtPosition(Physics.gravity / (_gridSizeX * _gridSizeY * _gridSizeZ), voxelPosition, ForceMode.Acceleration);
 			}
+
+
+			// foreach (var voxel in _voxels) {
+			// 	Vector3 voxelPosition = moduloedPosition + rb.rotation * voxel.Position;
+			//
+			// 	Vector3 closestVertex = Vector3.zero;
+			// 	float minDistance = float.MaxValue;
+			// 	foreach (var data in _oceanCachedData) {
+			// 		Vector2 basePosition = VertexBasePosition(i);
+			// 		Vector3 currentVertex = new Vector3(
+			// 			data.r + basePosition.x + x_OceanPosition,
+			// 			data.g + y_OceanPosition,
+			// 			data.b + basePosition.y + z_OceanPosition
+			// 		);
+			// 		float currentDistance = Vector3.Distance(voxelPosition, currentVertex);
+			// 		if (currentDistance < minDistance) {
+			// 			minDistance = currentDistance;
+			// 			closestVertex = currentVertex;
+			// 		}
+			//
+			// 		i++;
+			// 	}
+			//
+			// 	i = 0;
+			// 	float submergedHeight = 0;
+			// 	if (closestVertex.y > voxelPosition.y + voxelSize) {
+			// 		submergedHeight = voxelSize;
+			// 	}
+			// 	else if (closestVertex.y <= voxelPosition.y + voxelSize &&
+			// 	         closestVertex.y > voxelPosition.y - voxelSize) {
+			// 		submergedHeight = closestVertex.y - (voxelPosition.y - voxelSize);
+			// 	}
+			//
+			// 	var lowestNeighbor = closestVertex;
+			// 	for (int x = -1; x <= 1; x++) {
+			// 		for (int z = -1; z <= 1; z++) {
+			// 			if (x == 0 && z == 0) continue;
+			// 			int neighborIndex = i + x * ocean.tileSideVertexCount + z;
+			// 			if (neighborIndex < 0 || neighborIndex >= _oceanCachedData.Length) continue;
+			// 			if (_oceanCachedData[neighborIndex].g < lowestNeighbor.y) {
+			// 				lowestNeighbor = new Vector3(
+			// 					_oceanCachedData[neighborIndex].r + VertexBasePosition(neighborIndex).x + x_OceanPosition,
+			// 					_oceanCachedData[neighborIndex].g + y_OceanPosition,
+			// 					_oceanCachedData[neighborIndex].b + VertexBasePosition(neighborIndex).y + z_OceanPosition
+			// 				);
+			// 			}
+			// 		}
+			// 	}
+			//
+			//
+			// 	voxel.SubmergedVolume = Mathf.Max(0, voxelSize * voxelSize * submergedHeight);
+			// 	float buoyancyForce = -voxel.SubmergedVolume * Physics.gravity.y * fluidDensity;
+			// 	var modifiedPos = Vector3.Lerp(transform.position, voxelPosition, torqueModifier);
+			// 	var toLowestNeighbor = lowestNeighbor - voxelPosition;
+			// 	var force = (Vector3.up /*+ new Vector3(toLowestNeighbor.x, 0, toLowestNeighbor.z).normalized * (Mathf.Max(0, closestVertex.y - lowestNeighbor.y) * horizontalModifier)*/).normalized * buoyancyForce;
+			// 	rb.AddForceAtPosition(force, modifiedPos);
+			// 	Debug.DrawLine(voxelPosition, voxelPosition + force * 0.01f, Color.yellow);
+
+			// 	totalVolume += voxel.SubmergedVolume;
+			// }
 		}
 		else {
 			Debug.LogWarning("Cached data not created");
@@ -203,7 +253,7 @@ public class Buoyancy : MonoBehaviour {
 	private async void StartGPURequest() {
 		_isRequestSent = true;
 		try {
-			AsyncGPUReadbackRequest request = await AsyncGPUReadback.RequestAsync(ocean.displacement, 0);
+			AsyncGPUReadbackRequest request = await AsyncGPUReadback.RequestAsync(_renderTexture, 0);
 			if (request.hasError) {
 				Debug.LogError("GPU readback error");
 			}

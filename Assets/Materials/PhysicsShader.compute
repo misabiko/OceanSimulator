@@ -3,12 +3,54 @@
 
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
-RWTexture2D<float4> Result;
 
-[numthreads(8,8,1)]
+Texture2D<float4> Displacement;
+float VoxelSize;
+float FluidDensity;
+float TorqueModifier;
+float4 BoatRotation;
+float4 VoxelBoxCenter;
+int Resolution;
+float tileLength;
+float3 ModuloedPosition;
+float Gravity;
+RWTexture2D<float4> VoxelForce;
+
+
+[numthreads(1,1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    // TODO: insert actual code here!
+    float minDistance = 1000000;
+    float3 closestVertex = float3(0, 0, 0);
+    float3 voxelGlobalPosition = ModuloedPosition + BoatRotation * (float3(id.x, id.y, id.z) * VoxelSize + VoxelBoxCenter);
+    for (int x = 0; x < Resolution; x++)
+    {
+        for (int z = 0; z < Resolution; z++)
+        {
+            float3 vertexBasePosition = float3(x * tileLength / Resolution, 0, z * tileLength / Resolution);
+            float4 data = Displacement[uint2(x, z)];
+            float3 currentVertex = float3(data.x + vertexBasePosition.x, data.y + vertexBasePosition.y, data.z + vertexBasePosition.z);
+            float currentDistance = length(float3(currentVertex  - voxelGlobalPosition));
+            if (currentDistance < minDistance)
+            {
+                minDistance = currentDistance;
+                closestVertex = currentVertex;
+            }
+        }
+    }
 
-    Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
+    float submergedHeight = 0;
+    if (closestVertex.y > voxelGlobalPosition.y)
+    {
+        submergedHeight = VoxelSize;
+    }
+    else if (closestVertex.y <= voxelGlobalPosition.y + VoxelSize
+        && closestVertex.y > voxelGlobalPosition.y - VoxelSize)
+    {
+        submergedHeight = closestVertex.y - (voxelGlobalPosition.y - VoxelSize);
+    }
+    float submergedVolume = max(0, submergedHeight * VoxelSize * VoxelSize);
+    float buoyancyForce = - submergedVolume * Gravity * FluidDensity;
+    float3 modifiedPos = lerp(ModuloedPosition, voxelGlobalPosition, TorqueModifier);
+    VoxelForce[id.xy] = float4(modifiedPos.x, modifiedPos.y, modifiedPos.z, buoyancyForce);
 }

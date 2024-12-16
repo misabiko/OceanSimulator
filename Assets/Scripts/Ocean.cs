@@ -223,7 +223,7 @@ public class Ocean : MonoBehaviour {
 	// 	simpleSinusoid.Dispatch(0, tileSideVertexCount / 8, tileSideVertexCount / 8, 1);
 	// }
 
-	RenderTexture CreateRenderTexture(uint components = 4) {
+	public RenderTexture CreateRenderTexture(uint components = 4) {
 		var rt = new RenderTexture(tileSideVertexCount, tileSideVertexCount, 32) {
 			enableRandomWrite = true,
 			filterMode = FilterMode.Point,
