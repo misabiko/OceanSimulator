@@ -55,7 +55,10 @@ public class BirdController : MonoBehaviour
    }
    private void OnActivate()
    {
-      GetComponent<PlayerInput>().enabled = true;
+      PlayerInput playerInput =  GetComponent<PlayerInput>();
+      playerInput.enabled = true;
+      playerInput.SwitchCurrentActionMap(playerInput.defaultActionMap);
+      playerInput.SwitchCurrentControlScheme(Gamepad.current);
    }
 
     
@@ -160,7 +163,7 @@ public class BirdController : MonoBehaviour
         float minOutput = 0f;
         float maxOutput = 1f;
 
-        // Clamp pour limiter la valeur à la plage
+        // Clamp pour limiter la valeur ï¿½ la plage
         value = Mathf.Clamp(value, minInput, maxInput);
 
         // Normalisation
