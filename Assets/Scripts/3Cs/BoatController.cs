@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 public class BoatController : MonoBehaviour
@@ -73,6 +74,19 @@ public class BoatController : MonoBehaviour
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotLerpSpeed * Time.deltaTime); 
         forwardMovement = transform.forward * forwardSpeed;
 
+        if (moveInput.x < -0.1f)
+        {
+            AudioManager.instance.PlayHaptics("left");
+            AudioManager.instance.AdjustHapticsVolume(NormalizeValueForHaptics(moveInput.x));
+        }
+        else if (moveInput.x > 0.1f)
+        {
+            AudioManager.instance.PlayHaptics("right");
+            AudioManager.instance.AdjustHapticsVolume(NormalizeValueForHaptics(moveInput.x));
+        }
+        else { 
+            AudioManager.instance.StopHaptics();
+        }
         if (Input.GetKeyDown(KeyCode.P))
             Paddle();
 
@@ -120,5 +134,20 @@ public class BoatController : MonoBehaviour
     {
         if (other.collider.CompareTag("Rocks"))
             currentSpeed = Mathf.Clamp(currentSpeed, -forwardSpeed, 0);
+    }
+
+    private float NormalizeValueForHaptics(float value)
+    {
+        value = Mathf.Abs(value);
+        float minInput = 0.1f;
+        float maxInput = 1f;
+        float minOutput = 0f;
+        float maxOutput = 1f;
+
+        // Clamp pour limiter la valeur à la plage
+        value = Mathf.Clamp(value, minInput, maxInput);
+
+        // Normalisation
+        return minOutput + (value - minInput) * (maxOutput - minOutput) / (maxInput - minInput);
     }
 }

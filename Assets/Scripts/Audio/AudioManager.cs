@@ -2,20 +2,25 @@ using UnityEngine;
 using FMODUnity;
 using System.Collections.Generic;
 using System;
+using FMOD;
+using Unity.VisualScripting;
 
 public class AudioManager : MonoBehaviour
 {
    public static AudioManager instance { get; private set;}
    [SerializeField] private List<string> OutputForHaptics = new List<string>();
-   private FMOD.RESULT result;
-   private FMOD.ChannelGroup channelGroup;
-   private FMOD.Channel channel;
-   private FMOD.Sound sound1;
+    private FMOD.RESULT result;
+    private FMOD.ChannelGroup channelGroup;
+    private FMOD.Channel channel;
+    private FMOD.Sound turningLeft;
+    private FMOD.Sound turningRight;
+    private FMOD.Sound birdDiving;
+    private bool isActivated=false;
     private void Awake()
     {
         if (instance != null)
         {
-            Debug.LogError("More than one audio manager in the scene");
+            UnityEngine.Debug.LogError("More than one audio manager in the scene");
         }
 
         var resGetDrivers_core = FMODUnity.RuntimeManager.CoreSystem.getNumDrivers(out int totalDrivers);
@@ -35,8 +40,13 @@ public class AudioManager : MonoBehaviour
         }
         result = FMODUnity.RuntimeManager.HapticsSystem.setDriver(2);
         CheckFMODResult(result, "setDriver");
-        PlayHaptics("Assets/Audio/Haptics/ocean-waves-LtoR.wav");
-
+        result = FMODUnity.RuntimeManager.HapticsSystem.createSound("Assets/Audio/Haptics/LeftRota.wav", FMOD.MODE.LOOP_NORMAL, out turningLeft);
+        CheckFMODResult(result, "createSound");
+        result = FMODUnity.RuntimeManager.HapticsSystem.createSound("Assets/Audio/Haptics/WindBirdDive.wav", FMOD.MODE.LOOP_NORMAL, out birdDiving);
+        CheckFMODResult(result, "createSound");
+        result = FMODUnity.RuntimeManager.HapticsSystem.createSound("Assets/Audio/Haptics/RightRota.wav", FMOD.MODE.LOOP_NORMAL, out turningRight);
+        CheckFMODResult(result, "createSound");
+        FMODUnity.RuntimeManager.HapticsSystem.createChannelGroup("MyChannelGroup", out channelGroup);
         instance = this;
     }
 
@@ -46,19 +56,30 @@ public class AudioManager : MonoBehaviour
     }
 
     public void PlayHaptics(String sound) {
-        
-        result = FMODUnity.RuntimeManager.HapticsSystem.createSound(sound, FMOD.MODE.LOOP_NORMAL, out sound1);
-        CheckFMODResult(result, "createSound");
-        // Créer un groupe de canaux
-        FMODUnity.RuntimeManager.HapticsSystem.createChannelGroup("MyChannelGroup", out channelGroup);
-        // Jouer le son en l'assignant au groupe
-        result = FMODUnity.RuntimeManager.HapticsSystem.playSound(sound1, channelGroup, false, out channel);
-        CheckFMODResult(result, "playSound");
+        if(isActivated) {
+            FMOD.Sound playing = birdDiving;
+            switch (sound)
+            {
+                case "left": playing = turningLeft;
+                    break;
+                case "right":
+                    playing = turningRight;
+                    break;
+            }
+            result = FMODUnity.RuntimeManager.HapticsSystem.playSound(playing, channelGroup, false, out channel);
+            CheckFMODResult(result, "playSound");
+        }
+        isActivated = true;
     }
 
     public void StopHaptics()
     {
-        channel.stop();
+        if(channel.hasHandle())
+        {
+            result = channelGroup.stop();
+            CheckFMODResult(result, "stop");
+        }
+        isActivated = false;
     }
 
     public void AdjustHapticsVolume(float vol)
@@ -87,19 +108,5 @@ public class AudioManager : MonoBehaviour
             UnityEngine.Debug.Log($"Operation {operation} succeeded.");
         }
     }
-
-    void Update()
-    {
-        // Si vous voulez arrêter la boucle après un certain temps ou événement
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            channel.stop();
-            Debug.Log("Boucle arrêtée.");
-        }
-        if (Input.GetKeyDown(KeyCode.V))
-        {
-            channel.setVolume(2f);
-            Debug.Log("Volume down");
-        }
-    }
+    
 }
