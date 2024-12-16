@@ -11,12 +11,7 @@ public class Boid : MonoBehaviour
 
     public Vector3 velocity;
     public Vector3 centroid;
-    //public float animationTime = 0;
 
-
-    //public static float animationLength = 3;
-    //private static List<Vector4> animationPixels;
-    //private static Texture2D animationTexture;
     private BirdSimulation Simulation => BirdSimulation.instance;
 
     // Start is called before the first frame update
@@ -25,46 +20,11 @@ public class Boid : MonoBehaviour
         mesh = GetComponentInChildren<SkinnedMeshRenderer>();
         collider = GetComponentInChildren<SphereCollider>();
         velocity = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1), Random.Range(-1, 1)).normalized * Random.Range(1, Simulation.MaxSpeed);
-
-        //if (animationPixels == null)
-        //{
-        //    var baker = GetComponentInChildren<GPUAnimationBaker>();
-        //    animationPixels = baker.ReadMatricesFromFile();
-        //    //baker.Bake();
-        //    //animationTexture = baker.bakedTexture;
-        //    //animationPixels = baker.bakedPixels;
-        //    //Debug.Log($"Boid has lib: {animationTexture.GetPixel(0, 0)}");
-        //    //Debug.Log($"Boid has anim: {animationTexture.GetPixel(1, 0)}");
-        //    //Debug.Log($"Boid has bone: {animationTexture.GetPixel(2, 0)}")
-        //    Debug.Log($"Boid has arr lib:  {animationPixels[0]}");
-        //    Debug.Log($"Boid has arr anim: {animationPixels[1]}");
-
-        //    // metadata + frame + bone + column
-        //    int frameid = 0;
-        //    int boneid = 3;
-        //    int animIndex = 2 + (frameid * 32 * 4) + (boneid * 4) + 3;
-        //    Debug.Log($"Boid has arr bone {frameid}, {boneid}, {animIndex}: {animationPixels[animIndex]}");
-
-        //    var animData = animationPixels[1];
-        //    animationLength = animData[0]; // length
-        //}
-        ////mesh.material.SetTexture("_BoneTransformTex", animationTexture);
-        //mesh.material.SetVectorArray("_BoneTransformPixels", animationPixels);
     }
 
     // Update is called once per frame
     void Update()
     {
-        // Increment AnimationTime based on time and speed.
-        //float animationTime = Time.time * speed;
-        //animationTime += Time.deltaTime;
-        //if (animationTime > animationLength)
-        //{
-        //    animationTime -= animationLength; // loop animation
-        //}
-        //foreach (var mat in mesh.materials)
-        //    mat.SetFloat("_AnimationTime", animationTime);
-        //mesh.material.SetFloat("_AnimationTime", animationTime);
         ApplyRulesBoids();
     }
 
