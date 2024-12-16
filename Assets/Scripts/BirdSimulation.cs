@@ -53,7 +53,7 @@ public class BirdSimulation : MonoBehaviour
     private float[] animationTimes;
 
     private BoatController _boatController;
-    private BirdController _birdController;
+    [SerializeField] private BirdController _birdController;
 
     private void Awake()
     {
@@ -62,7 +62,7 @@ public class BirdSimulation : MonoBehaviour
     // Start is called before the first frame update
     private void Start()
     {
-        _birdController = GameObject.FindAnyObjectByType<BirdController>();
+        //_birdController = GameObject.FindAnyObjectByType<BirdController>();
         _boatController = GameObject.FindAnyObjectByType<BoatController>();
         allBoids = new GameObject[boidCount];
         for (var i = 0; i < boidCount; i++)
