@@ -68,8 +68,8 @@ public class BirdSimulation : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = new Color(0, 1, 0);
-        Gizmos.DrawWireSphere(this.goalPos, 1);
+        //Gizmos.color = new Color(0, 1, 0);
+        //Gizmos.DrawWireSphere(this.goalPos, 1);
         Gizmos.color = new Color(1, 0, 0);
         Gizmos.DrawWireSphere(Vector3.zero, SpaceBoundRadius);
     }

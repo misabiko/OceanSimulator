@@ -11,12 +11,12 @@ public class Boid : MonoBehaviour
 
     public Vector3 velocity;
     public Vector3 centroid;
-    public float animationTime = 0;
+    //public float animationTime = 0;
 
 
-    public static float animationLength = 3;
-    private static List<Color> animationPixels;
-    private static Texture2D animationTexture;
+    //public static float animationLength = 3;
+    //private static List<Vector4> animationPixels;
+    //private static Texture2D animationTexture;
     private BirdSimulation Simulation => BirdSimulation.instance;
 
     // Start is called before the first frame update
@@ -26,25 +26,30 @@ public class Boid : MonoBehaviour
         collider = GetComponentInChildren<SphereCollider>();
         velocity = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1), Random.Range(-1, 1)).normalized * Random.Range(1, Simulation.MaxSpeed);
 
-        if (animationPixels == null)
-        {
-            var baker = GetComponentInChildren<GPUAnimationBaker>();
-            animationPixels = baker.ReadMatricesFromFile();
-            //baker.Bake();
-            //animationTexture = baker.bakedTexture;
-            //animationPixels = baker.bakedPixels;
-            //Debug.Log($"Boid has lib: {animationTexture.GetPixel(0, 0)}");
-            //Debug.Log($"Boid has anim: {animationTexture.GetPixel(1, 0)}");
-            //Debug.Log($"Boid has bone: {animationTexture.GetPixel(2, 0)}")
-            Debug.Log($"Boid has arr lib:  {animationPixels[0]}");
-            Debug.Log($"Boid has arr anim: {animationPixels[1]}");
-            Debug.Log($"Boid has arr bone: {animationPixels[2]}");
+        //if (animationPixels == null)
+        //{
+        //    var baker = GetComponentInChildren<GPUAnimationBaker>();
+        //    animationPixels = baker.ReadMatricesFromFile();
+        //    //baker.Bake();
+        //    //animationTexture = baker.bakedTexture;
+        //    //animationPixels = baker.bakedPixels;
+        //    //Debug.Log($"Boid has lib: {animationTexture.GetPixel(0, 0)}");
+        //    //Debug.Log($"Boid has anim: {animationTexture.GetPixel(1, 0)}");
+        //    //Debug.Log($"Boid has bone: {animationTexture.GetPixel(2, 0)}")
+        //    Debug.Log($"Boid has arr lib:  {animationPixels[0]}");
+        //    Debug.Log($"Boid has arr anim: {animationPixels[1]}");
 
-            var animData = animationPixels[1];
-            animationLength = animData[0]; // length
-        }
-        //mesh.material.SetTexture("_BoneTransformTex", animationTexture);
-        mesh.material.SetColorArray("_BoneTransformPixels", animationPixels);
+        //    // metadata + frame + bone + column
+        //    int frameid = 0;
+        //    int boneid = 3;
+        //    int animIndex = 2 + (frameid * 32 * 4) + (boneid * 4) + 3;
+        //    Debug.Log($"Boid has arr bone {frameid}, {boneid}, {animIndex}: {animationPixels[animIndex]}");
+
+        //    var animData = animationPixels[1];
+        //    animationLength = animData[0]; // length
+        //}
+        ////mesh.material.SetTexture("_BoneTransformTex", animationTexture);
+        //mesh.material.SetVectorArray("_BoneTransformPixels", animationPixels);
     }
 
     // Update is called once per frame
@@ -52,14 +57,14 @@ public class Boid : MonoBehaviour
     {
         // Increment AnimationTime based on time and speed.
         //float animationTime = Time.time * speed;
-        animationTime += Time.deltaTime;
-        if (animationTime > animationLength)
-        {
-            animationTime -= animationLength; // loop animation
-        }
-        foreach (var mat in mesh.materials)
-            mat.SetFloat("_AnimationTime", animationTime);
-        mesh.material.SetFloat("_AnimationTime", animationTime);
+        //animationTime += Time.deltaTime;
+        //if (animationTime > animationLength)
+        //{
+        //    animationTime -= animationLength; // loop animation
+        //}
+        //foreach (var mat in mesh.materials)
+        //    mat.SetFloat("_AnimationTime", animationTime);
+        //mesh.material.SetFloat("_AnimationTime", animationTime);
         ApplyRulesBoids();
     }
 
@@ -117,8 +122,8 @@ public class Boid : MonoBehaviour
 
             cohesion = (centroid - pos0) * Simulation.Cohesion;
             align = (avgVel - vel0) * Simulation.Alignment;
-            Debug.DrawLine(pos0, pos0 + cohesion, Color.green);
-            Debug.DrawLine(pos0, pos0 + align, Color.blue);
+            //Debug.DrawLine(pos0, pos0 + cohesion, Color.green);
+            //Debug.DrawLine(pos0, pos0 + align, Color.blue);
             vel0 += cohesion + align;
         }
         // Avoidance
@@ -130,7 +135,7 @@ public class Boid : MonoBehaviour
         // Flocking size limitation
         if (countInProximity > Simulation.MaxCountInProximity)
         {
-            vel0 -= (centroid - pos0) * Simulation.OvercrowdWeight; // * (Simulation.MaxCountInProximity - countInProximity);
+            vel0 -= (centroid - pos0) * Simulation.OvercrowdWeight; //  * (Simulation.MaxCountInProximity - countInProximity);
         }
 
         // Goal
@@ -145,7 +150,6 @@ public class Boid : MonoBehaviour
 
         // Avoid Obstacles
         LayerMask collisionLayer = LayerMask.GetMask("Obstacles");
-        var speed1 = Math.Clamp(vel0.magnitude, 1, Simulation.MaxSpeed);
 
         Collider[] hitColliders = Physics.OverlapSphere(pos0, Simulation.DetectRadius, collisionLayer);
         foreach (var hitCollider in hitColliders)
@@ -178,6 +182,7 @@ public class Boid : MonoBehaviour
 
         }
         
+        var speed1 = Math.Clamp(vel0.magnitude, 1, Simulation.MaxSpeed);
         // Going up should be slower than going down
         //var dotup = Vector3.Dot(vel0, Vector3.down); // [1, -1] = [down, up]
         //dotup /= 4; // [0.25, -0.25]
@@ -191,7 +196,7 @@ public class Boid : MonoBehaviour
         this.velocity = vel0;
 
         // Transform
-        Debug.DrawLine(pos0, pos0 + velocity, Color.red);
+        //Debug.DrawLine(pos0, pos0 + velocity, Color.red);
         this.transform.LookAt(pos0 + velocity, Vector3.up);
         this.transform.Translate(velocity * Time.deltaTime, Space.World);
     }
@@ -207,9 +212,10 @@ public class Boid : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         if (Simulation == null) return; // because this runs in the editor, where the simulation isnt started yet
-        Gizmos.color = new Color(0, 1, 1);
+        Gizmos.color = new Color(0, 1, 1, 0.1f);
         Gizmos.DrawWireSphere(this.transform.position, Simulation.DetectRadius);
         Gizmos.DrawWireSphere(this.transform.position, Simulation.AvoidanceRadius);
+        Debug.DrawLine(this.transform.position, this.transform.position + velocity.normalized, Color.red);
     }
 
 }
