@@ -621,6 +621,7 @@ MonoBehaviour:
   voxelSize: 0.7
   showVoxels: 0
   showWaterGizmos: 0
+  forceDebugScale: 1
   GizmoSize: 0.5
   torqueModifier: 1
   fluidDensity: 36
@@ -630,7 +631,7 @@ MonoBehaviour:
   lastTotalVolume: 0
   _boatDensity: 30
   _physicsShader: {fileID: 7200000, guid: bee02eccc5cc53943b505126a96be2e3, type: 3}
-  horizontalModifier: 0
+  horizontalModifier: 0.2
 --- !u!54 &546443728347341381
 Rigidbody:
   m_ObjectHideFlags: 0
