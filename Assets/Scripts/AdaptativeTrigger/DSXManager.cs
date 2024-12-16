@@ -17,15 +17,17 @@ public class DSXManager : MonoBehaviour
     static DateTime TimeSent;
 
     static List<Device> devices = new List<Device>();
+    public  int currentTrigger { get; private set; }
     public static DSXManager instance {  get; private set; }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
         if (instance != null)
         {
-            Debug.LogError("More than one audio manager in the scene");
+            Debug.LogError("More than one DSX manager in the scene");
         }
         instance = this;
+        currentTrigger = 2;
         Connect();
         GetConnectedDevicesFromDSX();
         if (!devices.Any())
@@ -35,13 +37,18 @@ public class DSXManager : MonoBehaviour
     }
     public void changeTrigger(int mode)
     {
-        TriggerMode t = TriggerMode.Soft;
+        TriggerMode t = TriggerMode.Normal;
 
         switch(mode)
         {
-            case 1: t = TriggerMode.Hard; 
+            case 1: t = TriggerMode.Hardest;
             break;
+            case 2: t = TriggerMode.Normal;
+            break;   
+
         }
+
+        currentTrigger = mode;
 
         for (int i = 0; i < devices.Count; i++)
         {
@@ -50,7 +57,7 @@ public class DSXManager : MonoBehaviour
             int controllerIndex = devices[i].Index;
 
             packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, t, new List<int>());
-
+           // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, t, new List<int>());
 
             SendDataToDSX(packet);
         }
@@ -337,198 +344,6 @@ public class DSXManager : MonoBehaviour
 
         return packet;
     }
-
-
-    // All Configurations:
-    // ----------------------------------------------------------------------------------------------------------------------------
-
-    // Reset To User Settings
-    // When sent to DSX, it will discard any modifications
-    // sent to the controller and apply the settings from the profile it's attached to in DSX
-    // Usage ==============
-    // packet = AddResetToPacket(packet, controllerIndex);
-
-    // DSX v3 Trigger Modes:
-
-    // OFF:
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.OFF, new List<int>());
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.OFF, new List<int>());
-
-    // FEEDBACK:
-    // Needs 2 Params in List<int> (Start Position: 1-9) -> (Resistance Strength: 1-8)
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.FEEDBACK, new List<int> { 1, 8 });
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.FEEDBACK, new List<int> { 1, 8 });
-
-    // WEAPON:
-    // Needs 3 Params in List<int> (Start Position: 2-7) -> (End Position: 3-8) -> (Resistance Strength: 1-8)
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.WEAPON, new List<int> { 2, 6, 8 });
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.WEAPON, new List<int> { 2, 6, 8 });
-
-    // VIBRATION:
-    // Needs 3 Params in List<int> (Start Position: 1-9) -> (Amplitude: 1-8) -> (Frequency: 1-40)
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.VIBRATION, new List<int> { 1, 8, 10 });
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.VIBRATION, new List<int> { 1, 8, 10 });
-
-    // SLOPE_FEEDBACK:
-    // Needs 4 Params in List<int> (Start Position: 1-8) -> (End Position: 2-9) -> (Start Resistance Strength: 1-8) -> (End Resistance Strength: 1-8)
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.SLOPE_FEEDBACK, new List<int> { 1, 9, 8, 1 });
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.SLOPE_FEEDBACK, new List<int> { 1, 9, 8, 1 });
-
-    // MULTIPLE_POSITION_FEEDBACK:
-    // Needs 10 Params in List<int> 10 Region Resistance Strength: (Region 1: 0-8) -> (Region 2: 0-8) -> (Region 3: 0-8) -> (Region 4: 0-8) -> (Region 5: 0-8) -> (Region 6: 0-8) -> (Region 7: 0-8) -> (Region 8: 0-8) -> (Region 9: 0-8) -> (Region 10: 0-8)
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.MULTIPLE_POSITION_FEEDBACK, new List<int> { 8, 8, 8, 0, 0, 0, 8, 8, 0, 0 });
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.MULTIPLE_POSITION_FEEDBACK, new List<int> { 8, 8, 8, 0, 0, 0, 8, 8, 0, 0 });
-
-    // MULTIPLE_POSITION_VIBRATION:
-    // Needs 11 Params in List<int> (Frequency: 1-40) -> 10 Region Amplitude: (Region 1: 0-8) -> (Region 2: 0-8) -> (Region 3: 0-8) -> (Region 4: 0-8) -> (Region 5: 0-8) -> (Region 6: 0-8) -> (Region 7: 0-8) -> (Region 8: 0-8) -> (Region 9: 0-8) -> (Region 10: 0-8)
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.MULTIPLE_POSITION_VIBRATION, new List<int> { 10, 8, 8, 8, 8, 8, 0, 0, 0, 8, 8 });
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.MULTIPLE_POSITION_VIBRATION, new List<int> { 10, 8, 8, 8, 8, 8, 0, 0, 0, 8, 8 });
-
-    // Normal:
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Normal, new List<int>());
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Normal, new List<int>());
-
-    // GameCube:
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.GameCube, new List<int>());
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.GameCube, new List<int>());
-
-    // VerySoft:
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.VerySoft, new List<int>());
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.VerySoft, new List<int>());
-
-    // Soft:
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Soft, new List<int>());
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Soft, new List<int>());
-
-    // Hard:
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Hard, new List<int>());
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Hard, new List<int>());
-
-    // VeryHard:
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.VeryHard, new List<int>());
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.VeryHard, new List<int>());
-
-    // Hardest:
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Hardest, new List<int>());
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Hardest, new List<int>());
-
-    // Rigid:
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Rigid, new List<int>());
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Rigid, new List<int>());
-
-    // VibrateTrigger:
-    // Needs 1 Param in List<int> (Frequency: 0-255)
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.VibrateTrigger, new List<int> { 10 });
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.VibrateTrigger, new List<int> { 10 });
-
-    // Choppy:
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Choppy, new List<int>());
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Choppy, new List<int>());
-
-    // Medium:
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Medium, new List<int>());
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Medium, new List<int>());
-
-    // VibrateTriggerPulse:
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.VibrateTriggerPulse, new List<int>());
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.VibrateTriggerPulse, new List<int>());
-
-    // CustomTriggerValue:
-    // With CustomTriggerValueMode
-    // Usage ==============
-    // packet = AddCustomAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.CustomTriggerValue, CustomTriggerValueMode.PulseAB, new List<int> { 0, 101, 255, 255, 0, 0, 0 });
-    // packet = AddCustomAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.CustomTriggerValue, CustomTriggerValueMode.PulseAB, new List<int> { 0, 101, 255, 255, 0, 0, 0 });
-
-    // Resistance
-    // Needs 2 Params in List<int> (Start: 0-9) -> (Force: 0-8)
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new List<int> { 0, 8 });
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new List<int> { 0, 8 });
-
-    // Bow:
-    // Needs 4 Params in List<int> (Start: 0-8) -> (End: 0-8) -> (Force: 0-8) -> (SnapForce: 0-8)
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new List<int> { 0, 8, 2, 5 });
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new List<int> { 0, 8, 2, 5 });
-
-    // Galloping:
-    // Needs 5 Params in List<int> (Start: 0-8) -> (End: 0-9) -> (FirstFoot: 0-6) -> (SecondFoot: 0-7) -> (Frequency: 0-255)
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Galloping, new List<int> { 0, 9, 2, 4, 10 });
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Galloping, new List<int> { 0, 9, 2, 4, 10 });
-
-    // SemiAutomaticGun:
-    // Needs 3 Params in List<int> (Start: 2-7) -> (End: 0-8) -> (Force: 0-8)
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.SemiAutomaticGun, new List<int> { 2, 7, 8 });
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.SemiAutomaticGun, new List<int> { 2, 7, 8 });
-
-    // AutomaticGun:
-    // Needs 3 Params in List<int> (Start: 0-9) -> (Strength: 0-8) -> (Frequency: 0-255)
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.AutomaticGun, new List<int> { 0, 8, 10 });
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun, new List<int> { 0, 8, 10 });
-
-    // Machine:
-    // Needs 6 Params in List<int> (Start: 0-8) -> (End: 0-9) -> (StrengthA: 0-7) -> (StrengthB: 0-7) -> (Frequency: 0-255) -> (Period: 0-2)
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Machine, new List<int> { 0, 9, 7, 7, 10, 0 });
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Machine, new List<int> { 0, 9, 7, 7, 10, 0 });
-
-    // VIBRATE_TRIGGER_10Hz:
-    // Applies Vibration Effect with 10 Hz (Frequency)
-    // Usage ==============
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Left, TriggerMode.VIBRATE_TRIGGER_10Hz, new List<int>());
-    // packet = AddAdaptiveTriggerToPacket(packet, controllerIndex, Trigger.Right, TriggerMode.VIBRATE_TRIGGER_10Hz, new List<int>());
-
-
-    // TriggerThreshold
-    // This is used for telling the emulation when to send the "pressed state"
-    // Needs 1 Param in List<int> (Threshold: 0-255)
-    // Usage ==============
-    // packet = AddTriggerThresholdToPacket(packet, controllerIndex, Trigger.Left, 0);
-    // packet = AddTriggerThresholdToPacket(packet, controllerIndex, Trigger.Right, 0);
-
-    // Lightbar LED
-    // Needs 4 Params in List<int> (Red: 0-255) (Green: 0-255) (Blue: 0-255) (Brightness: 0-255)
-    // Usage ==============
-    // packet = AddRGBToPacket(packet, controllerIndex, 255, 255, 255, 255);
-
-    // Player LED
-    // Layout for Player LEDs
-    // Needs 1 Param (PlayerLEDNewRevision: Enum)
-    //  - -x- -  Player 1
-    //  - x-x -  Player 2
-    //  x -x- x  Player 3
-    //  x x-x x  Player 4
-    //  x xxx x  Player 5
-    // Usage ==============
-    // packet = AddPlayerLEDToPacket(packet, controllerIndex, PlayerLEDNewRevision.One);
-
-    // Mic LED
-    // Three modes: ON, PU;SE, or OFF
-    // Needs 1 Param (MicLEDMode: Enum)
-    // Usage ==============
-    // packet = AddMicLEDToPacket(packet, controllerIndex, MicLEDMode.Pulse);
 
 }
 

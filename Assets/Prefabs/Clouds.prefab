@@ -12,7 +12,8 @@ GameObject:
   - component: {fileID: 1271974730866279555}
   - component: {fileID: 3042523971803436865}
   - component: {fileID: 4762379315003432906}
-  m_Layer: 3
+  - component: {fileID: 8367717904026816732}
+  m_Layer: 0
   m_Name: Clouds
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3809,8 +3810,7 @@ ParticleSystem:
     exit: 2
     colliderQueryMode: 0
     radiusScale: 1
-    primitives:
-    - {fileID: 0}
+    primitives: []
   SubModule:
     serializedVersion: 2
     enabled: 0
@@ -4849,3 +4849,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   onExitRemainingLifeTime: 10
   particleSystem: {fileID: 1271974730866279555}
+--- !u!114 &8367717904026816732
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5417259978360155573}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46a8344fc4773f34390a3f28b2d7b366, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _particleSystem: {fileID: 1271974730866279555}
