@@ -25,7 +25,7 @@ public class BirdController : MonoBehaviour
 
    private float currentSpeed;
    private Rigidbody myRigidbody;
-   private float acceleration;
+   [SerializeField] private float acceleration;
    private Vector3 forwardMovement;
 
    private void Awake()
@@ -63,14 +63,21 @@ public class BirdController : MonoBehaviour
    {
       GetComponent<PlayerInput>().enabled = false;
    }
-   private void HandleFlightInput()
-   {
-      Vector2 moveInput = inputManager.moveDirection;
+    private void HandleFlightInput()
+    {
+        Vector2 moveInput = inputManager.moveDirection;
 
-      transform.Rotate(moveInput.y * myPitchSpeed,   moveInput.x * myRollSpeed, -inputManager.Yaw * myYawSpeed, Space.Self);
-      
-      if (momentumEnabled)
-         CalculateAcceleration();
+        transform.Rotate(moveInput.y * myPitchSpeed, moveInput.x * myRollSpeed, -inputManager.Yaw * myYawSpeed, Space.Self);
+
+        if (momentumEnabled)
+            CalculateAcceleration();
+
+        if (acceleration > 0.2) {
+            AudioManager.instance.PlayHaptics("bird");
+            AudioManager.instance.AdjustHapticsVolume(NormalizeValueForHaptics(acceleration));
+        }
+        else {AudioManager.instance.StopHaptics();}
+            
       
       currentSpeed = myForwardSpeed + (0.75f * myForwardSpeed) * acceleration;
       forwardMovement = transform.forward * currentSpeed;
@@ -145,4 +152,18 @@ public class BirdController : MonoBehaviour
    {
       return currentSpeed - myForwardSpeed;
    }
+
+   private float NormalizeValueForHaptics(float value)
+    {
+        float minInput = 0.2f;
+        float maxInput = 0.5f;
+        float minOutput = 0f;
+        float maxOutput = 1f;
+
+        // Clamp pour limiter la valeur à la plage
+        value = Mathf.Clamp(value, minInput, maxInput);
+
+        // Normalisation
+        return minOutput + (value - minInput) * (maxOutput - minOutput) / (maxInput - minInput);
+    }
 }

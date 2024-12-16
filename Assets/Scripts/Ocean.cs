@@ -1,12 +1,12 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class Ocean : MonoBehaviour {
-	[Min(0)] public int tileRadius;
 	[Min(0)] public int tileSideVertexCount = 256;
 	[Min(0)] public float tileSize = 64;
 	[SerializeField] Material tileMaterial;
 
-	// readonly Dictionary<Vector2Int, GameObject> tiles = new();
+	readonly Dictionary<Vector2Int, GameObject> tiles = new();
 
 	[SerializeField] ComputeShader displacementComputeShader;
 	[SerializeField] ComputeShader frequencyDomainFieldComputeShader;
@@ -29,14 +29,24 @@ public class Ocean : MonoBehaviour {
 	[Min(0)] public float F = 1400000;
 	public Vector2 U10 = new(20, 0);
 	[Min(0)] public float gamma = 3.3f;
+	public float waveFreqSharpness = 1f;
+	public float waveSharpness = 1f;
+	public float waveFreqHeight = 1f;
+	public float waveHeight = 1f;
+	[Range(0, 1)] public float normalizingFactor;
 
-	[Header("Phillips Spectrum")] [Min(0)] public float phillipsA = 1;
-	[Min(0)] public float phillipsSmallLength = 0.1f;
-	public Vector2 phillipsWindDir = Vector2.right;
+	Mesh tileMesh;
+	Material materialInstance;
+	[SerializeField, Min(0)] int unloadTileRadiusPadding = 2;
+	[SerializeField] float frustumAngle = 90;
+	[SerializeField, Min(0)] float backOffset = 2f;
+
+	// [Header("Phillips Spectrum")] [Min(0)] public float phillipsA = 1;
+	// [Min(0)] public float phillipsSmallLength = 0.1f;
+	// public Vector2 phillipsWindDir = Vector2.right;
 
 	[Header("Bleh")] [Min(0)] public float timeScale = 1;
 	public float timeOffset = 1000;
-	public float heightTest = 0;
 	public Vector2 test2d = new(128, 128);
 	public Vector2 test2d2 = new(0, 0);
 	public Vector2 test2d3 = new(0, 0.5f);
@@ -49,10 +59,6 @@ public class Ocean : MonoBehaviour {
 	public Vector3 normalTestZ = Vector3.one;
 	public float normalTest2;
 	public Vector3 normalTest3 = Vector3.zero;
-
-	[SerializeField] Vector2 waveVector = Vector2.one;
-	[SerializeField] float amplitude = 1;
-	[SerializeField] float angularFrequency;
 
 	// [Header("SimpleSinusoid")]
 	// [SerializeField] ComputeShader simpleSinusoid;
@@ -70,10 +76,10 @@ public class Ocean : MonoBehaviour {
 	void Awake() {
 		InitTextures();
 
-		frequencyDomainFieldComputeShader.SetTexture(0, "Noise", NoiseTexture);
-		frequencyDomainFieldComputeShader.SetFloat("Resolution", tileSideVertexCount);
-		frequencyDomainFieldComputeShader.SetFloat("PI", Mathf.PI);
-		frequencyDomainFieldComputeShader.SetFloat("g", -Physics.gravity.y);
+		frequencyDomainFieldComputeShader.SetTexture(0, NoiseID, NoiseTexture);
+		frequencyDomainFieldComputeShader.SetFloat(ResolutionID, tileSideVertexCount);
+		frequencyDomainFieldComputeShader.SetFloat(PI, Mathf.PI);
+		frequencyDomainFieldComputeShader.SetFloat(G, -Physics.gravity.y);
 		frequencyDomainFieldComputeShader.SetTexture(0, DispFreqXid, DispFreqX);
 		frequencyDomainFieldComputeShader.SetTexture(0, DispFreqYid, DispFreqY);
 		frequencyDomainFieldComputeShader.SetTexture(0, DispFreqZid, DispFreqZ);
@@ -91,31 +97,40 @@ public class Ocean : MonoBehaviour {
 		displacementComputeShader.SetTexture(0, DispSpatialYid, DispSpatialY);
 		displacementComputeShader.SetTexture(0, DispSpatialZid, DispSpatialZ);
 		displacementComputeShader.SetTexture(0, NormSpatialYid, NormSpatialY);
-		displacementComputeShader.SetFloat("Resolution", tileSideVertexCount);
-		displacementComputeShader.SetFloat("PI", Mathf.PI);
-		displacementComputeShader.SetFloat("g", -Physics.gravity.y);
+		displacementComputeShader.SetFloat(ResolutionID, tileSideVertexCount);
+		displacementComputeShader.SetFloat(PI, Mathf.PI);
+		displacementComputeShader.SetFloat(G, -Physics.gravity.y);
 		SetupComputeShader();
 
 		AddTextureDebugs();
 
-		SpawnTiles();
+		tileMesh = CreateMesh();
+
+		materialInstance = new Material(tileMaterial);
+		materialInstance.SetTexture(TileMaterialDisplacement, displacement);
+		materialInstance.SetTexture(TileMaterialApproximateNormalMap, ApproximateNormals);
+		materialInstance.SetTexture(TileMaterialNormalMap, Normals);
+		materialInstance.SetVector(TileMaterialResolution, new Vector2(tileSize, tileSize));
+
+		UpdateTiles();
 	}
 
 	void SetupComputeShader() {
-		frequencyDomainFieldComputeShader.SetFloats("test", test2d.x, test2d.y);
-		frequencyDomainFieldComputeShader.SetFloats("test2", test2d2.x, test2d2.y);
-		frequencyDomainFieldComputeShader.SetFloats("test3", test2d3.x, test2d3.y);
-		frequencyDomainFieldComputeShader.SetFloats("test4", test2d4.x, test2d4.y);
-		frequencyDomainFieldComputeShader.SetFloats("test5", test2d5.x, test2d5.y);
-		frequencyDomainFieldComputeShader.SetFloat("time", Time.time * timeScale + timeOffset);
-		frequencyDomainFieldComputeShader.SetFloat("L", tileSize);
-		frequencyDomainFieldComputeShader.SetFloat("F", F);
-		frequencyDomainFieldComputeShader.SetVector("U10", U10);
-		frequencyDomainFieldComputeShader.SetFloat("gamma", gamma);
-		frequencyDomainFieldComputeShader.SetFloat("heightTest", heightTest);
-		frequencyDomainFieldComputeShader.SetFloat("phillipsA", phillipsA);
-		frequencyDomainFieldComputeShader.SetFloat("phillipsSmallLength", phillipsSmallLength);
-		frequencyDomainFieldComputeShader.SetVector("phillipsWindDir", phillipsWindDir.normalized);
+		frequencyDomainFieldComputeShader.SetFloats(Test, test2d.x, test2d.y);
+		frequencyDomainFieldComputeShader.SetFloats(Test2, test2d2.x, test2d2.y);
+		frequencyDomainFieldComputeShader.SetFloats(Test3, test2d3.x, test2d3.y);
+		frequencyDomainFieldComputeShader.SetFloats(Test4, test2d4.x, test2d4.y);
+		frequencyDomainFieldComputeShader.SetFloats(Test5, test2d5.x, test2d5.y);
+		frequencyDomainFieldComputeShader.SetFloat(TimeID, Time.time * timeScale + timeOffset);
+		frequencyDomainFieldComputeShader.SetFloat(L, tileSize);
+		frequencyDomainFieldComputeShader.SetFloat(Fid, F);
+		frequencyDomainFieldComputeShader.SetVector(U10ID, U10);
+		frequencyDomainFieldComputeShader.SetFloat(Gamma, gamma);
+		frequencyDomainFieldComputeShader.SetFloat(WaveSharpness, waveFreqSharpness);
+		frequencyDomainFieldComputeShader.SetFloat(WaveHeight, waveFreqHeight);
+		// frequencyDomainFieldComputeShader.SetFloat("phillipsA", phillipsA);
+		// frequencyDomainFieldComputeShader.SetFloat("phillipsSmallLength", phillipsSmallLength);
+		// frequencyDomainFieldComputeShader.SetVector("phillipsWindDir", phillipsWindDir.normalized);
 		frequencyDomainFieldComputeShader.Dispatch(0, tileSideVertexCount / 8, tileSideVertexCount / 8, 1);
 
 		RunIFFT(DispFreqY, PingBuffer, PongBuffer, DispSpatialY);
@@ -126,18 +141,18 @@ public class Ocean : MonoBehaviour {
 
 		// SetupSimpleSinusoid();
 
-		displacementComputeShader.SetFloat("dtest1", dtest1);
-		displacementComputeShader.SetFloat("dtest2", dtest2);
-		displacementComputeShader.SetFloat("dtest3", dtest3);
-		displacementComputeShader.SetVector("normalTestX", normalTestX);
-		displacementComputeShader.SetVector("normalTestZ", normalTestZ);
-		displacementComputeShader.SetFloat("normalTest2", normalTest2);
-		displacementComputeShader.SetVector("normalTest3", normalTest3);
-		displacementComputeShader.SetVector("waveVector", waveVector);
-		displacementComputeShader.SetFloat("amplitude", amplitude);
-		displacementComputeShader.SetFloat("angularFrequency", angularFrequency);
-		displacementComputeShader.SetFloat("time", Time.time * timeScale + timeOffset);
-		displacementComputeShader.SetFloat("L", tileSize);
+		displacementComputeShader.SetFloat(Dtest1, dtest1);
+		displacementComputeShader.SetFloat(Dtest2, dtest2);
+		displacementComputeShader.SetFloat(Dtest3, dtest3);
+		displacementComputeShader.SetVector(NormalTestX, normalTestX);
+		displacementComputeShader.SetVector(NormalTestZ, normalTestZ);
+		displacementComputeShader.SetFloat(NormalTest2, normalTest2);
+		displacementComputeShader.SetVector(NormalTest3, normalTest3);
+		displacementComputeShader.SetFloat(TimeID, Time.time * timeScale + timeOffset);
+		displacementComputeShader.SetFloat(L, tileSize);
+		displacementComputeShader.SetFloat(WaveSharpness, waveSharpness);
+		displacementComputeShader.SetFloat(WaveHeight, waveHeight);
+		displacementComputeShader.SetFloat(NormalizingFactor, normalizingFactor);
 		displacementComputeShader.Dispatch(0, tileSideVertexCount / 8, tileSideVertexCount / 8, 1);
 
 		// simpleSinusoid.SetTexture(0, "dispSpatialX", dispSpatialX);
@@ -147,25 +162,46 @@ public class Ocean : MonoBehaviour {
 
 	void Update() => SetupComputeShader();
 
-	void SpawnTiles() {
-		var mesh = CreateMesh();
+	void LateUpdate() => UpdateTiles();
 
-		var materialInstance = new Material(tileMaterial);
-		materialInstance.SetTexture(TileMaterialDisplacement, displacement);
-		materialInstance.SetTexture(TileMaterialApproximateNormalMap, ApproximateNormals);
-		materialInstance.SetTexture(TileMaterialNormalMap, Normals);
-		materialInstance.SetVector(TileMaterialResolution, new Vector2(tileSize, tileSize));
+	void SpawnTile(Vector2Int position) {
+		//I tried creating the GameObject and set its component before the loop and instantiating it as a prefab, but the prefab is still added to the scene on construction, so it's simpler like this
+		var oceanTile = new GameObject($"OceanTile {position.x} {position.y}");
+		oceanTile.AddComponent<MeshFilter>().mesh = tileMesh;
+		oceanTile.AddComponent<MeshRenderer>().material = materialInstance;
 
-		for (int x = -tileRadius; x <= tileRadius; ++x)
-		for (int z = -tileRadius; z <= tileRadius; ++z) {
-			//I tried creating the GameObject and set its component before the loop and instantiating it as a prefab, but the prefab is still added to the scene on construction, so it's simpler like this
-			var oceanTile = new GameObject($"OceanTile {x} {z}");
-			oceanTile.AddComponent<MeshFilter>().mesh = mesh;
-			oceanTile.AddComponent<MeshRenderer>().material = materialInstance;
+		oceanTile.transform.SetParent(transform);
+		oceanTile.transform.position = new Vector3(position.x, 0, position.y) * tileSize;
+		tiles.Add(position, oceanTile);
+	}
 
-			oceanTile.transform.SetParent(transform);
-			oceanTile.transform.position = new Vector3(x, 0, z) * tileSize;
-			// tiles.Add(new Vector2Int(x, z), oceanTile);
+	void UpdateTiles() {
+		var camPos = Camera.main!.transform.position - Camera.main.transform.forward * (backOffset * tileSize);
+		var playerPosition = ConvertVector(camPos);
+		var oldTiles = new Dictionary<Vector2Int, GameObject>(tiles);
+
+		int loadTileRadius = Mathf.CeilToInt((Camera.main.farClipPlane + (backOffset * tileSize)) / tileSize);
+		foreach (var (position, tile) in oldTiles) {
+			var distance = Vector2Int.Distance(playerPosition, position);
+			bool shouldDestroy = distance > loadTileRadius + unloadTileRadiusPadding;
+			float angleFromCam = Vector3.Angle(tile.transform.position - camPos, Camera.main.transform.forward);
+			if (angleFromCam > frustumAngle)
+				shouldDestroy = true;
+
+			if (shouldDestroy) {
+				Destroy(tile);
+				tiles.Remove(position);
+			}
+		}
+
+		for (int x = -loadTileRadius; x <= loadTileRadius; ++x)
+		for (int z = -loadTileRadius; z <= loadTileRadius; ++z) {
+			var position = new Vector2Int(x, z) + playerPosition;
+			float angleFromCam = Vector3.Angle(new Vector3(position.x, 0, position.y) * tileSize - camPos, Camera.main.transform.forward);
+			if (!tiles.ContainsKey(position)) {
+				if (angleFromCam <= frustumAngle)
+					SpawnTile(position);
+			}
 		}
 	}
 
@@ -272,7 +308,8 @@ public class Ocean : MonoBehaviour {
 			if (i == 0) {
 				input = initInput;
 				normalization = 1f / tileSideVertexCount;
-			}else {
+			}
+			else {
 				if (i == iterations - 1) {
 					output = initOutput;
 					normalization = tileSideVertexCount;
@@ -362,6 +399,22 @@ public class Ocean : MonoBehaviour {
 		renderDebug.name = textureName;
 	}
 
+	void OnDrawGizmos() {
+		Gizmos.matrix = Matrix4x4.TRS(
+			Camera.main!.transform.position - Camera.main.transform.forward * (backOffset * tileSize),
+			Camera.main.transform.rotation,
+			Vector3.one
+		);
+		Gizmos.DrawFrustum(
+			Vector3.zero,
+			Camera.main.fieldOfView,
+			//There's a weird additional padding, but not worth correcting
+			Camera.main.farClipPlane + (backOffset * tileSize),
+			Camera.main.nearClipPlane,
+			Camera.main.aspect
+		);
+	}
+
 	static readonly int FFTOneOverResolution = Shader.PropertyToID("oneOverResolution");
 	static readonly int FFTSrc = Shader.PropertyToID("src");
 	static readonly int FFTOutput = Shader.PropertyToID("output");
@@ -386,4 +439,28 @@ public class Ocean : MonoBehaviour {
 	static readonly int NormFreqYid = Shader.PropertyToID("NormFreqY");
 	static readonly int NormalsID = Shader.PropertyToID("Normals");
 	static readonly int NormSpatialYid = Shader.PropertyToID("NormSpatialY");
+	static readonly int Dtest1 = Shader.PropertyToID("dtest1");
+	static readonly int Dtest2 = Shader.PropertyToID("dtest2");
+	static readonly int Dtest3 = Shader.PropertyToID("dtest3");
+	static readonly int NormalTestX = Shader.PropertyToID("normalTestX");
+	static readonly int NormalTestZ = Shader.PropertyToID("normalTestZ");
+	static readonly int NormalTest2 = Shader.PropertyToID("normalTest2");
+	static readonly int NormalTest3 = Shader.PropertyToID("normalTest3");
+	static readonly int TimeID = Shader.PropertyToID("Time");
+	static readonly int L = Shader.PropertyToID("L");
+	static readonly int NoiseID = Shader.PropertyToID("Noise");
+	static readonly int ResolutionID = Shader.PropertyToID("Resolution");
+	static readonly int PI = Shader.PropertyToID("PI");
+	static readonly int G = Shader.PropertyToID("g");
+	static readonly int Test = Shader.PropertyToID("test");
+	static readonly int Test2 = Shader.PropertyToID("test2");
+	static readonly int Test3 = Shader.PropertyToID("test3");
+	static readonly int Test4 = Shader.PropertyToID("test4");
+	static readonly int Test5 = Shader.PropertyToID("test5");
+	static readonly int Fid = Shader.PropertyToID("F");
+	static readonly int U10ID = Shader.PropertyToID("U10");
+	static readonly int Gamma = Shader.PropertyToID("gamma");
+	static readonly int WaveSharpness = Shader.PropertyToID("WaveSharpness");
+	static readonly int WaveHeight = Shader.PropertyToID("WaveHeight");
+	static readonly int NormalizingFactor = Shader.PropertyToID("NormalizingFactor");
 }

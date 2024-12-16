@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 public class BoatController : MonoBehaviour
@@ -18,11 +19,12 @@ public class BoatController : MonoBehaviour
     private Rigidbody myRigidbody;
     private Vector3 forwardMovement;
     private Quaternion targetRotation;
-    private float forceMultiplier = 0.1f;//
     [SerializeField] private bool isUnderWater = false;
     [SerializeField] private int currentTrigger = 2;
     [SerializeField] private PlayerStateComponent state;
-    
+    private bool hasPlayedSound = false;
+
+
     private void Awake()
     {
         state.OnActivate += OnActivate;
@@ -73,21 +75,40 @@ public class BoatController : MonoBehaviour
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotLerpSpeed * Time.deltaTime); 
         forwardMovement = transform.forward * forwardSpeed;
 
+        if (moveInput.x < -0.1f)
+        {
+            AudioManager.instance.PlayHaptics("left");
+            AudioManager.instance.AdjustHapticsVolume(NormalizeValueForHaptics(moveInput.x));
+        }
+        else if (moveInput.x > 0.1f)
+        {
+            AudioManager.instance.PlayHaptics("right");
+            AudioManager.instance.AdjustHapticsVolume(NormalizeValueForHaptics(moveInput.x));
+        }
+        else { 
+            AudioManager.instance.StopHaptics();
+        }
         if (Input.GetKeyDown(KeyCode.P))
             Paddle();
 
         if (inputManager.isMoving)
         {
-            rightpaddle.transform.Rotate(0, 0, -1.5f);
-            leftpaddle.transform.Rotate(0, 0, -1.5f);
+            rightpaddle.transform.Rotate(0, 0, -10f);
+            leftpaddle.transform.Rotate(0, 0, -10f);
             float zRotation = rightpaddle.transform.localEulerAngles.z;
             if (zRotation <= 75f && zRotation >= -75f) 
             {
+                //j'aimrai juste declncehr ça une fois, quand on passe en dessous de 75 deg
+                if(!hasPlayedSound)AudioManager.instance.PlayOneShot(FMODEvents.instance.rowSound, this.transform.position);
+                hasPlayedSound = true;
+
                 isUnderWater = true;
-                myRigidbody.AddForce(new Vector3(forwardMovement.x, 0, forwardMovement.z) * forceMultiplier, ForceMode.Impulse);
+                myRigidbody.AddForce(new Vector3(forwardMovement.x, 0, forwardMovement.z), ForceMode.Impulse);
+                
             }
             else
             {
+                hasPlayedSound = false;
                 isUnderWater = false;
             }
 
@@ -120,5 +141,20 @@ public class BoatController : MonoBehaviour
     {
         if (other.collider.CompareTag("Rocks"))
             currentSpeed = Mathf.Clamp(currentSpeed, -forwardSpeed, 0);
+    }
+
+    private float NormalizeValueForHaptics(float value)
+    {
+        value = Mathf.Abs(value);
+        float minInput = 0.1f;
+        float maxInput = 1f;
+        float minOutput = 0f;
+        float maxOutput = 1f;
+
+        // Clamp pour limiter la valeur à la plage
+        value = Mathf.Clamp(value, minInput, maxInput);
+
+        // Normalisation
+        return minOutput + (value - minInput) * (maxOutput - minOutput) / (maxInput - minInput);
     }
 }
