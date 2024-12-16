@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -17,7 +18,6 @@ public class InputManager : MonoBehaviour
     public Boolean isMoving;
     private void Awake()
     {
-
         myPlayerInput = GetComponent<PlayerInput>();
         RightYawAction = myPlayerInput.actions.FindAction("Right Yaw");
         LeftYawAction = myPlayerInput.actions.FindAction("Left Yaw");
@@ -41,7 +41,6 @@ public class InputManager : MonoBehaviour
         RightYawAction.canceled -= OnYawCancel;
         LeftYawAction.canceled -= OnYawCancel;
     }
-
     public void OnMove(InputValue aValue)
     {
         MoveInput(aValue.Get<Vector2>());
@@ -84,5 +83,10 @@ public class InputManager : MonoBehaviour
     private void OnYawCancel(InputAction.CallbackContext obj)
     {
         Yaw = 0;
+    }
+    
+    private void OnGoToBoat(InputValue aValue)
+    {
+        PlayerStateManager.SwitchTo(PlayerState.Boat);
     }
 }

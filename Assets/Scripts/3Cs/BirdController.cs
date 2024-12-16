@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class BirdController : MonoBehaviour
 {
@@ -19,15 +21,27 @@ public class BirdController : MonoBehaviour
    [SerializeField] private float upwardsLerpSpeed = 0.7f;
    [SerializeField] private float downwardsLerpSpeed = 0.7f;
    [SerializeField] private float decellerationLerpSpeed = 2f;
+   [SerializeField] private PlayerStateComponent state;
 
    private float currentSpeed;
    private Rigidbody myRigidbody;
    private float acceleration;
    private Vector3 forwardMovement;
-   
+
+   private void Awake()
+   {
+      state.OnActivate += OnActivate;
+      state.OnDeactivate += OnDeactivate;   }
+
    void Start()
    {
       myRigidbody = GetComponent<Rigidbody>();
+   }
+
+   private void OnDestroy()
+   {
+      state.OnActivate -= OnActivate;
+      state.OnDeactivate -= OnDeactivate;   
    }
 
    void Update()
@@ -39,7 +53,16 @@ public class BirdController : MonoBehaviour
       ClampHeight();
       ClampRotation();
    }
+   private void OnActivate()
+   {
+      GetComponent<PlayerInput>().enabled = true;
+   }
 
+    
+   private void OnDeactivate()
+   {
+      GetComponent<PlayerInput>().enabled = false;
+   }
    private void HandleFlightInput()
    {
       Vector2 moveInput = inputManager.moveDirection;

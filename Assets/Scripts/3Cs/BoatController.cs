@@ -21,28 +21,43 @@ public class BoatController : MonoBehaviour
     private float forceMultiplier = 0.1f;//
     [SerializeField] private bool isUnderWater = false;
     [SerializeField] private int currentTrigger = 2;
-
+    [SerializeField] private PlayerStateComponent state;
+    
     private void Awake()
     {
+        state.OnActivate += OnActivate;
+        state.OnDeactivate += OnDeactivate;
+
         inputManager.fire += Switch;
-      
     }
 
     private void OnDestroy()
     {
+        state.OnActivate -= OnActivate;
+        state.OnDeactivate -= OnDeactivate;
+
         inputManager.fire -= Switch;
     }
 
-    
+    private void OnActivate()
+    {
+        PlayerInput playerInput =  GetComponent<PlayerInput>();
+        playerInput.enabled = true;
+        playerInput.SwitchCurrentActionMap(playerInput.defaultActionMap);
+        playerInput.SwitchCurrentControlScheme(Gamepad.current);
+    }
 
     
+    private void OnDeactivate()
+    {
+        GetComponent<PlayerInput>().enabled = false;
+    }
 
     // Start is called before the first frame update
     void Start()
     {
         currentSpeed = 0;
         myRigidbody = GetComponent<Rigidbody>();
-
     }
 
     // Update is called once per frame
@@ -70,8 +85,6 @@ public class BoatController : MonoBehaviour
             {
                 isUnderWater = true;
                 myRigidbody.AddForce(new Vector3(forwardMovement.x, 0, forwardMovement.z) * forceMultiplier, ForceMode.Impulse);
-               
-
             }
             else
             {
