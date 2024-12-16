@@ -8,6 +8,7 @@ using UnityEngine;
 public class FMODEvents : MonoBehaviour
 {
     [field: Header("WaveCrash")]
+    [field: SerializeField] public EventReference ambience { get; private set; }
     [field: SerializeField] public EventReference waveLtoR { get; private set; }
     [field: SerializeField] public EventReference waveRtoL { get; private set; }
 

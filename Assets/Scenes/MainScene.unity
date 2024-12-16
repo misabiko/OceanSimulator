@@ -1021,6 +1021,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3fba52a9607d65349859a09731f713ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  <ambience>k__BackingField:
+    Guid:
+      Data1: -1457223806
+      Data2: 1241695237
+      Data3: -1768690759
+      Data4: 2064496177
+    Path: event:/Ambience
   <waveLtoR>k__BackingField:
     Guid:
       Data1: -835361464

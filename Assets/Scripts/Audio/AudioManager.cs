@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System;
 using FMOD;
 using Unity.VisualScripting;
+using System.Dynamic;
+using FMOD.Studio;
 
 public class AudioManager : MonoBehaviour
 {
@@ -16,6 +18,7 @@ public class AudioManager : MonoBehaviour
     private FMOD.Sound turningRight;
     private FMOD.Sound birdDiving;
     private bool isActivated=false;
+    private FMOD.Studio.EventInstance ambienceEvent;
     private void Awake()
     {
         if (instance != null)
@@ -49,6 +52,22 @@ public class AudioManager : MonoBehaviour
         FMODUnity.RuntimeManager.HapticsSystem.createChannelGroup("MyChannelGroup", out channelGroup);
         instance = this;
     }
+
+    private void Start()
+    {
+        initialiseAmbience(FMODEvents.instance.ambience);
+    }
+
+    private void initialiseAmbience(EventReference ambience)
+    {
+        ambienceEvent = RuntimeManager.CreateInstance(ambience);
+        result=ambienceEvent.set3DAttributes(this.transform.position.To3DAttributes());
+        CheckFMODResult(result, "Start");
+        result = ambienceEvent.start();
+        CheckFMODResult(result, "Start");
+    }
+
+    
 
     public void PlayOneShot(EventReference sound, Vector3 wordPos)
     {
@@ -108,5 +127,10 @@ public class AudioManager : MonoBehaviour
             UnityEngine.Debug.Log($"Operation {operation} succeeded.");
         }
     }
-    
+
+    private void OnDestroy()
+    {
+        ambienceEvent.release();
+    }
+
 }
