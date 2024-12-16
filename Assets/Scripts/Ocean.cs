@@ -37,8 +37,9 @@ public class Ocean : MonoBehaviour {
 
 	Mesh tileMesh;
 	Material materialInstance;
-	[SerializeField, Min(0)] int loadTileRadius = 5;
 	[SerializeField, Min(0)] int unloadTileRadiusPadding = 2;
+	[SerializeField] float frustumAngle = 90;
+	[SerializeField, Min(0)] float backOffset = 2f;
 
 	// [Header("Phillips Spectrum")] [Min(0)] public float phillipsA = 1;
 	// [Min(0)] public float phillipsSmallLength = 0.1f;
@@ -175,11 +176,19 @@ public class Ocean : MonoBehaviour {
 	}
 
 	void UpdateTiles() {
-		var playerPosition = ConvertVector(Camera.main!.transform.position);
+		var camPos = Camera.main!.transform.position - Camera.main.transform.forward * (backOffset * tileSize);
+		var playerPosition = ConvertVector(camPos);
 		var oldTiles = new Dictionary<Vector2Int, GameObject>(tiles);
+
+		int loadTileRadius = Mathf.CeilToInt((Camera.main.farClipPlane + (backOffset * tileSize)) / tileSize);
 		foreach (var (position, tile) in oldTiles) {
 			var distance = Vector2Int.Distance(playerPosition, position);
-			if (distance > loadTileRadius + unloadTileRadiusPadding) {
+			bool shouldDestroy = distance > loadTileRadius + unloadTileRadiusPadding;
+			float angleFromCam = Vector3.Angle(tile.transform.position - camPos, Camera.main.transform.forward);
+			if (angleFromCam > frustumAngle)
+				shouldDestroy = true;
+
+			if (shouldDestroy) {
 				Destroy(tile);
 				tiles.Remove(position);
 			}
@@ -188,8 +197,11 @@ public class Ocean : MonoBehaviour {
 		for (int x = -loadTileRadius; x <= loadTileRadius; ++x)
 		for (int z = -loadTileRadius; z <= loadTileRadius; ++z) {
 			var position = new Vector2Int(x, z) + playerPosition;
-			if (!tiles.ContainsKey(position))
-				SpawnTile(position);
+			float angleFromCam = Vector3.Angle(new Vector3(position.x, 0, position.y) * tileSize - camPos, Camera.main.transform.forward);
+			if (!tiles.ContainsKey(position)) {
+				if (angleFromCam <= frustumAngle)
+					SpawnTile(position);
+			}
 		}
 	}
 
@@ -296,7 +308,8 @@ public class Ocean : MonoBehaviour {
 			if (i == 0) {
 				input = initInput;
 				normalization = 1f / tileSideVertexCount;
-			}else {
+			}
+			else {
 				if (i == iterations - 1) {
 					output = initOutput;
 					normalization = tileSideVertexCount;
@@ -384,6 +397,22 @@ public class Ocean : MonoBehaviour {
 		);
 		renderDebug.GetComponent<Renderer>().material.mainTexture = texture;
 		renderDebug.name = textureName;
+	}
+
+	void OnDrawGizmos() {
+		Gizmos.matrix = Matrix4x4.TRS(
+			Camera.main!.transform.position - Camera.main.transform.forward * (backOffset * tileSize),
+			Camera.main.transform.rotation,
+			Vector3.one
+		);
+		Gizmos.DrawFrustum(
+			Vector3.zero,
+			Camera.main.fieldOfView,
+			//There's a weird additional padding, but not worth correcting
+			Camera.main.farClipPlane + (backOffset * tileSize),
+			Camera.main.nearClipPlane,
+			Camera.main.aspect
+		);
 	}
 
 	static readonly int FFTOneOverResolution = Shader.PropertyToID("oneOverResolution");
