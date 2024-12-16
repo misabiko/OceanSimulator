@@ -22,6 +22,7 @@ float PI;
 float g;
 float WaveSharpness;
 float WaveHeight;
+float NormalizingFactor;
 
 float dtest1;
 float dtest2;
@@ -88,27 +89,27 @@ void CSMain(uint3 id : SV_DispatchThreadID) {
 	{
 		displacement = float3(
 			DispSpatialX[uint2(0, 0)].x * factor(0, 0) * WaveSharpness,
-			DispSpatialY[uint2(0, 0)].x * factor(0, 0) * WaveHeight,
+			DispSpatialY[uint2(0, 0)].x * factor(0, 0) * (1.0 + WaveSharpness * WaveHeight),
 			DispSpatialZ[uint2(0, 0)].x * factor(0, 0) * WaveSharpness
 		);
 	}else if (id.x == 0 || id.x == edge)
 	{
 		displacement = float3(
 			DispSpatialX[uint2(0, id.y)].x * factor(0, id.y) * WaveSharpness,
-			DispSpatialY[uint2(0, id.y)].x * factor(0, id.y) * WaveHeight,
+			DispSpatialY[uint2(0, id.y)].x * factor(0, id.y) * (1.0 + WaveSharpness * WaveHeight),
 			DispSpatialZ[uint2(0, id.y)].x * factor(0, id.y) * WaveSharpness
 		);
 	}else if (id.y == 0 || id.y == edge)
 	{
 		displacement = float3(
 			DispSpatialX[uint2(id.x, 0)].x * factor(id.x, 0) * WaveSharpness,
-			DispSpatialY[uint2(id.x, 0)].x * factor(id.x, 0) * WaveHeight,
+			DispSpatialY[uint2(id.x, 0)].x * factor(id.x, 0) * (1.0 + WaveSharpness * WaveHeight),
 			DispSpatialZ[uint2(id.x, 0)].x * factor(id.x, 0) * WaveSharpness
 		);
 	}else
 		displacement = float3(
 			DispSpatialX[id.xy].x * factor(id.x, id.y) * WaveSharpness,
-			DispSpatialY[id.xy].x * factor(id.x, id.y) * WaveHeight,
+			DispSpatialY[id.xy].x * factor(id.x, id.y) * (1.0 + WaveSharpness * WaveHeight),
 			DispSpatialZ[id.xy].x * factor(id.x, id.y) * WaveSharpness
 		);
 

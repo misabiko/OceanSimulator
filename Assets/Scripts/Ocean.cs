@@ -1,12 +1,12 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class Ocean : MonoBehaviour {
-	[Min(0)] public int tileRadius;
 	[Min(0)] public int tileSideVertexCount = 256;
 	[Min(0)] public float tileSize = 64;
 	[SerializeField] Material tileMaterial;
 
-	// readonly Dictionary<Vector2Int, GameObject> tiles = new();
+	readonly Dictionary<Vector2Int, GameObject> tiles = new();
 
 	[SerializeField] ComputeShader displacementComputeShader;
 	[SerializeField] ComputeShader frequencyDomainFieldComputeShader;
@@ -33,6 +33,12 @@ public class Ocean : MonoBehaviour {
 	public float waveSharpness = 1f;
 	public float waveFreqHeight = 1f;
 	public float waveHeight = 1f;
+	[Range(0, 1)] public float normalizingFactor;
+
+	Mesh tileMesh;
+	Material materialInstance;
+	[SerializeField, Min(0)] int loadTileRadius = 5;
+	[SerializeField, Min(0)] int unloadTileRadiusPadding = 2;
 
 	// [Header("Phillips Spectrum")] [Min(0)] public float phillipsA = 1;
 	// [Min(0)] public float phillipsSmallLength = 0.1f;
@@ -97,7 +103,15 @@ public class Ocean : MonoBehaviour {
 
 		AddTextureDebugs();
 
-		SpawnTiles();
+		tileMesh = CreateMesh();
+
+		materialInstance = new Material(tileMaterial);
+		materialInstance.SetTexture(TileMaterialDisplacement, displacement);
+		materialInstance.SetTexture(TileMaterialApproximateNormalMap, ApproximateNormals);
+		materialInstance.SetTexture(TileMaterialNormalMap, Normals);
+		materialInstance.SetVector(TileMaterialResolution, new Vector2(tileSize, tileSize));
+
+		UpdateTiles();
 	}
 
 	void SetupComputeShader() {
@@ -137,6 +151,7 @@ public class Ocean : MonoBehaviour {
 		displacementComputeShader.SetFloat(L, tileSize);
 		displacementComputeShader.SetFloat(WaveSharpness, waveSharpness);
 		displacementComputeShader.SetFloat(WaveHeight, waveHeight);
+		displacementComputeShader.SetFloat(NormalizingFactor, normalizingFactor);
 		displacementComputeShader.Dispatch(0, tileSideVertexCount / 8, tileSideVertexCount / 8, 1);
 
 		// simpleSinusoid.SetTexture(0, "dispSpatialX", dispSpatialX);
@@ -146,25 +161,35 @@ public class Ocean : MonoBehaviour {
 
 	void Update() => SetupComputeShader();
 
-	void SpawnTiles() {
-		var mesh = CreateMesh();
+	void LateUpdate() => UpdateTiles();
 
-		var materialInstance = new Material(tileMaterial);
-		materialInstance.SetTexture(TileMaterialDisplacement, displacement);
-		materialInstance.SetTexture(TileMaterialApproximateNormalMap, ApproximateNormals);
-		materialInstance.SetTexture(TileMaterialNormalMap, Normals);
-		materialInstance.SetVector(TileMaterialResolution, new Vector2(tileSize, tileSize));
+	void SpawnTile(Vector2Int position) {
+		//I tried creating the GameObject and set its component before the loop and instantiating it as a prefab, but the prefab is still added to the scene on construction, so it's simpler like this
+		var oceanTile = new GameObject($"OceanTile {position.x} {position.y}");
+		oceanTile.AddComponent<MeshFilter>().mesh = tileMesh;
+		oceanTile.AddComponent<MeshRenderer>().material = materialInstance;
 
-		for (int x = -tileRadius; x <= tileRadius; ++x)
-		for (int z = -tileRadius; z <= tileRadius; ++z) {
-			//I tried creating the GameObject and set its component before the loop and instantiating it as a prefab, but the prefab is still added to the scene on construction, so it's simpler like this
-			var oceanTile = new GameObject($"OceanTile {x} {z}");
-			oceanTile.AddComponent<MeshFilter>().mesh = mesh;
-			oceanTile.AddComponent<MeshRenderer>().material = materialInstance;
+		oceanTile.transform.SetParent(transform);
+		oceanTile.transform.position = new Vector3(position.x, 0, position.y) * tileSize;
+		tiles.Add(position, oceanTile);
+	}
 
-			oceanTile.transform.SetParent(transform);
-			oceanTile.transform.position = new Vector3(x, 0, z) * tileSize;
-			// tiles.Add(new Vector2Int(x, z), oceanTile);
+	void UpdateTiles() {
+		var playerPosition = ConvertVector(Camera.main!.transform.position);
+		var oldTiles = new Dictionary<Vector2Int, GameObject>(tiles);
+		foreach (var (position, tile) in oldTiles) {
+			var distance = Vector2Int.Distance(playerPosition, position);
+			if (distance > loadTileRadius + unloadTileRadiusPadding) {
+				Destroy(tile);
+				tiles.Remove(position);
+			}
+		}
+
+		for (int x = -loadTileRadius; x <= loadTileRadius; ++x)
+		for (int z = -loadTileRadius; z <= loadTileRadius; ++z) {
+			var position = new Vector2Int(x, z) + playerPosition;
+			if (!tiles.ContainsKey(position))
+				SpawnTile(position);
 		}
 	}
 
@@ -408,4 +433,5 @@ public class Ocean : MonoBehaviour {
 	static readonly int Gamma = Shader.PropertyToID("gamma");
 	static readonly int WaveSharpness = Shader.PropertyToID("WaveSharpness");
 	static readonly int WaveHeight = Shader.PropertyToID("WaveHeight");
+	static readonly int NormalizingFactor = Shader.PropertyToID("NormalizingFactor");
 }
