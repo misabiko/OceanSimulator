@@ -1,0 +1,130 @@
+#pragma kernel CSMain
+
+Texture2D DispFreqX;
+Texture2D DispFreqY;
+Texture2D DispFreqZ;
+Texture2D DispSpatialX;
+Texture2D DispSpatialY;
+Texture2D DispSpatialZ;
+Texture2D NormSpatialY;
+
+RWTexture2D<float4> Displacement;
+RWTexture2D<float4> Normals;
+RWTexture2D<float4> ApproximateNormals;
+
+float Resolution;
+float L;
+
+float2 waveVector;
+float amplitude;
+float angularFrequency;
+float time;
+
+//TODO Is there a better way to define PI?
+float PI;
+float g;
+
+float dtest1;
+float dtest2;
+float dtest3;
+float3 normalTestX;
+float3 normalTestZ;
+float normalTest2;
+float3 normalTest3;
+
+//I can't find where the normalization is reverted in rreeusser's implementation
+//And I really don't understand negation issue, something about baked origin shift or DC component in the FFT implementation?
+float factor(uint x, uint y) {
+	return (((x % 2 == 0) ^ (y % 2 == 0)) ? -1 : 1);
+}
+
+void normals(uint2 id)
+{
+	float f = factor(id.x, id.y);
+	float nx = NormSpatialY[id].x * f;
+	float nz = NormSpatialY[id].z * f;
+	Normals[id] = float4(
+		float3(
+			nx,
+			1,
+			nz
+		) / sqrt(1 + nx * nx + nz * nz),
+		1
+	);
+}
+
+void approximateNormals(uint2 id)
+{
+	// float3 x1 = float3(
+	// 	dtest1 * DispSpatialX[id.xy + int2(-1, 0)].xy) - Resolution / 2.0 / L,
+	// 	dtest2 * DispSpatialY[id.xy + int2(-1, 0)].xy),
+	// 	dtest3 * DispSpatialZ[id.xy + int2(-1, 0)].xy)
+	// );
+	// float3 x2 = float3(
+	// 	dtest1 * DispSpatialX[id.xy + int2(1, 0)].xy) + Resolution / 2.0 / L,
+	// 	dtest2 * DispSpatialY[id.xy + int2(1, 0)].xy),
+	// 	dtest3 * DispSpatialZ[id.xy + int2(1, 0)].xy)
+	// );
+	// float3 z1 = float3(
+	// 	dtest1 * DispSpatialX[id.xy + int2(0, -1)].xy),
+	// 	dtest2 * DispSpatialY[id.xy + int2(0, -1)].xy),
+	// 	dtest3 * DispSpatialZ[id.xy + int2(0, -1)].xy) - Resolution / 2.0 / L
+	// );
+	// float3 z2 = float3(
+	// 	dtest1 * DispSpatialX[id.xy + int2(0, 1)].xy),
+	// 	dtest2 * DispSpatialY[id.xy + int2(0, 1)].xy),
+	// 	dtest3 * DispSpatialZ[id.xy + int2(0, 1)].xy) + Resolution / 2.0 / L
+	// );
+	// float3 x = x2 - x1;
+	// float3 z = z2 - z1;
+	// ApproximateNormals[id.xy] = float4(normalize(cross(z, x)), 0);
+	ApproximateNormals[id] = float4(0, 1, 0, 0);
+}
+
+[numthreads(8,8,1)]
+void CSMain(uint3 id : SV_DispatchThreadID) {
+	uint edge = Resolution - 1;
+	float3 displacement;
+	if ((id.x == 0 && id.y == 0) || (id.x == edge && id.y == edge) || (id.x == 0 && id.y == edge) || (id.x == edge && id.y == 0))
+	{
+		displacement = float3(
+			DispSpatialX[uint2(0, 0)].x * factor(0, 0),
+			DispSpatialY[uint2(0, 0)].x * factor(0, 0),
+			DispSpatialZ[uint2(0, 0)].x * factor(0, 0)
+		);
+	}else if (id.x == 0 || id.x == edge)
+	{
+		displacement = float3(
+			DispSpatialX[uint2(0, id.y)].x * factor(0, id.y),
+			DispSpatialY[uint2(0, id.y)].x * factor(0, id.y),
+			DispSpatialZ[uint2(0, id.y)].x * factor(0, id.y)
+		);
+	}else if (id.y == 0 || id.y == edge)
+	{
+		displacement = float3(
+			DispSpatialX[uint2(id.x, 0)].x * factor(id.x, 0),
+			DispSpatialY[uint2(id.x, 0)].x * factor(id.x, 0), 
+			DispSpatialZ[uint2(id.x, 0)].x * factor(id.x, 0)
+		);
+	}else
+		displacement = float3(
+			DispSpatialX[id.xy].x * factor(id.x, id.y),
+			DispSpatialY[id.xy].x * factor(id.x, id.y),
+			DispSpatialZ[id.xy].x * factor(id.x, id.y)
+		);
+
+	//TODO Have Displacement in RGB
+	Displacement[id.xy] = float4(displacement, 0);
+
+	normals(id.xy);
+	approximateNormals(id.xy);
+	//TODO Draw textures in ui with alpha 0
+	//Setting alpha to 1 so it shows up on UI Toolkit, will probably cause issues
+	// {
+	// 	Displacement[id.xy] = float4(Displacement[id.xy].xyz, 1);
+	// 	ApproximateNormals[id.xy] = float4(ApproximateNormals[id.xy].xyz, 1);
+	// 	DispFreqY[id.xy] = float4(DispFreqY[id.xy].xyz, 1);
+	// 	DispFreqX[id.xy] = float4(DispFreqX[id.xy].xyz, 1);
+	// 	DispFreqZ[id.xy] = float4(DispFreqZ[id.xy].xyz, 1);
+	// }
+}

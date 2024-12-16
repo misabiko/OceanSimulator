@@ -68,7 +68,7 @@ public class BirdSimulation : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        if (Random.Range(0, 100) < 1)
+        if (UnityEngine.Random.Range(0, 100) < 1)
         {
             goalPos = Vector3.Lerp(goalPos, this.transform.position + RandomInsideBound(), 0.2f);
         }
