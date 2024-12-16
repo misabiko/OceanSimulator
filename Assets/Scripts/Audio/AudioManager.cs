@@ -41,7 +41,7 @@ public class AudioManager : MonoBehaviour
             UnityEngine.Debug.Log($"Driver {i}: {driverName} - Mode: {speakerMode} - Rate: {systemRate}Hz");
             OutputForHaptics.Add( driverName );
         }
-        result = FMODUnity.RuntimeManager.HapticsSystem.setDriver(2);
+        result = FMODUnity.RuntimeManager.HapticsSystem.setDriver(1);
         CheckFMODResult(result, "setDriver");
         result = FMODUnity.RuntimeManager.HapticsSystem.createSound("Assets/Audio/Haptics/LeftRota.wav", FMOD.MODE.LOOP_NORMAL, out turningLeft);
         CheckFMODResult(result, "createSound");
@@ -75,7 +75,7 @@ public class AudioManager : MonoBehaviour
     }
 
     public void PlayHaptics(String sound) {
-        if(isActivated) {
+        if(!isActivated) {
             FMOD.Sound playing = birdDiving;
             switch (sound)
             {
