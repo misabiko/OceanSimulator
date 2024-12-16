@@ -696,6 +696,7 @@ MonoBehaviour:
   leftpaddle: {fileID: 8312113139048181732}
   isUnderWater: 0
   currentTrigger: 2
+  state: {fileID: 1021653360561354904}
 --- !u!114 &1398898669410139179
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -723,7 +724,7 @@ MonoBehaviour:
       m_Calls: []
   m_ActionEvents: []
   m_NeverAutoSwitchControlSchemes: 0
-  m_DefaultControlScheme: 
+  m_DefaultControlScheme: Gamepad
   m_DefaultActionMap: Boat
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}

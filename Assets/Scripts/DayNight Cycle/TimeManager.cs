@@ -77,4 +77,9 @@ public class TimeManager : MonoBehaviour
     {
         timeService.UpdateTime(Time.deltaTime);
     }
+
+    public string GetTimeOfDay()
+    {
+        return timeService.CurrentTime.ToString("hh:mm:ss tt");
+    }
 }
