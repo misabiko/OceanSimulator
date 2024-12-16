@@ -8,6 +8,7 @@ public class Buoyancy : MonoBehaviour {
 	[SerializeField] private float voxelSize = 0.1f;
 	[SerializeField] private bool showVoxels = false;
 	[SerializeField] private bool showWaterGizmos = false;
+	[SerializeField] float forceDebugScale = 1f;
 	[SerializeField, Range(0, 1)] private float GizmoSize = 1f;
 	[SerializeField] private float torqueModifier = 0.5f;
 	private float _voxelBorderDepth;
@@ -125,7 +126,8 @@ public class Buoyancy : MonoBehaviour {
 				Mathf.Abs(transform.position.z % ocean.tileSize)
 			);
 			foreach (var voxel in _voxels) {
-				Vector3 voxelPosition = moduloedPosition + rb.rotation * voxel.Position;
+				var voxelGlobalPosition = transform.position + rb.rotation * voxel.Position;
+				var voxelModuloedPosition = moduloedPosition + rb.rotation * voxel.Position;
 
 				Vector3 closestVertex = Vector3.zero;
 				float minDistance = float.MaxValue;
@@ -136,7 +138,7 @@ public class Buoyancy : MonoBehaviour {
 						data.g + y_OceanPosition,
 						data.b + basePosition.y + z_OceanPosition
 					);
-					float currentDistance = Vector3.Distance(voxelPosition, currentVertex);
+					float currentDistance = Vector3.Distance(voxelModuloedPosition, currentVertex);
 					if (currentDistance < minDistance) {
 						minDistance = currentDistance;
 						closestVertex = currentVertex;
@@ -147,12 +149,12 @@ public class Buoyancy : MonoBehaviour {
 
 				i = 0;
 				float submergedHeight = 0;
-				if (closestVertex.y > voxelPosition.y + voxelSize) {
+				if (closestVertex.y > voxelGlobalPosition.y + voxelSize) {
 					submergedHeight = voxelSize;
 				}
-				else if (closestVertex.y <= voxelPosition.y + voxelSize &&
-				         closestVertex.y > voxelPosition.y - voxelSize) {
-					submergedHeight = closestVertex.y - (voxelPosition.y - voxelSize);
+				else if (closestVertex.y <= voxelGlobalPosition.y + voxelSize &&
+				         closestVertex.y > voxelGlobalPosition.y - voxelSize) {
+					submergedHeight = closestVertex.y - (voxelGlobalPosition.y - voxelSize);
 				}
 
 				var lowestNeighbor = closestVertex;
@@ -178,11 +180,17 @@ public class Buoyancy : MonoBehaviour {
 				// 	voxelPosition + Vector3.up * submergedHeight,
 				// 	Color.red);
 				// Debug.DrawLine(voxelPosition, closestVertex, Color.yellow);
-				var modifiedPos = Vector3.Lerp(transform.position, voxelPosition, torqueModifier);
-				var toLowestNeighbor = lowestNeighbor - voxelPosition;
-				var force = (Vector3.up /*+ new Vector3(toLowestNeighbor.x, 0, toLowestNeighbor.z).normalized * (Mathf.Max(0, closestVertex.y - lowestNeighbor.y) * horizontalModifier)*/).normalized * buoyancyForce;
+				var modifiedPos = Vector3.Lerp(transform.position, voxelGlobalPosition, torqueModifier);
+				var tilePosition = new Vector3(
+					Mathf.Floor(transform.position.x / ocean.tileSize) * ocean.tileSize,
+					0,
+					Mathf.Floor(transform.position.z / ocean.tileSize) * ocean.tileSize
+				);
+				var toLowestNeighbor = lowestNeighbor + tilePosition - voxelGlobalPosition;
+				var force = (Vector3.up + new Vector3(toLowestNeighbor.x, 0, toLowestNeighbor.z).normalized * (Mathf.Max(0, closestVertex.y - lowestNeighbor.y) * horizontalModifier)).normalized * buoyancyForce;
 				rb.AddForceAtPosition(force, modifiedPos);
-				Debug.DrawLine(voxelPosition, voxelPosition + force * 0.01f, Color.yellow);
+				Debug.DrawLine(voxelGlobalPosition, voxelGlobalPosition + force / rb.mass + Physics.gravity / voxelCount, Color.Lerp(Color.yellow
+					, Color.red, ((force / rb.mass + Physics.gravity / voxelCount).y * .5f + .5f)) * forceDebugScale);
 				rb.AddForceAtPosition(Physics.gravity / voxelCount, modifiedPos, ForceMode.Acceleration);
 				totalVolume += voxel.SubmergedVolume;
 			}

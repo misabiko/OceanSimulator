@@ -385,7 +385,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.1
-  far clip plane: 5000
+  far clip plane: 100
   field of view: 40
   orthographic: 0
   orthographic size: 10
@@ -712,6 +712,11 @@ PrefabInstance:
         type: 3}
       propertyPath: outerRadius
       value: 200
+      objectReference: {fileID: 0}
+    - target: {fileID: 8481918126875551258, guid: 3ba4c81e0a75cd241909de95134341b1,
+        type: 3}
+      propertyPath: Pools.Array.data[1].size
+      value: 15
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1217,6 +1222,11 @@ PrefabInstance:
       propertyPath: birdController
       value: 
       objectReference: {fileID: 29142660}
+    - target: {fileID: 9040481412440435333, guid: f65c27762f3ede9489e9179eef1e5fab,
+        type: 3}
+      propertyPath: m_Lens.FarClipPlane
+      value: 100
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1344,6 +1354,7 @@ MonoBehaviour:
   OvercrowdWeight: 0.15
   MaxCountInProximity: 10
   VelocityLerp: 0.2
+  _birdController: {fileID: 29142660}
 --- !u!114 &1096928441 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7507723429645048162, guid: f65c27762f3ede9489e9179eef1e5fab,

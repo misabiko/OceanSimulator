@@ -131,9 +131,6 @@ public class Boid : MonoBehaviour
         {
             var p = hitCollider.ClosestPoint(pos0);
             var dpos = p - pos0;
-            //vel0 += -dpos * Simulation.ObstacleAvoidanceWeight * (Simulation.DetectRadius - dpos.magnitude);
-            //Debug.DrawLine(pos0, p, new Color(1, 0, 1, 1f), 1);
-
 
             Ray ray = new Ray(pos0, dpos.normalized);
             float rayLength = Simulation.DetectRadius;
@@ -144,7 +141,6 @@ public class Boid : MonoBehaviour
                 // Get the normal of the surface at the hit point
                 Vector3 hitNormal = hit.normal;
 
-                //var dpos = hit.point - pos0;
                 var obstacleAvoidanceVector = hitNormal * Simulation.ObstacleAvoidanceWeight * (rayLength - dpos.magnitude);
                 vel0 += obstacleAvoidanceVector;
 
@@ -154,10 +150,8 @@ public class Boid : MonoBehaviour
                 // Draw the face normal
                 Debug.DrawRay(hit.point, hitNormal, Color.green);
             }
-
         }
         
-        var speed1 = Math.Clamp(vel0.magnitude, 1, Simulation.MaxSpeed);
         // Going up should be slower than going down
         //var dotup = Vector3.Dot(vel0, Vector3.down); // [1, -1] = [down, up]
         //dotup /= 4; // [0.25, -0.25]
@@ -165,7 +159,7 @@ public class Boid : MonoBehaviour
         //vel0 *= dotup;
 
         // Clamp speed
-        var speed = Math.Clamp(vel0.magnitude, 1, Simulation.MaxSpeed);
+        var speed = Math.Clamp(vel0.magnitude, Simulation.MaxSpeed * 0.2f, Simulation.MaxSpeed);
         vel0 = vel0.normalized * speed;
         vel0 = Vector3.Lerp(previousVelocity, vel0, Simulation.VelocityLerp);
         this.velocity = vel0;
