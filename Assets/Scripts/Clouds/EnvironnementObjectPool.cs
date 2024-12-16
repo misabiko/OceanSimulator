@@ -39,8 +39,8 @@ public class EnvironnementObjectPool : MonoBehaviour
 
                 if (pool.tag == "Clouds")
                     instance = InstantiateCloud(pool, index);
-                //else if (pool.tag == "Rocks")
-                   // instance = InstantiateRocks(pool, index);
+                else if (pool.tag == "Rocks")
+                    instance = InstantiateRocks(pool, index);
 
                 if (instance != null)
                     objectPool.Enqueue(instance);
