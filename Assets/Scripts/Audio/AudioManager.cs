@@ -75,7 +75,7 @@ public class AudioManager : MonoBehaviour
     }
 
     public void PlayHaptics(String sound) {
-        if(isActivated) {
+        if(!isActivated) {
             FMOD.Sound playing = birdDiving;
             switch (sound)
             {
