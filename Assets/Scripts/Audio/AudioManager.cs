@@ -95,6 +95,8 @@ public class AudioManager : MonoBehaviour
     {
         if(channel.hasHandle())
         {
+            result = channelGroup.setVolume(1f);
+            CheckFMODResult(result, "reset volume");
             result = channelGroup.stop();
             CheckFMODResult(result, "stop");
         }
@@ -103,7 +105,7 @@ public class AudioManager : MonoBehaviour
 
     public void AdjustHapticsVolume(float vol)
     {
-        channel.setVolume(vol);
+        channelGroup.setVolume(vol);
     }
 
 
