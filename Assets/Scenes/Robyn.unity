@@ -389,7 +389,7 @@ GameObject:
   - component: {fileID: 1579833805}
   - component: {fileID: 1579833804}
   - component: {fileID: 1579833803}
-  m_Layer: 3
+  m_Layer: 7
   m_Name: Cube (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -497,7 +497,7 @@ GameObject:
   - component: {fileID: 1629942537}
   - component: {fileID: 1629942536}
   - component: {fileID: 1629942535}
-  m_Layer: 3
+  m_Layer: 7
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -685,17 +685,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   boidPrefab: {fileID: 2176301407503456708, guid: 4b17a840543d03746aabb122d40d0857,
     type: 3}
-  boidCount: 100
   allBoids: []
   goalPos: {x: 0, y: 0, z: 0}
+  boidCount: 100
   DetectRadius: 10
   AvoidanceRadius: 3
   Cohesion: 0.2
   Alignment: 0.2
   Separation: 4
-  MaxSpeed: 15
+  MaxSpeed: 22
   SpaceBoundSizeRadius: {x: 42.6, y: 20, z: 40}
   BoundAvoidanceWeight: 0.25
+  GoalFollowersPercent: 0.3
   GoalWeight: 0.1
   WanderWeight: 0
   ObstacleAvoidanceWeight: 0.2

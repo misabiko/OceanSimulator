@@ -11,6 +11,7 @@ using UnityEngine.UIElements;
 using static UnityEditor.Experimental.GraphView.GraphView;
 using static UnityEngine.GraphicsBuffer;
 using static UnityEngine.InputSystem.HID.HID;
+using Random = UnityEngine.Random;
 
 public class GPUAnimationBaker : MonoBehaviour
 {
@@ -31,6 +32,7 @@ public class GPUAnimationBaker : MonoBehaviour
     {
         var animationPixels = this.ReadMatricesFromFile();
         animationLength = animationPixels[1][0]; // 1st value in animation #1 = length
+        animationTime = Random.Range(0, animationLength);
         skin.material.SetVectorArray("_BoneTransformPixels", animationPixels);
     }
     // Update is called once per frame
