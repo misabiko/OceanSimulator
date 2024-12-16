@@ -713,6 +713,11 @@ PrefabInstance:
       propertyPath: outerRadius
       value: 200
       objectReference: {fileID: 0}
+    - target: {fileID: 8481918126875551258, guid: 3ba4c81e0a75cd241909de95134341b1,
+        type: 3}
+      propertyPath: Pools.Array.data[1].size
+      value: 15
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
