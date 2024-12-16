@@ -19,11 +19,12 @@ public class BoatController : MonoBehaviour
     private Rigidbody myRigidbody;
     private Vector3 forwardMovement;
     private Quaternion targetRotation;
-    private float forceMultiplier = 0.1f;//
     [SerializeField] private bool isUnderWater = false;
     [SerializeField] private int currentTrigger = 2;
     [SerializeField] private PlayerStateComponent state;
-    
+    private bool hasPlayedSound = false;
+
+
     private void Awake()
     {
         state.OnActivate += OnActivate;
@@ -97,11 +98,17 @@ public class BoatController : MonoBehaviour
             float zRotation = rightpaddle.transform.localEulerAngles.z;
             if (zRotation <= 75f && zRotation >= -75f) 
             {
+                //j'aimrai juste declncehr ça une fois, quand on passe en dessous de 75 deg
+                if(!hasPlayedSound)AudioManager.instance.PlayOneShot(FMODEvents.instance.rowSound, this.transform.position);
+                hasPlayedSound = true;
+
                 isUnderWater = true;
-                myRigidbody.AddForce(new Vector3(forwardMovement.x, 0, forwardMovement.z) * forceMultiplier, ForceMode.Impulse);
+                myRigidbody.AddForce(new Vector3(forwardMovement.x, 0, forwardMovement.z), ForceMode.Impulse);
+                
             }
             else
             {
+                hasPlayedSound = false;
                 isUnderWater = false;
             }
 

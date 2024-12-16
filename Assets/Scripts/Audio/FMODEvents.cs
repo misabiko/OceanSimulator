@@ -15,6 +15,9 @@ public class FMODEvents : MonoBehaviour
     [field: SerializeField] public EventReference wingFlap { get; private set; }
     public static FMODEvents instance { get; private set; }
 
+    [field: Header("Boat")]
+    [field: SerializeField] public EventReference rowSound { get; private set; }
+
     private void Awake()
     {
         
