@@ -125,7 +125,7 @@ public class Boid : MonoBehaviour
 
         // Avoid Obstacles
         LayerMask collisionLayer = LayerMask.GetMask("Obstacles");
-
+        //Physics.SphereCast(pos0, )
         Collider[] hitColliders = Physics.OverlapSphere(pos0, Simulation.DetectRadius, collisionLayer);
         foreach (var hitCollider in hitColliders)
         {
