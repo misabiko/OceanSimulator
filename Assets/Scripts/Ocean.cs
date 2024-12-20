@@ -79,7 +79,6 @@ public class Ocean : MonoBehaviour {
 		frequencyDomainFieldComputeShader.SetTexture(0, NoiseID, NoiseTexture);
 		frequencyDomainFieldComputeShader.SetFloat(ResolutionID, tileSideVertexCount);
 		frequencyDomainFieldComputeShader.SetFloat(PI, Mathf.PI);
-		frequencyDomainFieldComputeShader.SetFloat(G, -Physics.gravity.y);
 		frequencyDomainFieldComputeShader.SetTexture(0, DispFreqXid, DispFreqX);
 		frequencyDomainFieldComputeShader.SetTexture(0, DispFreqYid, DispFreqY);
 		frequencyDomainFieldComputeShader.SetTexture(0, DispFreqZid, DispFreqZ);
@@ -128,6 +127,7 @@ public class Ocean : MonoBehaviour {
 		frequencyDomainFieldComputeShader.SetFloat(Gamma, gamma);
 		frequencyDomainFieldComputeShader.SetFloat(WaveSharpness, waveFreqSharpness);
 		frequencyDomainFieldComputeShader.SetFloat(WaveHeight, waveFreqHeight);
+		frequencyDomainFieldComputeShader.SetFloat(G, -Physics.gravity.y);
 		// frequencyDomainFieldComputeShader.SetFloat("phillipsA", phillipsA);
 		// frequencyDomainFieldComputeShader.SetFloat("phillipsSmallLength", phillipsSmallLength);
 		// frequencyDomainFieldComputeShader.SetVector("phillipsWindDir", phillipsWindDir.normalized);
