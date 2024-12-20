@@ -2,15 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Unity.Mathematics;
-using UnityEditor;
-using UnityEditor.Rendering;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.UIElements;
-using static UnityEditor.Experimental.GraphView.GraphView;
-using static UnityEngine.GraphicsBuffer;
-using static UnityEngine.InputSystem.HID.HID;
 using Random = UnityEngine.Random;
 
 public class GPUAnimationBaker : MonoBehaviour
