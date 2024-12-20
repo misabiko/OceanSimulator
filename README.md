@@ -1,5 +1,6 @@
 ﻿# Projet de fin d'études - Simulation immersive sur une planète-océan
 
+Le projet compilé est disponible dans les releases à https://github.com/misabiko/OceanSimulator/releases/tag/submission.  
 Le logiciel peut être lancé en exécutant le fichier OceanSimulator.exe dans le dossier du projet.
 
 
